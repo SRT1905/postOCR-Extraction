@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>SmartOCR.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -47,8 +50,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelProcessing\ConfigParser.cs" />
+    <Compile Include="ParseEntryPoint.cs" />
+    <Compile Include="WordProcessing\MatchProcessor.cs" />
+    <Compile Include="SearchTree\SearchTree.cs" />
+    <Compile Include="Utilities\SimilarityDescription.cs" />
+    <Compile Include="SearchTree\TreeNode.cs" />
+    <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Utilities\ParagraphContainer.cs" />
+    <Compile Include="WordProcessing\WordParser.cs" />
+    <Compile Include="WordProcessing\WordReader.cs" />
+    <Compile Include="OfficeApplications\ExcelApplication.cs" />
+    <Compile Include="ExcelProcessing\OutputWorkbook.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="OfficeApplications\WordApplication.cs" />
+    <Compile Include="ConfigContainer.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ConfigContainer.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ConfigContainer.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ConfigContainer.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\config.xlsx" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
