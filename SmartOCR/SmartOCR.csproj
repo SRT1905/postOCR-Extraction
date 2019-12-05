@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F41FD661-8210-4669-BCEB-5FCAA0F2A9A8}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>SmartOCR</RootNamespace>
     <AssemblyName>SmartOCR</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -43,6 +43,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -52,6 +54,12 @@
   <ItemGroup>
     <Compile Include="ExcelProcessing\ConfigParser.cs" />
     <Compile Include="ParseEntryPoint.cs" />
+    <Compile Include="WinForms\StartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinForms\StartForm.Designer.cs">
+      <DependentUpon>StartForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="WordProcessing\MatchProcessor.cs" />
     <Compile Include="SearchTree\SearchTree.cs" />
     <Compile Include="Utilities\SimilarityDescription.cs" />
@@ -75,6 +83,9 @@
     <EmbeddedResource Include="ConfigContainer.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ConfigContainer.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WinForms\StartForm.resx">
+      <DependentUpon>StartForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
