@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SmartOCR.Program</StartupObject>
+    <StartupObject>SmartOCR.CommandLineStart</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
@@ -54,10 +54,10 @@
   <ItemGroup>
     <Compile Include="Excel\ExcelConfigParser.cs" />
     <Compile Include="ParseEntryPoint.cs" />
-    <Compile Include="WinForms\StartForm.cs">
+    <Compile Include="WinForms\StartFormContent\StartForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="WinForms\StartForm.Designer.cs">
+    <Compile Include="WinForms\StartFormContent\StartForm.Designer.cs">
       <DependentUpon>StartForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utilities\MatchProcessor.cs" />
@@ -70,7 +70,7 @@
     <Compile Include="Word\WordReader.cs" />
     <Compile Include="Excel\ExcelApplication.cs" />
     <Compile Include="Excel\ExcelOutputWorkbook.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="CommandLineStart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Word\WordApplication.cs" />
     <Compile Include="ConfigContainer.Designer.cs">
@@ -84,7 +84,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ConfigContainer.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="WinForms\StartForm.resx">
+    <EmbeddedResource Include="WinForms\StartFormContent\StartForm.resx">
       <DependentUpon>StartForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

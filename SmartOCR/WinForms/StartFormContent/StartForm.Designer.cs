@@ -28,9 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label_input_config = new System.Windows.Forms.Label();
             this.textbox_input_config = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button_config = new System.Windows.Forms.Button();
             this.label_doc_types = new System.Windows.Forms.Label();
             this.combobox_doc_types = new System.Windows.Forms.ComboBox();
             this.label_chargecode = new System.Windows.Forms.Label();
@@ -42,6 +43,8 @@
             this.textbox_file_specification = new System.Windows.Forms.TextBox();
             this.checkbox_include_subdirectories = new System.Windows.Forms.CheckBox();
             this.button_run = new System.Windows.Forms.Button();
+            this.errorprovider = new System.Windows.Forms.ErrorProvider(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.errorprovider)).BeginInit();
             this.SuspendLayout();
             // 
             // label_input_config
@@ -61,16 +64,18 @@
             this.textbox_input_config.Name = "textbox_input_config";
             this.textbox_input_config.Size = new System.Drawing.Size(282, 20);
             this.textbox_input_config.TabIndex = 1;
+            this.textbox_input_config.TextChanged += new System.EventHandler(this.Textbox_input_config_TextChanged);
             // 
-            // button1
+            // button_config
             // 
-            this.button1.Location = new System.Drawing.Point(308, 31);
-            this.button1.Margin = new System.Windows.Forms.Padding(5);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(83, 20);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Browse";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button_config.Location = new System.Drawing.Point(308, 31);
+            this.button_config.Margin = new System.Windows.Forms.Padding(5);
+            this.button_config.Name = "button_config";
+            this.button_config.Size = new System.Drawing.Size(83, 20);
+            this.button_config.TabIndex = 2;
+            this.button_config.Text = "Browse";
+            this.button_config.UseVisualStyleBackColor = true;
+            this.button_config.Click += new System.EventHandler(this.Button_config_Click);
             // 
             // label_doc_types
             // 
@@ -92,6 +97,7 @@
             this.combobox_doc_types.Size = new System.Drawing.Size(180, 21);
             this.combobox_doc_types.Sorted = true;
             this.combobox_doc_types.TabIndex = 4;
+            this.combobox_doc_types.SelectedIndexChanged += new System.EventHandler(this.Combobox_doc_types_SelectedIndexChanged);
             // 
             // label_chargecode
             // 
@@ -110,6 +116,8 @@
             this.textbox_chargecode.Name = "textbox_chargecode";
             this.textbox_chargecode.Size = new System.Drawing.Size(180, 20);
             this.textbox_chargecode.TabIndex = 6;
+            this.textbox_chargecode.Validating += new System.ComponentModel.CancelEventHandler(this.Textbox_chargecode_Validating);
+            this.textbox_chargecode.Validated += new System.EventHandler(this.Textbox_chargecode_Validated);
             // 
             // label_directory
             // 
@@ -128,6 +136,7 @@
             this.textbox_directory.Name = "textbox_directory";
             this.textbox_directory.Size = new System.Drawing.Size(282, 20);
             this.textbox_directory.TabIndex = 8;
+            this.textbox_directory.TextChanged += new System.EventHandler(this.Textbox_directory_TextChanged);
             // 
             // button_directory
             // 
@@ -138,6 +147,7 @@
             this.button_directory.TabIndex = 9;
             this.button_directory.Text = "Browse";
             this.button_directory.UseVisualStyleBackColor = true;
+            this.button_directory.Click += new System.EventHandler(this.Button_directory_Click);
             // 
             // label_file_specification
             // 
@@ -157,6 +167,7 @@
             this.textbox_file_specification.Size = new System.Drawing.Size(282, 20);
             this.textbox_file_specification.TabIndex = 11;
             this.textbox_file_specification.Text = "*.*";
+            this.textbox_file_specification.TextChanged += new System.EventHandler(this.Textbox_file_specification_TextChanged);
             // 
             // checkbox_include_subdirectories
             // 
@@ -171,6 +182,7 @@
             // 
             // button_run
             // 
+            this.button_run.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button_run.Enabled = false;
             this.button_run.Location = new System.Drawing.Point(168, 223);
             this.button_run.Margin = new System.Windows.Forms.Padding(5);
@@ -179,6 +191,12 @@
             this.button_run.TabIndex = 13;
             this.button_run.Text = "Run";
             this.button_run.UseVisualStyleBackColor = true;
+            this.button_run.Click += new System.EventHandler(this.Button_run_Click);
+            // 
+            // errorprovider
+            // 
+            this.errorprovider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.errorprovider.ContainerControl = this;
             // 
             // StartForm
             // 
@@ -196,13 +214,17 @@
             this.Controls.Add(this.label_chargecode);
             this.Controls.Add(this.combobox_doc_types);
             this.Controls.Add(this.label_doc_types);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.button_config);
             this.Controls.Add(this.textbox_input_config);
             this.Controls.Add(this.label_input_config);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "StartForm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "SmartOCR";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.StartForm_FormClosing);
+            ((System.ComponentModel.ISupportInitialize)(this.errorprovider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -212,7 +234,7 @@
 
         private System.Windows.Forms.Label label_input_config;
         private System.Windows.Forms.TextBox textbox_input_config;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button_config;
         private System.Windows.Forms.Label label_doc_types;
         private System.Windows.Forms.ComboBox combobox_doc_types;
         private System.Windows.Forms.Label label_chargecode;
@@ -224,5 +246,6 @@
         private System.Windows.Forms.TextBox textbox_file_specification;
         private System.Windows.Forms.CheckBox checkbox_include_subdirectories;
         private System.Windows.Forms.Button button_run;
+        private System.Windows.Forms.ErrorProvider errorprovider;
     }
 }

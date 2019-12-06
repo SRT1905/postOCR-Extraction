@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace SmartOCR
 {
-    internal class Program
+    internal class CommandLineStart
     {
-        private static readonly int minimal_number_of_args = 2;
         private static string doc_type;
         private static string path_type;
 
@@ -42,16 +42,27 @@ namespace SmartOCR
             return directories;
         }
 
+        [STAThread]
         private static void Main(string[] args)
         {
-            if (args.Length >= minimal_number_of_args)
+            if (args.Length == 0)
             {
-                ExecuteProcessing(args);
+                System.Windows.Forms.Application.EnableVisualStyles();
+                StartForm form = new StartForm();
+                _ = form.ShowDialog();
             }
             else
             {
-                PrintInvalidInputMessage();
+                if (args.Length >= 2)
+                {
+                    ExecuteProcessing(args);
+                }
+                else
+                {
+                    PrintInvalidInputMessage();
+                }
             }
+
         }
 
         private static void PrintInvalidInputMessage()
