@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Office.Interop.Excel;
 
 namespace SmartOCR
 {
-    class OutputWorkbook
+    class ExcelOutputWorkbook
     {
         private static Workbook instance;
         private static Worksheet output_worksheet;
@@ -22,9 +19,9 @@ namespace SmartOCR
 
         private static Workbook CreateOutputWorkbook(string doc_type)
         {
-            if (ConfigParser.config_wb == null)
-                new ConfigParser();
-            Workbook source_wb = ConfigParser.config_wb;
+            if (ExcelConfigParser.config_wb == null)
+                new ExcelConfigParser();
+            Workbook source_wb = ExcelConfigParser.config_wb;
             Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
             Worksheet source_ws = GetWorksheetByName(source_wb, doc_type);

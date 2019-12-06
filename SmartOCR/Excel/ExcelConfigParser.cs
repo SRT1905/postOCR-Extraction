@@ -1,19 +1,16 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.IO;
-using Microsoft.Office.Interop.Excel;
 
 namespace SmartOCR
 {
-    class ConfigParser
+    class ExcelConfigParser
     {
         public static Workbook config_wb;
 
-        public ConfigParser()
+        public ExcelConfigParser()
         {
             if (config_wb == null)
                 config_wb = GetInternalConfig();

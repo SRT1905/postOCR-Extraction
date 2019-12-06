@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.Office.Interop.Word;
 
 namespace SmartOCR
 {
@@ -253,13 +252,13 @@ namespace SmartOCR
                             found_values_collection.Add(offset_index);
                         }
                     }
-                        
+
                 }
             }
             return found_values_collection;
         }
         private void ProcessValue(ref TreeNode node, ref TreeNode parent_node, long search_level)
-        {            
+        {
             foreach (long line_number in node.Lines)
             {
                 if (!line_mapping.ContainsKey(line_number))
