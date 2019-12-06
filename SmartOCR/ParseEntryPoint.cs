@@ -1,56 +1,79 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Word;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace SmartOCR
 {
-    class ParseEntryPoint
+    internal class ParseEntryPoint : IDisposable
     {
-        public Dictionary<string, object> Config_data { get; }
-        private readonly List<string> valid_files;
-        private readonly List<string> valid_doc_types = new List<string>()
+        private Dictionary<string, object> config_data = new Dictionary<string, object>();
+        private string doc_type;
+        private string output_location = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        private Workbook output_wb;
+
+        private List<string> valid_doc_types = new List<string>()
         {
             "Invoice"
         };
 
-        public ParseEntryPoint(string doc_type, IEnumerable<string> files)
+        private List<string> valid_files;
+
+        public ParseEntryPoint(string type, IEnumerable<string> files)
         {
-            valid_files = new List<string>();
-            foreach (string file_path in files)
+            doc_type = type;
+            valid_files = GetValidFiles(files);
+            config_data = new ExcelConfigParser().ParseConfig(doc_type);
+            output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
+        }
+
+        public void Dispose()
+        {
+            config_data = null;
+            doc_type = null;
+            output_location = null;
+            output_wb = null;
+            valid_doc_types = null;
+            valid_files = null;
+            WordApplication.ExitWordApplication();
+            ExcelApplication.ExitExcelApplication();
+        }
+
+        public bool TryGetData()
+        {
+            if (valid_files.Count == 0 || !valid_doc_types.Contains(doc_type))
             {
-                if (File.Exists(file_path))
-                {
-                    valid_files.Add(file_path);
-                }
+                return false;
             }
-            if (valid_files.Count == 0)
+            GetDataFromFiles();
+            return true;
+        }
+
+        private void GetDataFromFiles()
+        {
+            foreach (var item in valid_files)
             {
-                return;
+                Dictionary<string, string> result = GetResultFromFile(item);
+                ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
             }
+            output_wb.SaveAs(output_location);
+        }
 
-            if (valid_doc_types.Contains(doc_type))
-            {
-                ExcelConfigParser parser = new ExcelConfigParser();
-                Config_data = parser.ParseConfig(doc_type);
+        private Dictionary<string, string> GetResultFromFile(string item)
+        {
+            Document document = WordApplication.OpenWordDocument(item);
+            WordReader reader = new WordReader(document);
+            WordParser wordParser = new WordParser(reader.line_mapping);
+            return wordParser.ParseDocument(config_data);
+        }
 
-                Workbook output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
-
-                foreach (string item in valid_files)
-                {
-                    Document document = WordApplication.OpenWordDocument(item);
-                    WordReader reader = new WordReader(document);
-                    reader.Dispose();
-                    WordParser wordParser = new WordParser(reader.line_mapping);
-                    Dictionary<string, string> result = wordParser.ParseDocument(Config_data);
-
-                    ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
-
-                    output_wb.SaveAs(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
-                }
-                WordApplication.ExitWordApplication();
-                ExcelApplication.ExitExcelApplication();
-            }
+        private List<string> GetValidFiles(IEnumerable<string> files)
+        {
+            return (from string file_path in files
+                    where File.Exists(file_path)
+                    select file_path).ToList();
         }
     }
 }

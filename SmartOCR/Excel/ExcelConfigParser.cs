@@ -6,7 +6,7 @@ using System.IO;
 
 namespace SmartOCR
 {
-    class ExcelConfigParser
+    internal class ExcelConfigParser
     {
         public static Workbook config_wb;
 
@@ -34,6 +34,7 @@ namespace SmartOCR
             }
             return null;
         }
+
         private Dictionary<string, object> GetFields(Worksheet source_ws)
         {
             Dictionary<string, object> fields = new Dictionary<string, object>();
@@ -60,8 +61,13 @@ namespace SmartOCR
         {
             long item_column;
             for (item_column = 2; item_column <= source_ws.UsedRange.Columns.Count; item_column++)
+            {
                 if (source_ws.Cells.Item[1, item_column].Value2 == field_name)
+                {
                     break;
+                }
+            }
+
             if (source_ws.Cells.Item[1, item_column].Value2 != field_name)
             {
                 Console.WriteLine($"Processing error - field name '{field_name}' not found.");
@@ -70,9 +76,8 @@ namespace SmartOCR
             long type_row = 0;
             long field_expression_row = 0;
             long value_row = 0;
-            long last_row = source_ws.UsedRange.Rows.Count;
             long i;
-            for (i = 1; i <= last_row; i++)
+            for (i = 1; i <= source_ws.UsedRange.Rows.Count; i++)
             {
                 string cell_value = source_ws.Cells.Item[i, 1].Value2;
                 if (cell_value == null)
@@ -154,11 +159,15 @@ namespace SmartOCR
             }
             else
             {
-                values[1] = string.IsNullOrEmpty(splitted_offset[0].ToString()) ? 0 : long.Parse(splitted_offset[0].ToString());
+                values[1] = string.IsNullOrEmpty(splitted_offset[0].ToString())
+                    ? 0
+                    : long.Parse(splitted_offset[0].ToString());
                 if (splitted_offset[1] == null)
                     values[2] = 0;
                 else
-                    values[2] = string.IsNullOrEmpty(splitted_offset[1].ToString()) ? 0 : long.Parse(splitted_offset[1].ToString());
+                    values[2] = string.IsNullOrEmpty(splitted_offset[1].ToString())
+                        ? 0
+                        : long.Parse(splitted_offset[1].ToString());
             }
             return values;
         }

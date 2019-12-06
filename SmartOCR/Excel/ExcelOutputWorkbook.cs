@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.Office.Interop.Excel;
+﻿using Microsoft.Office.Interop.Excel;
+using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    class ExcelOutputWorkbook
+    internal class ExcelOutputWorkbook
     {
         private static Workbook instance;
         private static Worksheet output_worksheet;
@@ -20,13 +20,18 @@ namespace SmartOCR
         private static Workbook CreateOutputWorkbook(string doc_type)
         {
             if (ExcelConfigParser.config_wb == null)
+            {
                 new ExcelConfigParser();
+            }
+
             Workbook source_wb = ExcelConfigParser.config_wb;
             Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
             Worksheet source_ws = GetWorksheetByName(source_wb, doc_type);
             if (source_ws == null)
+            {
                 return null;
+            }
 
             output_worksheet = new_wb.Worksheets.Add(After: new_wb.Worksheets[new_wb.Worksheets.Count]);
             output_worksheet.Name = source_ws.Name;
@@ -56,14 +61,16 @@ namespace SmartOCR
             }
             return null;
         }
+
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
-            long row_to_input = GetLastRowInWorksheet();
             foreach (string key in values.Keys)
             {
                 long column_index = FindColumnIndex(key);
                 if (column_index != 0)
-                    output_worksheet.Cells[row_to_input, column_index] = values[key];
+                {
+                    output_worksheet.Cells[GetLastRowInWorksheet(), column_index] = values[key];
+                }
             }
         }
 

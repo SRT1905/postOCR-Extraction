@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.Office.Interop.Word;
+﻿using Microsoft.Office.Interop.Word;
+using System;
 
 namespace SmartOCR
 {
-    class ParagraphContainer
+    internal class ParagraphContainer : IComparable<ParagraphContainer>
     {
         public double HorizontalLocation;
         public double VerticalLocation;
@@ -11,25 +11,32 @@ namespace SmartOCR
 
         public ParagraphContainer(Range range)
         {
-            HorizontalLocation = range.Information[WdInformation.wdHorizontalPositionRelativeToPage];
-            if (HorizontalLocation == -1)
-            {
-                HorizontalLocation = range.Words[1].Information[WdInformation.wdHorizontalPositionRelativeToPage];
-            }
-
-            VerticalLocation = range.Information[WdInformation.wdVerticalPositionRelativeToPage];
-            if (VerticalLocation == -1)
-            {
-                VerticalLocation = range.Words[1].Information[WdInformation.wdVerticalPositionRelativeToPage];
-            }
-
+            HorizontalLocation = ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
+            VerticalLocation = ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
             Text = RemoveInvalidChars(range.Text);
         }
+
+        private double ValidateLocation(Range range, WdInformation information)
+        {
+            return range.Information[information] != -1
+                ? range.Information[information]
+                : range.Words[1].Information[information];
+        }
+
         private string RemoveInvalidChars(string check_string)
         {
-            string[] separators = new string[] {"\r", "\a", "\t", "\f"};
+            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
             string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("", temp);
+        }
+
+        public int CompareTo(ParagraphContainer that)
+        {
+            if (that == null)
+            {
+                return 1;
+            }
+            return HorizontalLocation.CompareTo(that.HorizontalLocation);
         }
     }
 }

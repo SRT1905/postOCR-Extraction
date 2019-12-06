@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace SmartOCR
 {
-    static class Utilities
+    internal static class Utilities
     {
         public static bool TryAddValueInCollection(long value, ref List<long> value_collection)
         {
@@ -31,56 +31,50 @@ namespace SmartOCR
             return regex_obj;
         }
 
-        public static string NumberProcessing(string value, bool negate = false)
+        public static string NumberProcessing(string value)
         {
-            string regional_decimal_separator = Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            string regional_decimal_separator = GetDecimalSeparator();
+            value = PrepareValueForNumberProcessing(value, regional_decimal_separator);
+
+            if (double.TryParse(value, out double _))
+            {
+                return value;
+            }
+
+            if (value.Count(single_char => single_char == '.' || single_char == ',') == 1)
+            {
+                value = value.Replace(",", regional_decimal_separator)
+                             .Replace(".", regional_decimal_separator);
+                return double.TryParse(value, out _) ? value : string.Empty;
+            }
+            return value;
+        }
+
+        private static string PrepareValueForNumberProcessing(string value, string regional_decimal_separator)
+        {
             value = TrimNonNumericChars(value);
-            value = value.Contains(",") && value.Contains(".") ?
-                        value.Replace(",", string.Empty) :
-                        value.Replace(",", regional_decimal_separator);
+            value = value.Contains(",") && value.Contains(".")
+                ? value.Replace(",", string.Empty)
+                : value.Replace(",", regional_decimal_separator);
 
             value = value.Replace(".", regional_decimal_separator);
+            return new string(value.ToCharArray()
+                                   .Where(c => !char.IsWhiteSpace(c))
+                                   .ToArray());
+        }
 
-            if (double.TryParse(value, out double numeric_value))
-            {
-                return negate ? (-numeric_value).ToString() : numeric_value.ToString();
-            }
-
-            string temp_value = new string(value.ToCharArray()
-                                                .Where(c => !Char.IsWhiteSpace(c))
-                                                .ToArray());
-            if (temp_value.Count(single_char => single_char == '.' || single_char == ',') == 1)
-            {
-                temp_value = temp_value.Replace(",", regional_decimal_separator);
-                temp_value = temp_value.Replace(".", regional_decimal_separator);
-                if (double.TryParse(temp_value, out numeric_value))
-                {
-                    return negate ? (-numeric_value).ToString() : numeric_value.ToString();
-                }
-
-                return string.Empty;
-            }
-            if (double.TryParse(temp_value, out numeric_value))
-            {
-                return temp_value;
-            }
-
-            return value;
+        private static string GetDecimalSeparator()
+        {
+            return Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
         }
 
         private static string TrimNonNumericChars(string value)
         {
-            string pattern = @"[\d\.\,\s\\]";
-            string result = string.Empty;
-            RegexOptions options = RegexOptions.Multiline;
-            Regex regex = new Regex(pattern, options);
+            Regex regex = new Regex(@"[\d\.\,\s\\]", RegexOptions.Multiline);
             if (regex.IsMatch(value))
             {
                 MatchCollection matches = regex.Matches(value);
-                foreach (Match item in matches)
-                {
-                    result += item.Value;
-                }
+                var result = string.Join("", matches.Cast<Match>().Select(match => match.Value));
                 return result.Trim().Replace('-', ',');
             }
             return value;
@@ -97,25 +91,23 @@ namespace SmartOCR
                 if (matches.Count >= 3)
                 {
                     string date_value = $"{matches[1].Value}/{matches[0].Value}/{matches[2].Value}";
-                    return DateTime.TryParse(date_value, out DateTime parsed_date)
-                        ? parsed_date.ToShortDateString()
+                    return DateTime.TryParse(date_value, out DateTime _)
+                        ? date_value
                         : $"Дата распознана как {date_value}";
                 }
             }
 
             if (regex_alpha_month.IsMatch(value))
             {
-                MatchCollection matches = regex_alpha_month.Matches(value);
-                GroupCollection groups = matches[0].Groups;
-                string month = ReturnNumericMonth(groups[1].Value.ToLower());
-                string date_value = $"{month}/{groups[0].Value}/{groups[2].Value}";
-                return DateTime.TryParse(date_value, out DateTime parsed_date)
-                    ? parsed_date.ToShortDateString()
+                GroupCollection groups = regex_alpha_month.Matches(value)[0].Groups;
+                string month = ReturnNumericMonth(groups[2].Value.ToLower());
+                string date_value = $"{month}/{groups[1].Value}/{groups[3].Value}";
+                return DateTime.TryParse(date_value, out DateTime _)
+                    ? date_value
                     : $"Дата распознана как {date_value}";
             }
 
             return "Дата документа не распознана";
-
         }
 
         private static string ReturnNumericMonth(string value)
@@ -139,7 +131,9 @@ namespace SmartOCR
             foreach (string key in month_mapping.Keys)
             {
                 if (value.Contains(key))
+                {
                     return month_mapping[key];
+                }
             }
             return "00";
         }

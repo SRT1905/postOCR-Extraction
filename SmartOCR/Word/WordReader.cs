@@ -4,120 +4,114 @@ using System.Linq;
 
 namespace SmartOCR
 {
-    class WordReader
+    internal class WordReader
     {
-        const byte shape_position_offset = 5;
         public SortedDictionary<long, List<ParagraphContainer>> line_mapping;
+        private readonly byte shape_position_offset = 5;
+        private readonly byte minimal_text_length = 2;
 
         public WordReader(Document document)
         {
             line_mapping = ReadDocument(document);
+            WordApplication.CloseDocument(document);
         }
 
-        private SortedDictionary<long, List<ParagraphContainer>> ReadDocument(Document document)
+        protected SortedDictionary<long, List<ParagraphContainer>> ReadDocument(Document document)
         {
-            SortedDictionary<long, List<ParagraphContainer>> line_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            var document_content = GetDataFromParagraphs(document);
+            List<TextFrame> frame_collection = GetValidTextFrames(document);
+            AddDataFromFrames(ref document_content, frame_collection);
+            return document_content;
+        }
+
+        protected void AddDataFromFrames(ref SortedDictionary<long, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
+        {
+            foreach (TextFrame frame in frame_collection)
+            {
+                if (frame.TextRange.Text.Length > minimal_text_length)
+                {
+                    AddDataFromSingleFrame(ref document_content, frame);
+                }
+            }
+        }
+
+        protected List<TextFrame> GetValidTextFrames(Document document)
+        {
+            List<TextFrame> frame_collection = new List<TextFrame>();
+            for (int i = 1; i <= document.Shapes.Count; i++)
+            {
+                TextFrame frame = document.Shapes[i].TextFrame;
+                if (frame != null && frame.HasText != 0)
+                {
+                    frame_collection.Add(frame);
+                }
+            }
+            return frame_collection;
+        }
+
+        protected SortedDictionary<long, List<ParagraphContainer>> GetDataFromParagraphs(Document document)
+        {
+            SortedDictionary<long, List<ParagraphContainer>> document_content = new SortedDictionary<long, List<ParagraphContainer>>();
             for (int i = 1; i <= document.Paragraphs.Count; i++)
             {
                 Range single_range = document.Paragraphs[i].Range;
-                if (single_range.Text.Length <= 2)
+                if (single_range.Text.Length <= minimal_text_length)
                 {
                     continue;
                 }
                 long line_number = single_range.Information[WdInformation.wdFirstCharacterLineNumber];
-                if (!line_mapping.ContainsKey(line_number))
+                if (!document_content.ContainsKey(line_number))
                 {
-                    line_mapping.Add(line_number, new List<ParagraphContainer>());
+                    document_content.Add(line_number, new List<ParagraphContainer>());
                 }
 
-                line_mapping[line_number].Add(new ParagraphContainer(single_range));
+                document_content[line_number].Add(new ParagraphContainer(single_range));
             }
-            List<TextFrame> frame_collection = new List<TextFrame>();
-            for (int i = 1; i <= document.Shapes.Count; i++)
-            {
-                frame_collection.Add(document.Shapes[i].TextFrame);
-            }
-
-            foreach (TextFrame frame in frame_collection)
-            {
-                if (frame != null && frame.HasText != 0)
-                {
-                    if (frame.TextRange.Text.Length > 2)
-                    {
-                        AddDataFromShape(ref line_mapping, frame);
-                    }
-                }
-            }
-            return line_mapping;
+            return document_content;
         }
-        private void AddDataFromShape(ref SortedDictionary<long, List<ParagraphContainer>> line_mapping, TextFrame text_frame)
+
+        private void AddDataFromSingleFrame(ref SortedDictionary<long, List<ParagraphContainer>> document_content, TextFrame text_frame)
         {
             foreach (Paragraph paragraph in text_frame.TextRange.Paragraphs)
             {
                 ParagraphContainer container = new ParagraphContainer(paragraph.Range);
-                if (container.Text.Length > 2)
+                if (container.Text.Length > minimal_text_length)
                 {
                     bool add_new_line = false;
-                    long closest_line = GetClosestLine(line_mapping, container.VerticalLocation, ref add_new_line);
-                    if (!line_mapping.ContainsKey(closest_line))
+                    long closest_line = GetClosestLine(ref document_content, container.VerticalLocation, ref add_new_line);
+                    if (!document_content.ContainsKey(closest_line))
                     {
-                        line_mapping.Add(closest_line, new List<ParagraphContainer>());
+                        document_content.Add(closest_line, new List<ParagraphContainer>());
                     }
                     else if (add_new_line)
                     {
-                        line_mapping = ShiftReadLines(line_mapping, closest_line);
+                        document_content = ShiftReadLines(ref document_content, closest_line);
                     }
 
-                    InsertRangeInCollection(ref line_mapping, closest_line, container);
+                    InsertRangeInCollection(ref document_content, closest_line, container);
                 }
             }
         }
-        private long GetClosestLine(SortedDictionary<long, List<ParagraphContainer>> line_mapping, double position, ref bool add_new_line)
+
+        private long GetClosestLine(ref SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line)
         {
             int lower_index = 0;
-            int upper_index = line_mapping.Count - 1;
-            List<long> keys = line_mapping.Keys.ToList();
-
+            int upper_index = document_content.Count - 1;
             while (lower_index <= upper_index)
             {
                 int middle_index = lower_index + ((upper_index - lower_index) / 2);
+                List<long> keys = document_content.Keys.ToList();
                 long middle_line = keys[middle_index];
-                double middle_position = line_mapping[middle_line][0].VerticalLocation;
-                long adjacent_line;
-                double adjacent_position;
+                double middle_position = document_content[middle_line][0].VerticalLocation;
                 if (position == middle_position)
                 {
-                    adjacent_line = middle_index - 1 < 0 ? keys[0] : keys[middle_index - 1];
-                    adjacent_position = line_mapping[adjacent_line][0].VerticalLocation;
+                    long adjacent_line = middle_index - 1 < 0 ? keys[0] : keys[middle_index - 1];
+                    double adjacent_position = document_content[adjacent_line][0].VerticalLocation;
                     return AdjustLineNumber(position, adjacent_line, adjacent_position, middle_line, middle_position, ref add_new_line);
                 }
                 if (lower_index == upper_index)
                 {
-                    long line;
-                    double line_position;
-                    if (lower_index == 0)
-                    {
-                        line = keys[lower_index];
-                        line_position = line_mapping[line][0].VerticalLocation;
-                        return AdjustLineNumber(position, 0, 0, line, line_position, ref add_new_line);
-                    }
-                    if (upper_index == line_mapping.Count - 1)
-                    {
-                        line = keys[upper_index];
-                        line_position = line_mapping[line][0].VerticalLocation;
-                        return AdjustLineNumber(position, line, line_position, 10000, 10000, ref add_new_line);
-                    }
-                    line = keys[lower_index];
-                    line_position = line_mapping[line][0].VerticalLocation;
-                    if (line_position <= position)
-                    {
-                        adjacent_line = keys[lower_index + 1];
-                        adjacent_position = line_mapping[adjacent_line][0].VerticalLocation;
-                        return AdjustLineNumber(position, line, line_position, adjacent_line, adjacent_position, ref add_new_line);
-                    }
-                    adjacent_line = keys[lower_index - 1];
-                    adjacent_position = line_mapping[adjacent_line][0].VerticalLocation;
-                    return AdjustLineNumber(position, adjacent_line, adjacent_position, line, line_position, ref add_new_line);
+                    return GetApproximateLineNumber(ref document_content, position, ref add_new_line, lower_index, upper_index);
                 }
                 if (position > middle_position)
                 {
@@ -130,19 +124,57 @@ namespace SmartOCR
             }
             return 0;
         }
+
+        private long GetApproximateLineNumber(ref SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line, int lower_index, int upper_index)
+        {
+            List<long> keys = document_content.Keys.ToList();
+            long line;
+            double line_position;
+            if (lower_index == 0)
+            {
+                line = keys[lower_index];
+                line_position = document_content[line][0].VerticalLocation;
+                return AdjustLineNumber(position, 0, 0, line, line_position, ref add_new_line);
+            }
+            if (upper_index == document_content.Count - 1)
+            {
+                line = keys[upper_index];
+                line_position = document_content[line][0].VerticalLocation;
+                return AdjustLineNumber(position, line, line_position, 10000, 10000, ref add_new_line);
+            }
+            line = keys[lower_index];
+            line_position = document_content[line][0].VerticalLocation;
+            double adjacent_position;
+            long adjacent_line;
+            if (line_position <= position)
+            {
+                adjacent_line = keys[lower_index + 1];
+                adjacent_position = document_content[adjacent_line][0].VerticalLocation;
+                return AdjustLineNumber(position, line, line_position, adjacent_line, adjacent_position, ref add_new_line);
+            }
+            adjacent_line = keys[lower_index - 1];
+            adjacent_position = document_content[adjacent_line][0].VerticalLocation;
+            return AdjustLineNumber(position, adjacent_line, adjacent_position, line, line_position, ref add_new_line);
+        }
+
         private long AdjustLineNumber(double position, long upper_line, double upper_line_position, long lower_line, double lower_line_position, ref bool add_new_line)
         {
-
-            int threshold = lower_line_position - upper_line_position <= shape_position_offset ? 0 : shape_position_offset;
-            bool inside_upper_position = upper_line_position <= position && position <= upper_line_position + threshold;
-            bool inside_lower_position = lower_line_position - threshold <= position && position <= lower_line_position;
+            int threshold = lower_line_position - upper_line_position <= shape_position_offset
+                ? 0
+                : shape_position_offset;
+            bool inside_upper_position = upper_line_position <= position
+                                      && position <= upper_line_position + threshold;
+            bool inside_lower_position = lower_line_position - threshold <= position
+                                      && position <= lower_line_position;
             bool between_positions = !(inside_lower_position || inside_upper_position);
 
             add_new_line = false;
             if (between_positions)
             {
                 add_new_line = true;
-                return position - upper_line_position > lower_line_position - position ? lower_line - 1 : upper_line + 1;
+                return position - upper_line_position > lower_line_position - position
+                    ? lower_line - 1
+                    : upper_line + 1;
             }
             if (inside_upper_position)
             {
@@ -154,45 +186,27 @@ namespace SmartOCR
             }
             return 0;
         }
-        private SortedDictionary<long, List<ParagraphContainer>> ShiftReadLines(SortedDictionary<long, List<ParagraphContainer>> line_mapping, long line)
+
+        private SortedDictionary<long, List<ParagraphContainer>> ShiftReadLines(ref SortedDictionary<long, List<ParagraphContainer>> document_content, long line)
         {
             SortedDictionary<long, List<ParagraphContainer>> dict = new SortedDictionary<long, List<ParagraphContainer>>();
             long shift = 0;
-            for (int i = 0; i < line_mapping.Count; i++)
+            foreach (long current_key in document_content.Keys)
             {
-                long current_key = line_mapping.Keys.ToList()[i];
                 if (current_key == line)
                 {
                     dict.Add(current_key, new List<ParagraphContainer>());
                     shift = 1;
                 }
-                dict.Add(current_key + shift, line_mapping[current_key]);
+                dict.Add(current_key + shift, document_content[current_key]);
             }
             return dict;
         }
-        private void InsertRangeInCollection(ref SortedDictionary<long, List<ParagraphContainer>> line_mapping, long closest_line, ParagraphContainer text_range_container)
+
+        private void InsertRangeInCollection(ref SortedDictionary<long, List<ParagraphContainer>> document_content, long closest_line, ParagraphContainer text_range_container)
         {
-            List<ParagraphContainer> paragraph_collection = line_mapping[closest_line];
-            int i;
-            for (i = 0; i < paragraph_collection.Count; i++)
-            {
-                ParagraphContainer container = paragraph_collection[i];
-                if (container.HorizontalLocation > text_range_container.HorizontalLocation)
-                    break;
-            }
-            if (i == paragraph_collection.Count)
-            {
-                paragraph_collection.Add(text_range_container);
-            }
-            else
-            {
-                paragraph_collection.Insert(i, text_range_container);
-            }
-            line_mapping[closest_line] = paragraph_collection;
-        }
-        public void Dispose()
-        {
-            WordApplication.CloseActiveWordDocument();
+            document_content[closest_line].Add(text_range_container);
+            document_content[closest_line].Sort();
         }
     }
 }

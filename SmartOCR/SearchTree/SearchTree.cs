@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    class SearchTree
+    internal class SearchTree
     {
         private readonly Dictionary<string, object> config_data;
         private TreeNode tree_structure;
+
         public SearchTree(Dictionary<string, object> config_data)
         {
             this.config_data = config_data;
             PopulateTree();
         }
+
         public List<TreeNode> Children => tree_structure.Children;
 
         private void PopulateTree()
@@ -24,6 +26,7 @@ namespace SmartOCR
             }
             tree_structure = root;
         }
+
         private TreeNode AddFieldNode(ref TreeNode root_node, string field_name, object field_data)
         {
             Dictionary<string, object> field_info = (Dictionary<string, object>)field_data;
@@ -54,35 +57,50 @@ namespace SmartOCR
             root_node.AddChild(node);
             return node;
         }
+
         public void AddSearchValues(dynamic field_data, ref TreeNode node, int initial_value_index = 0)
         {
             if (node.NodeLabel == "Terminal")
+            {
                 return;
+            }
+
             ArrayList values_collection = field_data["values"];
             if (node.Children.Count == 0 && values_collection.Count < initial_value_index + 1)
             {
-                TreeNode new_node = new TreeNode();
-                Dictionary<string, object> single_value_definition = (Dictionary<string, object>)values_collection[initial_value_index];
-                new_node.RE_Pattern = (string)single_value_definition["regexp"];
-                new_node.Lines.Add(node.Lines[0] + (long)single_value_definition["offset"]);
-                node.AddChild(new_node);
+                AddSearchValuesToChildlessNode(ref node, initial_value_index, values_collection);
             }
 
             if (values_collection.Count < initial_value_index + 1)
+            {
                 return;
+            }
 
             string field_name = node.Name;
             if (node.NodeLabel == "Line" || node.NodeLabel == "Field")
+            {
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     TreeNode child = node.Children[i];
                     AddSearchValuesToSingleNode(field_name, ref child, values_collection, initial_value_index);
                 }
+            }
             else
             {
                 AddSearchValuesToSingleNode(field_name, ref node, values_collection, initial_value_index);
             }
         }
+
+        private void AddSearchValuesToChildlessNode(ref TreeNode node, int initial_value_index,
+                                                    ArrayList values_collection)
+        {
+            TreeNode new_node = new TreeNode();
+            Dictionary<string, object> single_value_definition = (Dictionary<string, object>)values_collection[initial_value_index];
+            new_node.RE_Pattern = (string)single_value_definition["regexp"];
+            new_node.Lines.Add(node.Lines[0] + (long)single_value_definition["offset"]);
+            node.AddChild(new_node);
+        }
+
         private void AddSearchValuesToSingleNode(string field_name, ref TreeNode node, ArrayList values_collection, int initial_value_index)
         {
             TreeNode single_paragraph_node = node;
@@ -116,28 +134,30 @@ namespace SmartOCR
             Dictionary<string, string> final_values = new Dictionary<string, string>();
             foreach (string field_name in config_data.Keys)
             {
-                List<string> children_collection = new List<string>();
-                foreach (TreeNode field_node in tree_structure.Children)
-                {
-                    if (field_node.Name == field_name)
-                    {
-                        GetNodeChildren(field_node, ref children_collection);
-                        break;
-                    }
-                }
+                List<string> children_collection = GetChildrenByFieldName(field_name);
 
                 if (children_collection.Count != 0)
                 {
-                    Dictionary<string, string> result = new Dictionary<string, string>();
-                    for (int i = 0; i < children_collection.Count; i++)
-                    {
-                        result[children_collection[i]] = string.Empty;
-                    }
-
-                    final_values.Add(field_name, string.Join("|", result.Keys));
+                    HashSet<string> result = new HashSet<string>(children_collection);
+                    final_values.Add(field_name, string.Join("|", result));
                 }
             }
             return final_values;
+        }
+
+        private List<string> GetChildrenByFieldName(string field_name)
+        {
+            List<string> children_collection = new List<string>();
+            foreach (TreeNode field_node in tree_structure.Children)
+            {
+                if (field_node.Name == field_name)
+                {
+                    GetNodeChildren(field_node, ref children_collection);
+                    break;
+                }
+            }
+
+            return children_collection;
         }
 
         private void GetNodeChildren(TreeNode node, ref List<string> children_collection)

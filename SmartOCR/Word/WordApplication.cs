@@ -3,7 +3,7 @@ using System;
 
 namespace SmartOCR
 {
-    class WordApplication
+    internal class WordApplication
     {
         private static Application instance;
 
@@ -26,14 +26,15 @@ namespace SmartOCR
             Application app = GetWordApplication();
             app.Quit(WdSaveOptions.wdDoNotSaveChanges);
             if (app != null)
+            {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
+            }
             GC.Collect();
         }
 
         public static Document OpenWordDocument(string file_path)
         {
-            Application application = GetWordApplication();
-            Document document = application.Documents.Open(file_path);
+            Document document = GetWordApplication().Documents.Open(file_path);
             document.Activate();
             return document;
         }
@@ -41,7 +42,12 @@ namespace SmartOCR
         public static void CloseActiveWordDocument()
         {
             Application application = GetWordApplication();
-            application.ActiveDocument.Close(false);
+            application.ActiveDocument.Close(WdSaveOptions.wdDoNotSaveChanges);
+        }
+
+        public static void CloseDocument(Document document)
+        {
+            document.Close(WdSaveOptions.wdDoNotSaveChanges);
         }
     }
 }
