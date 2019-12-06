@@ -24,26 +24,20 @@ namespace SmartOCR
                 entryPoint.TryGetData();
             }
         }
-
-        private static List<string> GetFiles(IEnumerable<string> args)
-        {
-            return new List<string>(args);
-        }
-
         private static List<string> GetFilesFromArgs(IEnumerable<string> args, string path_type)
         {
             if (path_type == "directory")
             {
                 return GetFilesFromDirectories(args);
             }
-            return GetFiles(args);
+            return new List<string>(args);
         }
         private static List<string> GetFilesFromDirectories(IEnumerable<string> args)
         {
             List<string> directories = new List<string>();
             foreach (var item in args)
             {
-                directories.AddRange(Directory.EnumerateFiles(item).Where(file => !file.Contains("~")));
+                directories.AddRange(Directory.GetFiles(item).Where(file => !file.Contains("~")));
             }
             return directories;
         }
@@ -68,11 +62,8 @@ namespace SmartOCR
 
         private static string ValidateDocumentType(string doc_type)
         {
-            HashSet<string> doc_types = new HashSet<string>
-            {
-                "Invoice"
-            };
-            return doc_types.FirstOrDefault(item => item.Contains(doc_type));
+            
+            return Utilities.valid_document_types.FirstOrDefault(item => item.Contains(doc_type));
         }
 
         private static string ValidatePath(string path)

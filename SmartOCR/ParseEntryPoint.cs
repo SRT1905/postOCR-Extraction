@@ -14,10 +14,7 @@ namespace SmartOCR
         private string output_location = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private Workbook output_wb;
 
-        private List<string> valid_doc_types = new List<string>()
-        {
-            "Invoice"
-        };
+        private HashSet<string> valid_doc_types = Utilities.valid_document_types;
 
         private List<string> valid_files;
 

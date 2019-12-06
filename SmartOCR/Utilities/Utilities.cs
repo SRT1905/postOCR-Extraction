@@ -8,6 +8,10 @@ namespace SmartOCR
 {
     internal static class Utilities
     {
+        public static HashSet<string> valid_document_types = new HashSet<string>
+            {
+                "Invoice"
+            };
         public static bool TryAddValueInCollection(long value, ref List<long> value_collection)
         {
             if (value_collection.Contains(value))
