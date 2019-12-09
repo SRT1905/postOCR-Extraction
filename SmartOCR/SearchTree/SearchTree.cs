@@ -185,14 +185,71 @@ namespace SmartOCR
             foreach (string field_name in config_data.Keys)
             {
                 List<string> children_collection = GetChildrenByFieldName(field_name);
-
+                var result = new HashSet<string>();
                 if (children_collection.Count != 0)
                 {
-                    var result = new HashSet<string>(children_collection);
-                    final_values.Add(field_name, string.Join("|", result));
+                    result.UnionWith(children_collection);
                 }
+                else
+                {
+                    var pre_terminal_collection = GetDataFromPreTerminalNodes(field_name);
+                    result.UnionWith(pre_terminal_collection);
+                }
+                final_values.Add(field_name, string.Join("|", result));
             }
             return final_values;
+        }
+
+        private HashSet<string> GetDataFromPreTerminalNodes(string field_name)
+        {
+            var found_data = new Dictionary<bool, HashSet<string>>()
+            {
+                { true, new HashSet<string>() },
+                { false, new HashSet<string>() }
+            };
+            foreach (TreeNode node in tree_structure.Children)
+            {
+                if (node.Content.Name == field_name)
+                {
+                    GetDataFromNode(node, found_data);
+                    if (found_data[true].Count != 0)
+                    {
+                        return found_data[true];
+                    }
+                    return found_data[false];
+                    
+                }
+            }
+            return new HashSet<string>();
+        }
+
+        private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> found_data)
+        {
+            if (node.Children.Count == 0)
+            {
+                return;
+            }
+
+            foreach (TreeNode child in node.Children)
+            {
+                GetDataFromNode(child, found_data);
+            }
+            if (!string.IsNullOrEmpty(node.Content.FoundValue))
+            {
+                if (node.Content.Status)
+                {
+                    found_data[true].Add(node.Content.FoundValue);
+                }
+                else
+                {
+                    if (node.Parent.Content.NodeLabel != "Field")
+                    {
+                        found_data[false].Add(node.Content.FoundValue);
+                    }
+                }
+
+            }
+
         }
 
         private List<string> GetChildrenByFieldName(string field_name)

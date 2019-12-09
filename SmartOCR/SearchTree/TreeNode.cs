@@ -4,8 +4,8 @@ namespace SmartOCR
 {
     internal class TreeNode
     {
-        public TreeNode Parent;
         public TreeNodeContent Content;
+        public TreeNode Parent;
         public List<TreeNode> Children;
 
         public TreeNode()

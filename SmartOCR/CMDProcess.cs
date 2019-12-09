@@ -35,7 +35,7 @@ namespace SmartOCR
                 Utilities.PrintInvalidInputMessage();
                 return;
             }
-            using (ParseEntryPoint entryPoint = new ParseEntryPoint(doc_type, GetFilesFromArgs()))
+            using (var entryPoint = new ParseEntryPoint(doc_type, GetFilesFromArgs()))
             {
                 entryPoint.TryGetData();
             }

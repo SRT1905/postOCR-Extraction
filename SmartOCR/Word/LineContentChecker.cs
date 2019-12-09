@@ -6,7 +6,7 @@ namespace SmartOCR
 {
     internal class LineContentChecker
     {
-        private List<ParagraphContainer> paragraph_collection;
+        private List<ParagraphContainer> paragraph_collection { get; }
         public long paragraph_index;
         public string joined_matches;
 
@@ -34,7 +34,13 @@ namespace SmartOCR
                 string paragraph_text = paragraph_collection[(int)paragraph_index].Text;
                 if (regex_obj.IsMatch(paragraph_text))
                 {
-                    if (!string.IsNullOrEmpty(check_value))
+                    if (string.IsNullOrEmpty(check_value))
+                    {
+                        var found_matches = GetMatchesFromParagraph(paragraph_text, regex_obj);
+                        this.joined_matches = string.Join("|", found_matches);
+                        return true;
+                    }
+                    else
                     {
                         var found_matches = GetMatchesFromParagraph(paragraph_text, regex_obj, check_value);
                         if (found_matches.Count != 0)
@@ -43,14 +49,33 @@ namespace SmartOCR
                             return true;
                         }
                     }
-                    else
-                    {
-                        return true;
-                    }
+
                 }
             }
             paragraph_index = 0;
             return false;
+        }
+        private List<string> GetMatchesFromParagraph(string text_to_check, Regex re_object)
+        {
+            MatchCollection matches = re_object.Matches(text_to_check);
+            var found_values = new List<string>();
+            foreach (Match single_match in matches)
+            {
+                if (single_match.Groups.Count > 1)
+                {
+                    for (int group_i = 1; group_i < single_match.Groups.Count; group_i++)
+                    {
+                        Group group_item = single_match.Groups[group_i];
+                        found_values.Add(group_item.Value);
+                        
+                    }
+                }
+                else
+                {
+                    found_values.Add(single_match.Value);
+                }
+            }
+            return found_values;
         }
 
         private List<SimilarityDescription> GetMatchesFromParagraph(string text_to_check, Regex re_object, string check_value)

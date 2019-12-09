@@ -105,10 +105,10 @@ namespace SmartOCR
             return found_values;
         }
 
-        private List<long> GetOffsetLines(long line_number, TreeNodeContent content)
+        private Dictionary<long, string> GetOffsetLines(long line_number, TreeNodeContent content)
         {
             Regex regex_obj = Utilities.CreateRegexpObject(content.RE_Pattern);
-            List<long> found_values_collection = new List<long>();
+            var found_values_collection = new Dictionary<long, string>();
 
             for (int search_offset = 1; search_offset <= similarity_search_threshold; search_offset++)
             {
@@ -120,7 +120,7 @@ namespace SmartOCR
                         var line_checker = new LineContentChecker(line_mapping[offset_index]);
                         if (line_checker.CheckLineContents(regex_obj, content.CheckValue))
                         {
-                            found_values_collection.Add(offset_index);
+                            found_values_collection.Add(offset_index, line_checker.joined_matches);
                         }
                     }
                 }
@@ -131,23 +131,23 @@ namespace SmartOCR
         private void OffsetSearch(long line_number, TreeNode line_node, long search_level, bool add_to_parent = false)
         {
             var line_node_content = line_node.Content;
-            List<long> line_numbers = GetOffsetLines(line_number, line_node_content);
+            var line_numbers = GetOffsetLines(line_number, line_node_content);
 
-            foreach (long offset_index in line_numbers)
+            foreach (long offset_index in line_numbers.Keys)
             {
                 if (add_to_parent)
                 {
                     var parent = line_node.Parent;
-                    AddOffsetNode(parent, search_level, offset_index, add_to_parent);
+                    AddOffsetNode(parent, search_level, offset_index, line_numbers[offset_index], add_to_parent);
                 }
                 else
                 {
-                    AddOffsetNode(line_node, search_level, offset_index, add_to_parent);
+                    AddOffsetNode(line_node, search_level, offset_index, line_numbers[offset_index], add_to_parent);
                 }
             }
         }
 
-        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, bool add_to_parent)
+        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, bool add_to_parent)
         {
             var node_content = node.Content;
             if (!node_content.Lines.Contains(offset_index))
@@ -167,6 +167,7 @@ namespace SmartOCR
                     pattern = node.Content.RE_Pattern;
                 }
                 TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label);
+                child_node.Content.FoundValue = found_value;
                 tree_structure.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
             }
         }
@@ -197,7 +198,7 @@ namespace SmartOCR
             var line_node_content = line_node.Content;
             if (line_node_content.NodeLabel == "Terminal")
             {
-                ProcessTerminalNode(line_node, search_level);
+                ProcessValue(line_node, search_level);
                 return;
             }
 
@@ -235,15 +236,9 @@ namespace SmartOCR
             }
         }
 
-        private void ProcessTerminalNode(TreeNode line_node, long search_level)
-        {
-            ProcessValue(line_node, search_level);
-        }
-
         private void ProcessValue(TreeNode node, long search_level)
         {
             var node_content = node.Content;
-            var parent_node = node.Parent;
             foreach (long line_number in node_content.Lines)
             {
                 if (!line_mapping.ContainsKey(line_number))
