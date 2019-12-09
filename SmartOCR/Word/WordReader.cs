@@ -59,9 +59,10 @@ namespace SmartOCR
             {
                 return;
             }
-            var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+
             if (page_content.ContainsKey(0))
             {
+                var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
                 foreach (long key in page_content.Keys)
                 {
                     shifted_mapping.Add(key + 1, page_content[key]);
@@ -160,7 +161,7 @@ namespace SmartOCR
                     }
                     else if (add_new_line)
                     {
-                        document_content = ShiftReadLines(ref document_content, closest_line);
+                        document_content = ShiftReadLines(document_content, closest_line);
                     }
 
                     document_content[closest_line] = InsertRangeInCollection(document_content[closest_line], container);
@@ -171,34 +172,18 @@ namespace SmartOCR
 
         private long GetClosestLine(SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line)
         {
-            int lower_index = 0;
-            int upper_index = document_content.Count - 1;
-            while (lower_index <= upper_index)
+            var verticals = document_content.Values.Select(item => item.First().VerticalLocation).ToList();
+            int line = verticals.BinarySearch(position);
+            if (line < 0)
             {
-                int middle_index = lower_index + ((upper_index - lower_index) / 2);
-                List<long> keys = document_content.Keys.ToList();
-                long middle_line = keys[middle_index];
-                double middle_position = document_content[middle_line][0].VerticalLocation;
-                if (position == middle_position)
-                {
-                    long adjacent_line = middle_index - 1 < 0 ? keys[0] : keys[middle_index - 1];
-                    double adjacent_position = document_content[adjacent_line][0].VerticalLocation;
-                    return AdjustLineNumber(position, adjacent_line, adjacent_position, middle_line, middle_position, ref add_new_line);
-                }
-                if (lower_index == upper_index)
-                {
-                    return GetApproximateLineNumber(document_content, position, ref add_new_line, lower_index, upper_index);
-                }
-                if (position > middle_position)
-                {
-                    lower_index = middle_index + 1;
-                }
-                else if (position < middle_position)
-                {
-                    upper_index = middle_index - 1;
-                }
+                line = ~line;
+                return GetApproximateLineNumber(document_content, position, ref add_new_line, line - 1, line);
             }
-            return 0;
+            if (line == 0)
+            {
+                return GetApproximateLineNumber(document_content, position, ref add_new_line, 0, 0);
+            }
+            return line;
         }
 
         private long GetApproximateLineNumber(SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line, int lower_index, int upper_index)
@@ -263,7 +248,7 @@ namespace SmartOCR
             return 0;
         }
 
-        private SortedDictionary<long, List<ParagraphContainer>> ShiftReadLines(ref SortedDictionary<long, List<ParagraphContainer>> document_content, long line)
+        private SortedDictionary<long, List<ParagraphContainer>> ShiftReadLines(SortedDictionary<long, List<ParagraphContainer>> document_content, long line)
         {
             SortedDictionary<long, List<ParagraphContainer>> dict = new SortedDictionary<long, List<ParagraphContainer>>();
             long shift = 0;
