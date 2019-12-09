@@ -15,6 +15,7 @@ namespace SmartOCR
         public string search_pattern;
         public string document_type;
         public string output_file;
+        private bool is_output_valid;
         public StartForm()
         {
             InitializeComponent();
@@ -98,7 +99,6 @@ namespace SmartOCR
                 File.Exists(textbox_input_config.Text),
                 textbox_file_specification.Text != string.Empty,
                 combobox_doc_types.SelectedIndex != -1,
-                File.Exists(textbox_save_location.Text),
             }.Contains(false);
             button_run.Enabled = status;
             return status;
@@ -129,6 +129,7 @@ namespace SmartOCR
             search_pattern = textbox_file_specification.Text;
             found_files = GetFilesFromInput();
             document_type = combobox_doc_types.SelectedItem.ToString();
+            is_output_valid = File.Exists(output_file) || string.IsNullOrEmpty(output_file);
         }
 
         private void StartForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -140,8 +141,12 @@ namespace SmartOCR
                     e.Cancel = true;
                     errorprovider.SetError(button_run, "No files were found. Check input parameters.");
                 }
+                if (!is_output_valid)
+                {
+                    e.Cancel = true;
+                    errorprovider.SetError(textbox_save_location, "Invalid output file location.");
+                }
             }
-            
         }
 
         private List<string> GetFilesFromInput()
@@ -157,8 +162,6 @@ namespace SmartOCR
             {
                 return new List<string>();
             }
-            
-
         }
 
         private void Button_save_location_Click(object sender, System.EventArgs e)

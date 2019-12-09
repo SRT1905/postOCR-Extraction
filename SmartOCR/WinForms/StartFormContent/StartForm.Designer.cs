@@ -216,6 +216,7 @@
             this.textbox_save_location.Location = new System.Drawing.Point(14, 231);
             this.textbox_save_location.Margin = new System.Windows.Forms.Padding(5);
             this.textbox_save_location.Name = "textbox_save_location";
+            this.textbox_save_location.ReadOnly = true;
             this.textbox_save_location.Size = new System.Drawing.Size(284, 20);
             this.textbox_save_location.TabIndex = 14;
             this.textbox_save_location.TextChanged += new System.EventHandler(this.Textbox_save_location_TextChanged);
