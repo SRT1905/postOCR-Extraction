@@ -10,17 +10,10 @@ namespace SmartOCR
     {
         public static HashSet<string> valid_document_types = new HashSet<string>
             {
-                "Invoice",
-                "Settlement",
+                "invoice_sales",
+                "settlement",
+                "invoice_costs",
             };
-
-        public static bool TryAddValueInCollection(long value, ref List<long> value_collection)
-        {
-            if (value_collection.Contains(value))
-                return false;
-            value_collection.Add(value);
-            return true;
-        }
 
         public static Regex CreateRegexpObject(string text_pattern, bool is_global = true, bool ignore_case = true)
         {
