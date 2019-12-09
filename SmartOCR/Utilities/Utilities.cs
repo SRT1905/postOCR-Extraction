@@ -10,8 +10,10 @@ namespace SmartOCR
     {
         public static HashSet<string> valid_document_types = new HashSet<string>
             {
-                "Invoice"
+                "Invoice",
+                "Settlement",
             };
+
         public static bool TryAddValueInCollection(long value, ref List<long> value_collection)
         {
             if (value_collection.Contains(value))
@@ -140,6 +142,12 @@ namespace SmartOCR
                 }
             }
             return "00";
+        }
+
+        public static void PrintInvalidInputMessage()
+        {
+            System.Console.WriteLine("Enter valid document type and path(s) to file/directory.");
+            System.Console.ReadKey();
         }
     }
 }

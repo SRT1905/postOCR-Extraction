@@ -5,7 +5,7 @@ namespace SmartOCR
 {
     internal class MatchProcessor
     {
-        public readonly string result;
+        public string result { get; }
 
         public MatchProcessor(string text_to_check, Regex regex_obj, string value_type)
         {

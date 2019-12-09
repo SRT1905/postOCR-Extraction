@@ -16,6 +16,16 @@ namespace SmartOCR
                 config_wb = GetInternalConfig();
         }
 
+        public ExcelConfigParser(string config_file)
+        {
+            config_wb = GetExternalConfig(config_file);
+        }
+
+        private Workbook GetExternalConfig(string path)
+        {
+            return ExcelApplication.OpenExcelWorkbook(path);
+        }
+
         private Workbook GetInternalConfig()
         {
             string temp_path = Path.GetTempFileName();

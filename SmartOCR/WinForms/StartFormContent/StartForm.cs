@@ -13,6 +13,8 @@ namespace SmartOCR
         public string charge_code;
         public List<string> found_files;
         public string search_pattern;
+        public string document_type;
+        public string output_file;
         public StartForm()
         {
             InitializeComponent();
@@ -26,18 +28,19 @@ namespace SmartOCR
         private void Button_config_Click(object sender, System.EventArgs e)
         {
             string initial_directory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-            OpenFileDialog dialog = new OpenFileDialog()
+            using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                Filter = "Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb",
-                Multiselect = false,
-                InitialDirectory = initial_directory,
-                RestoreDirectory = true,
-                Title = "Select config file"
-            };
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                config_file = dialog.FileName;
-                textbox_input_config.Text = dialog.FileName;
+                dialog.Filter = "Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb";
+                dialog.Multiselect = false;
+                dialog.InitialDirectory = initial_directory;
+                dialog.RestoreDirectory = true;
+                dialog.Title = "Select config file";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    config_file = dialog.FileName;
+                    textbox_input_config.Text = dialog.FileName;
+                }
             }
         }
 
@@ -73,28 +76,32 @@ namespace SmartOCR
 
         private void Button_directory_Click(object sender, System.EventArgs e)
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog()
+            using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                Description = "Select directory with valid files",
-                ShowNewFolderButton = true,
-            };
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                search_directory = dialog.SelectedPath;
-                textbox_directory.Text = dialog.SelectedPath;
+                dialog.Description = "Select directory with valid files";
+                dialog.ShowNewFolderButton = true;
+            
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    search_directory = dialog.SelectedPath;
+                    textbox_directory.Text = dialog.SelectedPath;
+                }
             }
         }
 
-        private void TryEnableRunButton()
+        private bool TryEnableRunButton()
         {
-            button_run.Enabled = !new List<bool>()
+            bool status = !new List<bool>()
             {
                 textbox_chargecode.Text != string.Empty,
-                System.IO.Directory.Exists(textbox_directory.Text),
-                System.IO.File.Exists(textbox_input_config.Text),
+                Directory.Exists(textbox_directory.Text),
+                File.Exists(textbox_input_config.Text),
                 textbox_file_specification.Text != string.Empty,
-                combobox_doc_types.SelectedIndex != -1
+                combobox_doc_types.SelectedIndex != -1,
+                File.Exists(textbox_save_location.Text),
             }.Contains(false);
+            button_run.Enabled = status;
+            return status;
         }
 
         private void Textbox_input_config_TextChanged(object sender, System.EventArgs e)
@@ -121,11 +128,12 @@ namespace SmartOCR
         {
             search_pattern = textbox_file_specification.Text;
             found_files = GetFilesFromInput();
+            document_type = combobox_doc_types.SelectedItem.ToString();
         }
 
         private void StartForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (button_run.Enabled)
+            if (button_run.Enabled && TryEnableRunButton())
             {
                 if (found_files.Count == 0)
                 {
@@ -151,6 +159,27 @@ namespace SmartOCR
             }
             
 
+        }
+
+        private void Button_save_location_Click(object sender, System.EventArgs e)
+        {
+            string initial_directory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            using (SaveFileDialog dialog = new SaveFileDialog())
+            {
+                dialog.Filter = "Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb";
+                dialog.InitialDirectory = initial_directory;
+                dialog.RestoreDirectory = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    output_file = dialog.FileName;
+                    textbox_save_location.Text = dialog.FileName;
+                }
+            }
+        }
+
+        private void Textbox_save_location_TextChanged(object sender, System.EventArgs e)
+        {
+            TryEnableRunButton();
         }
     }
 }

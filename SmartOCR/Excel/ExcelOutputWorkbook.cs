@@ -64,12 +64,13 @@ namespace SmartOCR
 
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
+            long row_to_input = GetLastRowInWorksheet();
             foreach (string key in values.Keys)
             {
                 long column_index = FindColumnIndex(key);
                 if (column_index != 0)
                 {
-                    output_worksheet.Cells[GetLastRowInWorksheet(), column_index] = values[key];
+                    output_worksheet.Cells[row_to_input, column_index] = values[key];
                 }
             }
         }

@@ -1,46 +1,116 @@
 ﻿using Microsoft.Office.Interop.Word;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SmartOCR
 {
-    internal class WordReader
+    internal class WordReader : IDisposable
     {
         public SortedDictionary<long, List<ParagraphContainer>> line_mapping;
-        private readonly byte shape_position_offset = 5;
-        private readonly byte minimal_text_length = 2;
+        public Document document;
+        private const byte shape_position_offset = 5;
+        private const byte minimal_text_length = 2;
 
-        public WordReader(Document document)
+        public WordReader()
         {
-            line_mapping = ReadDocument(document);
-            WordApplication.CloseDocument(document);
+            line_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+        }
+        public WordReader(Document document) : this()
+        {
+            this.document = document;
         }
 
-        protected SortedDictionary<long, List<ParagraphContainer>> ReadDocument(Document document)
+        public void Dispose()
         {
-            var document_content = GetDataFromParagraphs(document);
-            List<TextFrame> frame_collection = GetValidTextFrames(document);
-            AddDataFromFrames(ref document_content, frame_collection);
+            if (document != null)
+            {
+                WordApplication.CloseDocument(document);
+            }
+        }
+
+        public void ReadDocument()
+        {
+            long number_of_pages = document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
+
+            for (int i = 1; i <= number_of_pages; i++)
+            {
+                var page_content = ReadSinglePage(i);
+                UpdateLineMapping(page_content);
+            }
+        }
+
+        public void ReadDocument(long page_index)
+        {
+            line_mapping = ReadSinglePage(page_index);
+        }
+
+        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long page_index)
+        {
+            var document_content = GetDataFromParagraphs(page_index);
+            List<TextFrame> frame_collection = GetValidTextFrames(page_index);
+            document_content = AddDataFromFrames(document_content, frame_collection);
             return document_content;
         }
 
-        protected void AddDataFromFrames(ref SortedDictionary<long, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
+        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> page_content)
+        {
+            if (page_content.Count == 0)
+            {
+                return;
+            }
+            var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            if (page_content.ContainsKey(0))
+            {
+                foreach (long key in page_content.Keys)
+                {
+                    shifted_mapping.Add(key + 1, page_content[key]);
+                }
+                page_content = shifted_mapping;
+            }
+
+            if (line_mapping.Count == 0)
+            {
+                line_mapping = page_content;
+                return;
+            }
+
+            long end_line = line_mapping.Keys.Last();
+            foreach (long key in page_content.Keys)
+            {
+                line_mapping.Add(key + end_line, page_content[key]);
+            }
+
+
+        }
+
+        protected SortedDictionary<long, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<long, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
         {
             foreach (TextFrame frame in frame_collection)
             {
                 if (frame.TextRange.Text.Length > minimal_text_length)
                 {
-                    AddDataFromSingleFrame(ref document_content, frame);
+                    document_content = AddDataFromSingleFrame(document_content, frame);
                 }
             }
+            return document_content;
         }
 
-        protected List<TextFrame> GetValidTextFrames(Document document)
+        protected List<TextFrame> GetValidTextFrames(long page_index)
         {
             List<TextFrame> frame_collection = new List<TextFrame>();
             for (int i = 1; i <= document.Shapes.Count; i++)
             {
-                TextFrame frame = document.Shapes[i].TextFrame;
+                Shape shape = document.Shapes[i];
+                if (shape.Anchor.Information[WdInformation.wdActiveEndPageNumber] > page_index)
+                {
+                    return frame_collection;
+                }
+                if (shape.Anchor.Information[WdInformation.wdActiveEndPageNumber] < page_index)
+                {
+                    continue;
+                }
+                TextFrame frame = shape.TextFrame;
                 if (frame != null && frame.HasText != 0)
                 {
                     frame_collection.Add(frame);
@@ -49,16 +119,21 @@ namespace SmartOCR
             return frame_collection;
         }
 
-        protected SortedDictionary<long, List<ParagraphContainer>> GetDataFromParagraphs(Document document)
+        protected SortedDictionary<long, List<ParagraphContainer>> GetDataFromParagraphs(long page_index)
         {
             SortedDictionary<long, List<ParagraphContainer>> document_content = new SortedDictionary<long, List<ParagraphContainer>>();
             for (int i = 1; i <= document.Paragraphs.Count; i++)
             {
                 Range single_range = document.Paragraphs[i].Range;
-                if (single_range.Text.Length <= minimal_text_length)
+                if (single_range.Information[WdInformation.wdActiveEndPageNumber] > page_index)
+                {
+                    return document_content;
+                }
+                if (single_range.Text.Length <= minimal_text_length || single_range.Information[WdInformation.wdActiveEndPageNumber] < page_index)
                 {
                     continue;
                 }
+
                 long line_number = single_range.Information[WdInformation.wdFirstCharacterLineNumber];
                 if (!document_content.ContainsKey(line_number))
                 {
@@ -70,7 +145,7 @@ namespace SmartOCR
             return document_content;
         }
 
-        private void AddDataFromSingleFrame(ref SortedDictionary<long, List<ParagraphContainer>> document_content, TextFrame text_frame)
+        private SortedDictionary<long, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<long, List<ParagraphContainer>> document_content, TextFrame text_frame)
         {
             foreach (Paragraph paragraph in text_frame.TextRange.Paragraphs)
             {
@@ -78,7 +153,7 @@ namespace SmartOCR
                 if (container.Text.Length > minimal_text_length)
                 {
                     bool add_new_line = false;
-                    long closest_line = GetClosestLine(ref document_content, container.VerticalLocation, ref add_new_line);
+                    long closest_line = GetClosestLine(document_content, container.VerticalLocation, ref add_new_line);
                     if (!document_content.ContainsKey(closest_line))
                     {
                         document_content.Add(closest_line, new List<ParagraphContainer>());
@@ -88,12 +163,13 @@ namespace SmartOCR
                         document_content = ShiftReadLines(ref document_content, closest_line);
                     }
 
-                    InsertRangeInCollection(ref document_content, closest_line, container);
+                    document_content[closest_line] = InsertRangeInCollection(document_content[closest_line], container);
                 }
             }
+            return document_content;
         }
 
-        private long GetClosestLine(ref SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line)
+        private long GetClosestLine(SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line)
         {
             int lower_index = 0;
             int upper_index = document_content.Count - 1;
@@ -111,7 +187,7 @@ namespace SmartOCR
                 }
                 if (lower_index == upper_index)
                 {
-                    return GetApproximateLineNumber(ref document_content, position, ref add_new_line, lower_index, upper_index);
+                    return GetApproximateLineNumber(document_content, position, ref add_new_line, lower_index, upper_index);
                 }
                 if (position > middle_position)
                 {
@@ -125,7 +201,7 @@ namespace SmartOCR
             return 0;
         }
 
-        private long GetApproximateLineNumber(ref SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line, int lower_index, int upper_index)
+        private long GetApproximateLineNumber(SortedDictionary<long, List<ParagraphContainer>> document_content, double position, ref bool add_new_line, int lower_index, int upper_index)
         {
             List<long> keys = document_content.Keys.ToList();
             long line;
@@ -203,10 +279,11 @@ namespace SmartOCR
             return dict;
         }
 
-        private void InsertRangeInCollection(ref SortedDictionary<long, List<ParagraphContainer>> document_content, long closest_line, ParagraphContainer text_range_container)
+        private List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraph_collection, ParagraphContainer text_range_container)
         {
-            document_content[closest_line].Add(text_range_container);
-            document_content[closest_line].Sort();
+            paragraph_collection.Add(text_range_container);
+            paragraph_collection.Sort();
+            return paragraph_collection;
         }
     }
 }

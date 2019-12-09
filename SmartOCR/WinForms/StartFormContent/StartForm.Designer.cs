@@ -44,6 +44,9 @@
             this.checkbox_include_subdirectories = new System.Windows.Forms.CheckBox();
             this.button_run = new System.Windows.Forms.Button();
             this.errorprovider = new System.Windows.Forms.ErrorProvider(this.components);
+            this.label_save_path = new System.Windows.Forms.Label();
+            this.textbox_save_location = new System.Windows.Forms.TextBox();
+            this.button_save_location = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.errorprovider)).BeginInit();
             this.SuspendLayout();
             // 
@@ -184,11 +187,11 @@
             // 
             this.button_run.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button_run.Enabled = false;
-            this.button_run.Location = new System.Drawing.Point(168, 223);
+            this.button_run.Location = new System.Drawing.Point(167, 276);
             this.button_run.Margin = new System.Windows.Forms.Padding(5);
             this.button_run.Name = "button_run";
             this.button_run.Size = new System.Drawing.Size(75, 23);
-            this.button_run.TabIndex = 13;
+            this.button_run.TabIndex = 16;
             this.button_run.Text = "Run";
             this.button_run.UseVisualStyleBackColor = true;
             this.button_run.Click += new System.EventHandler(this.Button_run_Click);
@@ -198,11 +201,44 @@
             this.errorprovider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.errorprovider.ContainerControl = this;
             // 
+            // label_save_path
+            // 
+            this.label_save_path.AutoSize = true;
+            this.label_save_path.Location = new System.Drawing.Point(13, 213);
+            this.label_save_path.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            this.label_save_path.Name = "label_save_path";
+            this.label_save_path.Size = new System.Drawing.Size(104, 13);
+            this.label_save_path.TabIndex = 13;
+            this.label_save_path.Text = "Output file (optional):";
+            // 
+            // textbox_save_location
+            // 
+            this.textbox_save_location.Location = new System.Drawing.Point(14, 231);
+            this.textbox_save_location.Margin = new System.Windows.Forms.Padding(5);
+            this.textbox_save_location.Name = "textbox_save_location";
+            this.textbox_save_location.Size = new System.Drawing.Size(284, 20);
+            this.textbox_save_location.TabIndex = 14;
+            this.textbox_save_location.TextChanged += new System.EventHandler(this.Textbox_save_location_TextChanged);
+            // 
+            // button_save_location
+            // 
+            this.button_save_location.Location = new System.Drawing.Point(308, 231);
+            this.button_save_location.Margin = new System.Windows.Forms.Padding(5);
+            this.button_save_location.Name = "button_save_location";
+            this.button_save_location.Size = new System.Drawing.Size(83, 20);
+            this.button_save_location.TabIndex = 15;
+            this.button_save_location.Text = "Browse";
+            this.button_save_location.UseVisualStyleBackColor = true;
+            this.button_save_location.Click += new System.EventHandler(this.Button_save_location_Click);
+            // 
             // StartForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(409, 260);
+            this.ClientSize = new System.Drawing.Size(409, 313);
+            this.Controls.Add(this.button_save_location);
+            this.Controls.Add(this.textbox_save_location);
+            this.Controls.Add(this.label_save_path);
             this.Controls.Add(this.button_run);
             this.Controls.Add(this.checkbox_include_subdirectories);
             this.Controls.Add(this.textbox_file_specification);
@@ -222,6 +258,7 @@
             this.MinimizeBox = false;
             this.Name = "StartForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SmartOCR";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.StartForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.errorprovider)).EndInit();
@@ -247,5 +284,8 @@
         private System.Windows.Forms.CheckBox checkbox_include_subdirectories;
         private System.Windows.Forms.Button button_run;
         private System.Windows.Forms.ErrorProvider errorprovider;
+        private System.Windows.Forms.Button button_save_location;
+        private System.Windows.Forms.TextBox textbox_save_location;
+        private System.Windows.Forms.Label label_save_path;
     }
 }
