@@ -106,10 +106,10 @@ namespace SmartOCR
             return found_values;
         }
 
-        private Dictionary<long, string> GetOffsetLines(long line_number, TreeNodeContent content)
+        private Dictionary<string, string> GetOffsetLines(long line_number, TreeNodeContent content)
         {
             Regex regex_obj = Utilities.CreateRegexpObject(content.RE_Pattern);
-            var found_values_collection = new Dictionary<long, string>();
+            var found_values_collection = new Dictionary<string, string>();
 
             for (int search_offset = 1; search_offset <= similarity_search_threshold; search_offset++)
             {
@@ -121,7 +121,7 @@ namespace SmartOCR
                         var line_checker = new LineContentChecker(LineMapping[offset_index]);
                         if (line_checker.CheckLineContents(regex_obj, content.CheckValue))
                         {
-                            found_values_collection.Add(offset_index, line_checker.joined_matches);
+                            found_values_collection.Add(string.Join("|", offset_index, line_checker.paragraph_horizontal_location), line_checker.joined_matches);
                         }
                     }
                 }
@@ -134,21 +134,24 @@ namespace SmartOCR
             var line_node_content = line_node.Content;
             var line_numbers = GetOffsetLines(line_number, line_node_content);
 
-            foreach (long offset_index in line_numbers.Keys)
+            foreach (string key in line_numbers.Keys)
             {
+                string[] splitted_key = key.Split('|');
+                long offset_index = long.Parse(splitted_key[0]);
+                double horizontal_position = double.Parse(splitted_key[1]);
                 if (add_to_parent)
                 {
                     var parent = line_node.Parent;
-                    AddOffsetNode(parent, search_level, offset_index, line_numbers[offset_index], add_to_parent);
+                    AddOffsetNode(parent, search_level, offset_index, line_numbers[key], horizontal_position, add_to_parent);
                 }
                 else
                 {
-                    AddOffsetNode(line_node, search_level, offset_index, line_numbers[offset_index], add_to_parent);
+                    AddOffsetNode(line_node, search_level, offset_index, line_numbers[key], horizontal_position, add_to_parent);
                 }
             }
         }
 
-        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, bool add_to_parent)
+        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, double position, bool add_to_parent)
         {
             var node_content = node.Content;
             if (!node_content.Lines.Contains(offset_index))
@@ -156,18 +159,21 @@ namespace SmartOCR
                 node_content.Lines.Add(offset_index);
                 string node_label;
                 string pattern;
+                double horizontal_position;
                 if (add_to_parent)
                 {
                     var first_child_content = node.Children.First().Content;
                     node_label = first_child_content.NodeLabel;
                     pattern = first_child_content.RE_Pattern;
+                    horizontal_position = position;
                 }
                 else
                 {
                     node_label = node.Content.NodeLabel;
                     pattern = node.Content.RE_Pattern;
+                    horizontal_position = position;
                 }
-                TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label);
+                TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position) ;
                 child_node.Content.FoundValue = found_value;
                 TreeStructure.AddSearchValues(ConfigData[node_content.Name], child_node, (int)search_level);
             }
@@ -216,7 +222,6 @@ namespace SmartOCR
                     var line_checker = new LineContentChecker(LineMapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
                     check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
                     line_node_content.FoundValue = line_checker.joined_matches;
-                    paragraph_horizontal_location = line_checker.paragraph_horizontal_location;
                 }
                 if (check_status)
                 {
