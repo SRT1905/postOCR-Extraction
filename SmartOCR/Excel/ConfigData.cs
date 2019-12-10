@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SmartOCR.Excel
+namespace SmartOCR
 {
     class ConfigData
     {
-        public List<ConfigField> fields { get; }
+        public List<ConfigField> Fields { get; }
 
         public ConfigField this[int index]
         {
             get
             {
-                return fields[index];
+                return Fields[index];
             }
         }
 
@@ -21,13 +21,13 @@ namespace SmartOCR.Excel
         {
             get
             {
-                return fields.Where(single_field => single_field.Name == index).First();
+                return Fields.Where(single_field => single_field.Name == index).First();
             }
         }
 
-        private ConfigData()
+        public ConfigData()
         {
-            fields = new List<ConfigField>();
+            Fields = new List<ConfigField>();
         }
 
         public ConfigData(params ConfigField[] fields) : this()
@@ -36,22 +36,22 @@ namespace SmartOCR.Excel
             {
                 if (item != null)
                 {
-                    this.fields.Add(item);
+                    Fields.Add(item);
                 }
             }
-            
+
         }
 
         public ConfigData(IEnumerable<ConfigField> fields) : this()
         {
-            this.fields = fields.ToList();
+            Fields = fields.ToList();
         }
 
         public void AddField(ConfigField field)
         {
             if (field != null)
             {
-                this.fields.Add(field);
+                Fields.Add(field);
             }
             else
             {

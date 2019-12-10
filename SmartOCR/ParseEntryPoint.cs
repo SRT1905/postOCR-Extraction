@@ -10,7 +10,7 @@ namespace SmartOCR
 {
     internal class ParseEntryPoint : IDisposable
     {
-        private Dictionary<string, object> config_data;
+        private ConfigData config_data;
         private string doc_type;
         private string output_location;
         private Workbook output_wb;
@@ -19,7 +19,7 @@ namespace SmartOCR
 
         public ParseEntryPoint()
         {
-            config_data = new Dictionary<string, object>();
+            config_data = new ConfigData();
             output_location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             valid_doc_types = Utilities.valid_document_types;
             valid_files = new List<string>();

@@ -10,9 +10,9 @@ namespace SmartOCR
         private const long similarity_search_threshold = 8;
         private SearchTree tree_structure { get; }
         private SortedDictionary<long, List<ParagraphContainer>> line_mapping { get; }
-        private Dictionary<string, object> config_data { get; }
+        private ConfigData config_data { get; }
 
-        public WordParser(SortedDictionary<long, List<ParagraphContainer>> document_content, Dictionary<string, object> config_data)
+        public WordParser(SortedDictionary<long, List<ParagraphContainer>> document_content, ConfigData config_data)
         {
             this.line_mapping = document_content;
             this.tree_structure = new SearchTree(config_data);
@@ -281,10 +281,9 @@ namespace SmartOCR
         private void SetOffsetChildrenParagraphs(TreeNode node, long search_level)
         {
             var node_content = node.Content;
-            var field_config = (Dictionary<string, object>)config_data[node_content.Name];
-            var search_parameters = (ArrayList)field_config["values"];
-            var single_parameter = (Dictionary<string, dynamic>)search_parameters[(int)search_level];
-            long horizontal_offset = single_parameter["horizontal_offset"];
+            ConfigField config_field = config_data[node_content.Name];
+            List<ConfigExpression> search_parameters = config_field.Expressions;
+            var single_parameter = search_parameters[(int)search_level];
 
             foreach (TreeNode child in node.Children)
             {
