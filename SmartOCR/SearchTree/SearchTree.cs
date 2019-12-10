@@ -6,12 +6,12 @@ namespace SmartOCR
 {
     internal class SearchTree
     {
-        private ConfigData config_data { get; }
+        private ConfigData ConfigData { get; }
         private TreeNode tree_structure;
 
         public SearchTree(ConfigData config_data)
         {
-            this.config_data = config_data;
+            this.ConfigData = config_data;
         }
 
         public List<TreeNode> Children
@@ -25,7 +25,7 @@ namespace SmartOCR
         public void PopulateTree()
         {
             var root = new TreeNode().CreateRoot();
-            foreach (ConfigField field in config_data.Fields)
+            foreach (ConfigField field in ConfigData.Fields)
             {
                 TreeNode field_node = AddFieldNode(root, field);
                 AddSearchValues(field, field_node);
@@ -158,7 +158,7 @@ namespace SmartOCR
         public Dictionary<string, string> GetValuesFromTree()
         {
             var final_values = new Dictionary<string, string>();
-            foreach (ConfigField field in config_data.Fields)
+            foreach (ConfigField field in ConfigData.Fields)
             {
                 List<string> children_collection = GetChildrenByFieldName(field.Name);
                 var result = new HashSet<string>();

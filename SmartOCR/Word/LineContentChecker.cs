@@ -6,21 +6,21 @@ namespace SmartOCR
 {
     internal class LineContentChecker
     {
-        private List<ParagraphContainer> paragraph_collection { get; }
+        private List<ParagraphContainer> Paragraphs { get; }
         public double paragraph_horizontal_location;
         public string joined_matches;
-        private int search_status;
+        private readonly int search_status;
         private int start_index;
         private int finish_index;
 
         public LineContentChecker()
         {
-            this.paragraph_collection = new List<ParagraphContainer>();
+            this.Paragraphs = new List<ParagraphContainer>();
         }
 
         public LineContentChecker(List<ParagraphContainer> paragraphs)
         {
-            this.paragraph_collection = paragraphs;
+            this.Paragraphs = paragraphs;
         }
 
         public LineContentChecker(List<ParagraphContainer> paragraphs, double paragraph_index, int search_status) : this(paragraphs)
@@ -36,11 +36,11 @@ namespace SmartOCR
             {
                 case 0:
                     start_index = 0;
-                    finish_index = paragraph_collection.Count - 1;
+                    finish_index = Paragraphs.Count - 1;
                     break;
                 case 1:
                     start_index = GetParagraphByLocation(true);
-                    finish_index = paragraph_collection.Count - 1;
+                    finish_index = Paragraphs.Count - 1;
                     break;
                 case -1:
                     start_index = 0;
@@ -53,7 +53,7 @@ namespace SmartOCR
 
         private int GetParagraphByLocation(bool return_next_largest)
         {
-            List<double> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
+            List<double> locations = Paragraphs.Select(item => item.HorizontalLocation).ToList();
             int location = locations.BinarySearch(paragraph_horizontal_location);
             if (location < 0)
             { 
@@ -61,7 +61,7 @@ namespace SmartOCR
             }
             if (return_next_largest)
             {
-                if (location == paragraph_collection.Count)
+                if (location == Paragraphs.Count)
                 {
                     return location--;
                 }
@@ -75,14 +75,14 @@ namespace SmartOCR
         {
             for (int location = start_index; location <= finish_index; location++)
             {
-                string paragraph_text = paragraph_collection[location].Text;
+                string paragraph_text = Paragraphs[location].Text;
                 if (regex_obj.IsMatch(paragraph_text))
                 {
                     if (string.IsNullOrEmpty(check_value))
                     {
                         var found_matches = GetMatchesFromParagraph(paragraph_text, regex_obj);
                         this.joined_matches = string.Join("|", found_matches);
-                        paragraph_horizontal_location = paragraph_collection[location].HorizontalLocation;
+                        paragraph_horizontal_location = Paragraphs[location].HorizontalLocation;
                         return true;
                     }
                     else
@@ -91,7 +91,7 @@ namespace SmartOCR
                         if (found_matches.Count != 0)
                         {
                             this.joined_matches = string.Join("|", found_matches.Select(item => item.Value));
-                            paragraph_horizontal_location = paragraph_collection[location].HorizontalLocation;
+                            paragraph_horizontal_location = Paragraphs[location].HorizontalLocation;
                             return true;
                         }
                     }

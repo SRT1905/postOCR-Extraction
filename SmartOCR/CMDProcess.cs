@@ -7,18 +7,18 @@ namespace SmartOCR
 {
     public class CMDProcess : IProcess
     {
-        private string doc_type { get; }
-        private string path_type { get; }
-        private IEnumerable<string> args { get; }
+        private string DocumentType { get; }
+        private string PathType { get; }
+        private IEnumerable<string> Args { get; }
         public bool ReadyToProcess { get; }
 
         public CMDProcess(string[] args)
         {
             try
             {
-                doc_type = ValidateDocumentType(args[0]);
-                path_type = ValidatePath(args[1]);
-                this.args = args.Skip(1);
+                DocumentType = ValidateDocumentType(args[0]);
+                PathType = ValidatePath(args[1]);
+                this.Args = args.Skip(1);
                 ReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
@@ -30,12 +30,12 @@ namespace SmartOCR
 
         public void ExecuteProcessing()
         {
-            if (doc_type == null || path_type == null)
+            if (DocumentType == null || PathType == null)
             {
                 Utilities.PrintInvalidInputMessage();
                 return;
             }
-            using (var entryPoint = new ParseEntryPoint(doc_type, GetFilesFromArgs()))
+            using (var entryPoint = new ParseEntryPoint(DocumentType, GetFilesFromArgs()))
             {
                 entryPoint.TryGetData();
             }
@@ -43,17 +43,17 @@ namespace SmartOCR
 
         private List<string> GetFilesFromArgs()
         {
-            if (path_type == "directory")
+            if (PathType == "directory")
             {
                 return GetFilesFromDirectories();
             }
-            return new List<string>(args);
+            return new List<string>(Args);
         }
 
         private List<string> GetFilesFromDirectories()
         {
             List<string> directories = new List<string>();
-            foreach (var item in args)
+            foreach (var item in Args)
             {
                 directories.AddRange(Directory.GetFiles(item).Where(file => !file.Contains("~")));
             }

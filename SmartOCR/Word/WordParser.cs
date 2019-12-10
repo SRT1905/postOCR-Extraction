@@ -8,22 +8,22 @@ namespace SmartOCR
     internal class WordParser
     {
         private const long similarity_search_threshold = 8;
-        private SearchTree tree_structure { get; }
-        private SortedDictionary<long, List<ParagraphContainer>> line_mapping { get; }
-        private ConfigData config_data { get; }
+        private SearchTree TreeStructure { get; }
+        private SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; }
+        private ConfigData ConfigData { get; }
 
         public WordParser(SortedDictionary<long, List<ParagraphContainer>> document_content, ConfigData config_data)
         {
-            this.line_mapping = document_content;
-            this.tree_structure = new SearchTree(config_data);
-            this.config_data = config_data;
+            this.LineMapping = document_content;
+            this.TreeStructure = new SearchTree(config_data);
+            this.ConfigData = config_data;
         }
 
         public Dictionary<string, string> ParseDocument()
         {
-            tree_structure.PopulateTree();
+            TreeStructure.PopulateTree();
             ProcessDocument();
-            return tree_structure.GetValuesFromTree();
+            return TreeStructure.GetValuesFromTree();
         }
 
         private void AddChildrenToFieldNode(TreeNode field_node, Dictionary<string, SimilarityDescription> collected_data, double max_similarity)
@@ -54,9 +54,9 @@ namespace SmartOCR
             Regex regex_object = Utilities.CreateRegexpObject(field_node.Content.RE_Pattern);
             Dictionary<string, SimilarityDescription> collected_data = new Dictionary<string, SimilarityDescription>();
 
-            foreach (long line in line_mapping.Keys)
+            foreach (long line in LineMapping.Keys)
             {
-                foreach (ParagraphContainer container in line_mapping[line])
+                foreach (ParagraphContainer container in LineMapping[line])
                 {
                     if (regex_object.IsMatch(container.Text))
                     {
@@ -64,7 +64,7 @@ namespace SmartOCR
 
                         for (int i = 0; i < matched_data_collection.Count; i++)
                         {
-                            collected_data.Add($"{line}|{line_mapping[line].IndexOf(container)}|{container.HorizontalLocation}|{i}", matched_data_collection[i]);
+                            collected_data.Add($"{line}|{LineMapping[line].IndexOf(container)}|{container.HorizontalLocation}|{i}", matched_data_collection[i]);
                         }
                     }
                 }
@@ -116,9 +116,9 @@ namespace SmartOCR
                 List<long> offset_indexes = new List<long>() { line_number + search_offset, line_number - search_offset };
                 foreach (long offset_index in offset_indexes)
                 {
-                    if (line_mapping.ContainsKey(offset_index))
+                    if (LineMapping.ContainsKey(offset_index))
                     {
-                        var line_checker = new LineContentChecker(line_mapping[offset_index]);
+                        var line_checker = new LineContentChecker(LineMapping[offset_index]);
                         if (line_checker.CheckLineContents(regex_obj, content.CheckValue))
                         {
                             found_values_collection.Add(offset_index, line_checker.joined_matches);
@@ -169,15 +169,15 @@ namespace SmartOCR
                 }
                 TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label);
                 child_node.Content.FoundValue = found_value;
-                tree_structure.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
+                TreeStructure.AddSearchValues(ConfigData[node_content.Name], child_node, (int)search_level);
             }
         }
 
         private void ProcessDocument()
         {
-            for (int field_index = 0; field_index < tree_structure.Children.Count; field_index++)
+            for (int field_index = 0; field_index < TreeStructure.Children.Count; field_index++)
             {
-                TreeNode field_node = tree_structure.Children[field_index];
+                TreeNode field_node = TreeStructure.Children[field_index];
                 var node_content = field_node.Content;
                 if (node_content.Lines[0] == 0)
                 {
@@ -209,18 +209,18 @@ namespace SmartOCR
                 long line_number = line_node_content.Lines[line_index];
                 bool check_status = false;
                 double paragraph_horizontal_location = 0;
-                if (line_mapping.ContainsKey(line_number))
+                if (LineMapping.ContainsKey(line_number))
                 {
                     paragraph_horizontal_location = line_node_content.HorizontalParagraph;
                     Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
-                    var line_checker = new LineContentChecker(line_mapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
+                    var line_checker = new LineContentChecker(LineMapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
                     check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
                     line_node_content.FoundValue = line_checker.joined_matches;
                     paragraph_horizontal_location = line_checker.paragraph_horizontal_location;
                 }
                 if (check_status)
                 {
-                    SetOffsetParagraph(line_node, paragraph_horizontal_location, search_level);
+                    SetOffsetParagraph(line_node, paragraph_horizontal_location);
                     int child_index = 0;
                     while (child_index < line_node.Children.Count)
                     {
@@ -242,13 +242,13 @@ namespace SmartOCR
             var node_content = node.Content;
             foreach (long line_number in node_content.Lines)
             {
-                if (!line_mapping.ContainsKey(line_number))
+                if (!LineMapping.ContainsKey(line_number))
                 {
                     OffsetSearch(line_number, node, search_level, true);
                 }
                 else
                 {
-                    List<ParagraphContainer> paragraph_collection = line_mapping[line_number];
+                    List<ParagraphContainer> paragraph_collection = LineMapping[line_number];
                     int start_index = 0;
                     int finish_index = paragraph_collection.Count - 1;
                     switch (node_content.HorizontalStatus)
@@ -271,9 +271,9 @@ namespace SmartOCR
                         Regex regex_obj = Utilities.CreateRegexpObject(node_content.RE_Pattern);
 
                         MatchProcessor match_processor = new MatchProcessor(paragraph_text, regex_obj, node_content.ValueType);
-                        if (!string.IsNullOrEmpty(match_processor.result))
+                        if (!string.IsNullOrEmpty(match_processor.Result))
                         {
-                            node_content.FoundValue = match_processor.result;
+                            node_content.FoundValue = match_processor.Result;
                             node_content.Status = true;
                             PropagateStatusInTree(true, node);
                             return;
@@ -312,12 +312,9 @@ namespace SmartOCR
             }
         }
 
-        private void SetOffsetChildrenParagraphs(TreeNode node, long search_level)
+        private void SetOffsetChildrenParagraphs(TreeNode node)
         {
             var node_content = node.Content;
-            ConfigField config_field = config_data[node_content.Name];
-            List<ConfigExpression> search_parameters = config_field.Expressions;
-            var single_parameter = search_parameters[(int)search_level];
 
             foreach (TreeNode child in node.Children)
             {
@@ -326,10 +323,10 @@ namespace SmartOCR
             }
         }
 
-        private void SetOffsetParagraph(TreeNode line_node, double found_paragraph_location, long search_level)
+        private void SetOffsetParagraph(TreeNode line_node, double found_paragraph_location)
         {
             line_node.Content.HorizontalParagraph = found_paragraph_location;
-            SetOffsetChildrenParagraphs(line_node, search_level);
+            SetOffsetChildrenParagraphs(line_node);
         }
 
         private void UpdateFieldNode(Dictionary<string, SimilarityDescription> collected_data, TreeNode field_node)
@@ -341,7 +338,7 @@ namespace SmartOCR
             }
             double max_similarity = collected_data.Values.ToList().Max(item => item.Ratio);
             AddChildrenToFieldNode(field_node, collected_data, max_similarity);
-            tree_structure.AddSearchValues(config_data[field_node.Content.Name], field_node);
+            TreeStructure.AddSearchValues(ConfigData[field_node.Content.Name], field_node);
         }
     }
 }

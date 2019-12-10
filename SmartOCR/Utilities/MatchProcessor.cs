@@ -5,11 +5,11 @@ namespace SmartOCR
 {
     internal class MatchProcessor
     {
-        public string result { get; }
+        public string Result { get; }
 
         public MatchProcessor(string text_to_check, Regex regex_obj, string value_type)
         {
-            result = ProcessValue(text_to_check, regex_obj, value_type);
+            Result = ProcessValue(text_to_check, regex_obj, value_type);
         }
 
         private string ProcessValue(string text_to_check, Regex regex_obj, string value_type)
