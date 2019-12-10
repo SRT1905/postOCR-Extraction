@@ -4,7 +4,7 @@ namespace SmartOCR
 {
     internal class TreeNodeContent
     {
-        public long HorizontalParagraph { get; set; }
+        public double HorizontalParagraph { get; set; }
         public List<long> Lines { get; set; }
         public string Name { get; set; }
         public string NodeLabel { get; set; }
@@ -13,6 +13,7 @@ namespace SmartOCR
         public string CheckValue { get; set; }
         public string FoundValue { get; set; }
         public string ValueType { get; set; }
+        public int HorizontalStatus { get; set; }
 
         public TreeNodeContent()
         {

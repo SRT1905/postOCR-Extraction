@@ -38,7 +38,7 @@ namespace SmartOCR
             return CreateNode("root");
         }
 
-        public TreeNode AddChild(string new_name = "", string pattern = "", long found_line = 0, string value_type = "", string new_value = "", string node_label = "", long horizontal_paragraph = 0)
+        public TreeNode AddChild(string new_name = "", string pattern = "", long found_line = 0, string value_type = "", string new_value = "", string node_label = "", double horizontal_paragraph = 0)
         {
             TreeNodeContent content = new TreeNodeContent()
             {

@@ -7,8 +7,11 @@ namespace SmartOCR
     internal class LineContentChecker
     {
         private List<ParagraphContainer> paragraph_collection { get; }
-        public long paragraph_index;
+        public double paragraph_horizontal_location;
         public string joined_matches;
+        private int search_status;
+        private int start_index;
+        private int finish_index;
 
         public LineContentChecker()
         {
@@ -20,24 +23,66 @@ namespace SmartOCR
             this.paragraph_collection = paragraphs;
         }
 
-        public LineContentChecker(List<ParagraphContainer> paragraphs, long paragraph_index) : this(paragraphs)
+        public LineContentChecker(List<ParagraphContainer> paragraphs, double paragraph_index, int search_status) : this(paragraphs)
         {
-            this.paragraph_index = paragraph_index;
+            this.paragraph_horizontal_location = paragraph_index;
+            this.search_status = search_status;
+            SetSearchIndexes();
         }
+
+        private void SetSearchIndexes()
+        {
+            switch (search_status)
+            {
+                case 0:
+                    start_index = 0;
+                    finish_index = paragraph_collection.Count - 1;
+                    break;
+                case 1:
+                    start_index = GetParagraphByLocation(true);
+                    finish_index = paragraph_collection.Count - 1;
+                    break;
+                case -1:
+                    start_index = 0;
+                    finish_index = GetParagraphByLocation(false);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private int GetParagraphByLocation(bool return_next_largest)
+        {
+            List<double> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
+            int location = locations.BinarySearch(paragraph_horizontal_location);
+            if (location < 0)
+            { 
+                location = ~location;
+            }
+            if (return_next_largest)
+            {
+                if (location == paragraph_collection.Count)
+                {
+                    return location--;
+                }
+                return location;
+            }
+            return location--;
+        }
+
 
         public bool CheckLineContents(Regex regex_obj, string check_value)
         {
-            long start_index = paragraph_index == 0 || paragraph_index >= paragraph_collection.Count ? 0 : paragraph_index;
-
-            for (paragraph_index = start_index; paragraph_index < paragraph_collection.Count; paragraph_index++)
+            for (int location = start_index; location <= finish_index; location++)
             {
-                string paragraph_text = paragraph_collection[(int)paragraph_index].Text;
+                string paragraph_text = paragraph_collection[location].Text;
                 if (regex_obj.IsMatch(paragraph_text))
                 {
                     if (string.IsNullOrEmpty(check_value))
                     {
                         var found_matches = GetMatchesFromParagraph(paragraph_text, regex_obj);
                         this.joined_matches = string.Join("|", found_matches);
+                        paragraph_horizontal_location = paragraph_collection[location].HorizontalLocation;
                         return true;
                     }
                     else
@@ -46,13 +91,14 @@ namespace SmartOCR
                         if (found_matches.Count != 0)
                         {
                             this.joined_matches = string.Join("|", found_matches.Select(item => item.Value));
+                            paragraph_horizontal_location = paragraph_collection[location].HorizontalLocation;
                             return true;
                         }
                     }
 
                 }
             }
-            paragraph_index = 0;
+            paragraph_horizontal_location = 0;
             return false;
         }
         private List<string> GetMatchesFromParagraph(string text_to_check, Regex re_object)

@@ -36,9 +36,9 @@ namespace SmartOCR
 
         private string ProcessString(MatchCollection matches)
         {
-            return matches[0].Groups.Count > 1 ?
-                matches[0].Groups[1].Value :
-                matches[0].Value;
+            return matches[0].Groups.Count > 1 
+                ? matches[0].Groups[1].Value 
+                : matches[0].Value;
         }
 
         private string ProcessNumber(MatchCollection matches)

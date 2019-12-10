@@ -41,10 +41,11 @@ namespace SmartOCR
         {
             var content = field_node.Content;
             long line = long.Parse(key.Split('|')[0]);
+            double horizontal_location = double.Parse(key.Split('|')[2]);
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
-                field_node.AddChild(found_line: line, pattern: content.RE_Pattern, new_value: content.CheckValue, node_label: "Line");
+                field_node.AddChild(found_line: line, pattern: content.RE_Pattern, new_value: content.CheckValue, node_label: "Line", horizontal_paragraph: horizontal_location);
             }
         }
 
@@ -63,7 +64,7 @@ namespace SmartOCR
 
                         for (int i = 0; i < matched_data_collection.Count; i++)
                         {
-                            collected_data.Add($"{line}|{line_mapping[line].IndexOf(container)}|{i}", matched_data_collection[i]);
+                            collected_data.Add($"{line}|{line_mapping[line].IndexOf(container)}|{container.HorizontalLocation}|{i}", matched_data_collection[i]);
                         }
                     }
                 }
@@ -207,19 +208,19 @@ namespace SmartOCR
             {
                 long line_number = line_node_content.Lines[line_index];
                 bool check_status = false;
-                long found_paragraph_index = 0;
+                double paragraph_horizontal_location = 0;
                 if (line_mapping.ContainsKey(line_number))
                 {
-                    found_paragraph_index = line_node_content.HorizontalParagraph;
+                    paragraph_horizontal_location = line_node_content.HorizontalParagraph;
                     Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
-                    var line_checker = new LineContentChecker(line_mapping[line_number], found_paragraph_index);
+                    var line_checker = new LineContentChecker(line_mapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
                     check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
                     line_node_content.FoundValue = line_checker.joined_matches;
-                    found_paragraph_index = line_checker.paragraph_index;
+                    paragraph_horizontal_location = line_checker.paragraph_horizontal_location;
                 }
                 if (check_status)
                 {
-                    SetOffsetParagraph(line_node, found_paragraph_index, search_level);
+                    SetOffsetParagraph(line_node, paragraph_horizontal_location, search_level);
                     int child_index = 0;
                     while (child_index < line_node.Children.Count)
                     {
@@ -248,9 +249,23 @@ namespace SmartOCR
                 else
                 {
                     List<ParagraphContainer> paragraph_collection = line_mapping[line_number];
-                    int start_index = node_content.HorizontalParagraph >= paragraph_collection.Count ? 0 : (int)node_content.HorizontalParagraph;
+                    int start_index = 0;
+                    int finish_index = paragraph_collection.Count - 1;
+                    switch (node_content.HorizontalStatus)
+                    {
+                        case 1:
+                            start_index = GetParagraphByLocation(paragraph_collection, node_content.HorizontalParagraph, true);
+                            finish_index = paragraph_collection.Count - 1;
+                            break;
+                        case -1:
+                            start_index = 0;
+                            finish_index = GetParagraphByLocation(paragraph_collection, node_content.HorizontalParagraph, false);
+                            break;
+                        default:
+                            break;
+                    }
 
-                    for (int paragraph_index = start_index; paragraph_index < paragraph_collection.Count; paragraph_index++)
+                    for (int paragraph_index = start_index; paragraph_index <= finish_index; paragraph_index++)
                     {
                         string paragraph_text = paragraph_collection[paragraph_index].Text;
                         Regex regex_obj = Utilities.CreateRegexpObject(node_content.RE_Pattern);
@@ -266,6 +281,25 @@ namespace SmartOCR
                     }
                 }
             }
+        }
+
+        private int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection, double position, bool return_next_largest)
+        {
+            List<double> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
+            int location = locations.BinarySearch(position);
+            if (location < 0)
+            {
+                location = ~location;
+            }
+            if (return_next_largest)
+            {
+                if (location == paragraph_collection.Count)
+                {
+                    return location--;
+                }
+                return location;
+            }
+            return location--;
         }
 
         private void PropagateStatusInTree(bool status, TreeNode node)
@@ -288,13 +322,13 @@ namespace SmartOCR
             foreach (TreeNode child in node.Children)
             {
                 var child_content = child.Content;
-                child_content.HorizontalParagraph = node_content.HorizontalParagraph + horizontal_offset;
+                child_content.HorizontalParagraph = node_content.HorizontalParagraph;
             }
         }
 
-        private void SetOffsetParagraph(TreeNode line_node, long found_paragraph_index, long search_level)
+        private void SetOffsetParagraph(TreeNode line_node, double found_paragraph_location, long search_level)
         {
-            line_node.Content.HorizontalParagraph = found_paragraph_index;
+            line_node.Content.HorizontalParagraph = found_paragraph_location;
             SetOffsetChildrenParagraphs(line_node, search_level);
         }
 
