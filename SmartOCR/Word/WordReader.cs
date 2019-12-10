@@ -183,6 +183,11 @@ namespace SmartOCR
             {
                 return GetApproximateLineNumber(document_content, position, ref add_new_line, 0, 0);
             }
+            if (~line == verticals.Count)
+            {
+                line = ~line;
+                return GetApproximateLineNumber(document_content, position, ref add_new_line, line - 1, line - 1);
+            }
             return line;
         }
 
