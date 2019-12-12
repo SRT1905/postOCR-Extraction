@@ -24,9 +24,9 @@ namespace SmartOCR
 
         private string RemoveInvalidChars(string check_string)
         {
-            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
+            string[] separators = new string[] { "\r", "\a", "\t", "\f"};
             string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            return string.Join("", temp);
+            return string.Join("", temp).Replace("\v", " ");
         }
 
         public int CompareTo(ParagraphContainer that)
