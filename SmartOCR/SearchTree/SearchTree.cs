@@ -107,13 +107,14 @@ namespace SmartOCR
                 RE_Pattern = single_value_definition.RE_Pattern,
                 HorizontalParagraph = node.Content.HorizontalParagraph,
                 HorizontalStatus = single_value_definition.HorizontalStatus,
-                ValueType = node.Content.ValueType
+                ValueType = node.Content.ValueType,
+                LineOffset = single_value_definition.LineOffset
             };
             if (initial_value_index + 1 == values_collection.Count)
             {
                 content.NodeLabel = "Terminal";
             }
-            content.Lines.Add(node.Content.Lines[0] + single_value_definition.LineOffset);
+            content.Lines.Add(node.Content.Lines[0]);
             TreeNode new_node = new TreeNode(content);
             node.AddChild(new_node);
         }
@@ -134,21 +135,14 @@ namespace SmartOCR
                     HorizontalParagraph = single_paragraph_node.Content.HorizontalParagraph,
                     ValueType = single_paragraph_node.Content.ValueType,
                     HorizontalStatus = single_value_definition.HorizontalStatus,
+                    LineOffset = single_value_definition.LineOffset
                 };
 
                 if (value_index + 1 == values_collection.Count)
                 {
                     content.NodeLabel = "Terminal";
                 }
-
-                if (offset_line == 0)
-                {
-                    content.Lines.Add(0);
-                }
-                else
-                {
-                    content.Lines.Add(single_value_definition.LineOffset + offset_line);
-                }
+                content.Lines.Add(offset_line);
 
                 var new_node = new TreeNode(content);
                 single_paragraph_node = single_paragraph_node.AddChild(new_node);

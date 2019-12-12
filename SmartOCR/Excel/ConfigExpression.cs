@@ -8,13 +8,13 @@ namespace SmartOCR
     class ConfigExpression
     {
         public string RE_Pattern { get; set; }
-        public long LineOffset { get; set; }
+        public int LineOffset { get; set; }
         public int HorizontalStatus { get; set; }
         // 0 - search whole line;
         // 1 - search only paragraphs to the right
         // -1 - search only paragrapgs to the left
 
-        public ConfigExpression(string pattern, long line_offset, int position_status)
+        public ConfigExpression(string pattern, int line_offset, int position_status)
         {
             RE_Pattern = pattern;
             LineOffset = line_offset;
@@ -39,7 +39,7 @@ namespace SmartOCR
             RE_Pattern = splitted_input[0];
             LineOffset = string.IsNullOrEmpty(splitted_input[1])
                 ? 0
-                : long.Parse(splitted_input[1]);
+                : int.Parse(splitted_input[1]);
             HorizontalStatus = string.IsNullOrEmpty(splitted_input[2])
                 ? 0
                 : int.Parse(splitted_input[2]);

@@ -26,8 +26,7 @@ namespace SmartOCR
             {
                 options |= RegexOptions.IgnoreCase;
             }
-            Regex regex_obj = new Regex(text_pattern, options);
-            return regex_obj;
+            return new Regex(text_pattern, options);
         }
 
         public static string NumberProcessing(string value)
