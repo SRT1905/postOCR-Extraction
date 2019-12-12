@@ -51,7 +51,7 @@ namespace SmartOCR
 
         private int GetParagraphByLocation(bool return_next_largest)
         {
-            List<int> locations = Paragraphs.Select(item => (int)item.HorizontalLocation).ToList(); // TODO: check if integer positions are more precise than double
+            List<int> locations = Paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
             int location = locations.BinarySearch((int)paragraph_horizontal_location);
             if (location < 0)
             { 

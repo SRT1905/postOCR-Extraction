@@ -114,5 +114,14 @@ namespace SmartOCR
             content.Lines.Add(found_line);
             return content;
         }
+
+        public override string ToString()
+        {
+            if (this.Content != null)
+            {
+                return $"{this.Content.Name}: {this.Content.NodeLabel} node";
+            }
+            return base.ToString();
+        }
     }
 }
