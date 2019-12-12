@@ -21,6 +21,8 @@ namespace SmartOCR
         public LineContentChecker(List<ParagraphContainer> paragraphs)
         {
             this.Paragraphs = paragraphs;
+            this.start_index = 0;
+            this.finish_index = paragraphs.Count - 1;
         }
 
         public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraph_index, int search_status) : this(paragraphs)
@@ -34,10 +36,6 @@ namespace SmartOCR
         {
             switch (search_status)
             {
-                case 0:
-                    start_index = 0;
-                    finish_index = Paragraphs.Count - 1;
-                    break;
                 case 1:
                     start_index = GetParagraphByLocation(true);
                     finish_index = Paragraphs.Count - 1;
@@ -53,8 +51,8 @@ namespace SmartOCR
 
         private int GetParagraphByLocation(bool return_next_largest)
         {
-            List<double> locations = Paragraphs.Select(item => item.HorizontalLocation).ToList();
-            int location = locations.BinarySearch(paragraph_horizontal_location);
+            List<int> locations = Paragraphs.Select(item => (int)item.HorizontalLocation).ToList(); // TODO: check if integer positions are more precise than double
+            int location = locations.BinarySearch((int)paragraph_horizontal_location);
             if (location < 0)
             { 
                 location = ~location;
