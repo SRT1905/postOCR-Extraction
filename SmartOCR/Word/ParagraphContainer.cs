@@ -37,5 +37,10 @@ namespace SmartOCR
             }
             return HorizontalLocation.CompareTo(that.HorizontalLocation);
         }
+
+        public override string ToString()
+        {
+            return $"X: {HorizontalLocation}; Y: {VerticalLocation}; Text: {Text}";
+        }
     }
 }
