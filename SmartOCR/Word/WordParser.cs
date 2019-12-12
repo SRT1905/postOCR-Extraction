@@ -157,29 +157,30 @@ namespace SmartOCR
         private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, decimal position, bool add_to_parent)
         {
             var node_content = node.Content;
-            if (!node_content.Lines.Contains(offset_index))
+            if (node_content.Lines.Count(item => item == offset_index) >= 2)
             {
-                node_content.Lines.Add(offset_index);
-                string node_label;
-                string pattern;
-                decimal horizontal_position;
-                if (add_to_parent)
-                {
-                    var first_child_content = node.Children.First().Content;
-                    node_label = first_child_content.NodeLabel;
-                    pattern = first_child_content.RE_Pattern;
-                    horizontal_position = position;
-                }
-                else
-                {
-                    node_label = node.Content.NodeLabel;
-                    pattern = node.Content.RE_Pattern;
-                    horizontal_position = position;
-                }
-                TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position) ;
-                child_node.Content.FoundValue = found_value;
-                TreeStructure.AddSearchValues(ConfigData[node_content.Name], child_node, (int)search_level);
+                return;
             }
+            node_content.Lines.Add(offset_index);
+            string node_label;
+            string pattern;
+            decimal horizontal_position;
+            if (add_to_parent)
+            {
+                var first_child_content = node.Children.First().Content;
+                node_label = first_child_content.NodeLabel;
+                pattern = first_child_content.RE_Pattern;
+                horizontal_position = position;
+            }
+            else
+            {
+                node_label = node.Content.NodeLabel;
+                pattern = node.Content.RE_Pattern;
+                horizontal_position = position;
+            }
+            TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position) ;
+            child_node.Content.FoundValue = found_value;
+            TreeStructure.AddSearchValues(ConfigData[node_content.Name], child_node, (int)search_level);
         }
 
 
