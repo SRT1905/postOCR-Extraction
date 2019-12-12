@@ -81,12 +81,11 @@ namespace SmartOCR
         private Dictionary<string, string> GetResultFromFile(string item)
         {
             Document document = WordApplication.OpenWordDocument(item);
-            using (var reader = new WordReader(document))
-            {
-                reader.ReadDocument();
-                WordParser wordParser = new WordParser(reader.line_mapping, config_data);
-                return wordParser.ParseDocument();
-            }
+            var reader = new WordReader(document);
+            reader.ReadDocument();
+            WordParser wordParser = new WordParser(reader.line_mapping, config_data);
+            reader.Dispose();
+            return wordParser.ParseDocument();
         }
 
         private List<string> GetValidFiles(IEnumerable<string> files)

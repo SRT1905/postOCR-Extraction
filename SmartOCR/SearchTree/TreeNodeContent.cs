@@ -14,6 +14,7 @@ namespace SmartOCR
         public string FoundValue { get; set; }
         public string ValueType { get; set; }
         public int HorizontalStatus { get; set; }
+        public int LineOffset { get; set; }
 
         public TreeNodeContent()
         {
@@ -30,6 +31,8 @@ namespace SmartOCR
             CheckValue = content.CheckValue;
             FoundValue = content.FoundValue;
             ValueType = content.ValueType;
+            HorizontalStatus = content.HorizontalStatus;
+            LineOffset = content.LineOffset;
         }
     }
 }
