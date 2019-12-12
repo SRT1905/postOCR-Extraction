@@ -7,7 +7,7 @@ namespace SmartOCR
     internal class LineContentChecker
     {
         private List<ParagraphContainer> Paragraphs { get; }
-        public double paragraph_horizontal_location;
+        public decimal paragraph_horizontal_location;
         public string joined_matches;
         private readonly int search_status;
         private int start_index;
@@ -23,7 +23,7 @@ namespace SmartOCR
             this.Paragraphs = paragraphs;
         }
 
-        public LineContentChecker(List<ParagraphContainer> paragraphs, double paragraph_index, int search_status) : this(paragraphs)
+        public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraph_index, int search_status) : this(paragraphs)
         {
             this.paragraph_horizontal_location = paragraph_index;
             this.search_status = search_status;
@@ -125,7 +125,7 @@ namespace SmartOCR
         }
 
         private List<SimilarityDescription> GetMatchesFromParagraph(string text_to_check, Regex re_object, string check_value)
-        {
+       {
             MatchCollection matches = re_object.Matches(text_to_check);
             List<SimilarityDescription> found_values = new List<SimilarityDescription>();
             foreach (Match single_match in matches)

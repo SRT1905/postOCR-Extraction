@@ -41,7 +41,7 @@ namespace SmartOCR
         {
             var content = field_node.Content;
             long line = long.Parse(key.Split('|')[0]);
-            double horizontal_location = double.Parse(key.Split('|')[2]);
+            decimal horizontal_location = decimal.Parse(key.Split('|')[2]);
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
@@ -141,7 +141,7 @@ namespace SmartOCR
             {
                 string[] splitted_key = key.Split('|');
                 long offset_index = long.Parse(splitted_key[0]);
-                double horizontal_position = double.Parse(splitted_key[1]);
+                decimal horizontal_position = decimal.Parse(splitted_key[1]);
                 if (add_to_parent)
                 {
                     var parent = line_node.Parent;
@@ -154,7 +154,7 @@ namespace SmartOCR
             }
         }
 
-        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, double position, bool add_to_parent)
+        private void AddOffsetNode(TreeNode node, long search_level, long offset_index, string found_value, decimal position, bool add_to_parent)
         {
             var node_content = node.Content;
             if (!node_content.Lines.Contains(offset_index))
@@ -162,7 +162,7 @@ namespace SmartOCR
                 node_content.Lines.Add(offset_index);
                 string node_label;
                 string pattern;
-                double horizontal_position;
+                decimal horizontal_position;
                 if (add_to_parent)
                 {
                     var first_child_content = node.Children.First().Content;
@@ -218,10 +218,9 @@ namespace SmartOCR
             {
                 long line_number = line_node_content.Lines[line_index];
                 bool check_status = false;
-                double paragraph_horizontal_location = 0;
                 if (LineMapping.ContainsKey(line_number))
                 {
-                    paragraph_horizontal_location = line_node_content.HorizontalParagraph;
+                    decimal paragraph_horizontal_location = line_node_content.HorizontalParagraph;
                     Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
                     var line_checker = new LineContentChecker(LineMapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
                     check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
@@ -300,9 +299,9 @@ namespace SmartOCR
             }
         }
 
-        private int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection, double position, bool return_next_largest)
+        private int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection, decimal position, bool return_next_largest)
         {
-            List<double> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
+            List<decimal> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
             int location = locations.BinarySearch(position);
             if (location < 0)
             {

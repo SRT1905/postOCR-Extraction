@@ -5,8 +5,8 @@ namespace SmartOCR
 {
     internal class ParagraphContainer : IComparable<ParagraphContainer>
     {
-        public double HorizontalLocation;
-        public double VerticalLocation;
+        public decimal HorizontalLocation;
+        public decimal VerticalLocation;
         public string Text;
 
         public ParagraphContainer(Range range)
@@ -16,11 +16,10 @@ namespace SmartOCR
             Text = RemoveInvalidChars(range.Text);
         }
 
-        private double ValidateLocation(Range range, WdInformation information)
+        private decimal ValidateLocation(Range range, WdInformation information)
         {
-            return range.Information[information] != -1
-                ? range.Information[information]
-                : range.Words[1].Information[information];
+            decimal temp = (decimal)range.Words[1].Information[information];
+            return decimal.Round(temp, 1);
         }
 
         private string RemoveInvalidChars(string check_string)
