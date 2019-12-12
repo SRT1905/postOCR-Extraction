@@ -100,7 +100,9 @@ namespace SmartOCR
             return new_node;
         }
 
-        private TreeNodeContent PopulateNodeContent(string new_name = "", string pattern = "", string value_type = "", long found_line = 0, string new_value = "", string node_label = "", long horizontal_paragraph = 0)
+        private TreeNodeContent PopulateNodeContent(string new_name = "", string pattern = "", string value_type = "",
+                                                    long found_line = 0, string new_value = "", string node_label = "",
+                                                    long horizontal_paragraph = 0)
         {
             var content = new TreeNodeContent()
             {

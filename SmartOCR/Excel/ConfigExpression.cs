@@ -20,7 +20,7 @@ namespace SmartOCR
             LineOffset = line_offset;
             HorizontalStatus = -1 <= position_status && position_status <= 1
                 ? position_status
-                : throw new ArgumentOutOfRangeException("Horizontal position status must be in range [-1;1].");
+                : throw new ArgumentOutOfRangeException("Horizontal position status must be in range [-1; 1].");
         }
 
         public ConfigExpression(string input)

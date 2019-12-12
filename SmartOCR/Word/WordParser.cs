@@ -296,6 +296,8 @@ namespace SmartOCR
                             return;
                         }
                     }
+
+                    OffsetSearch(line_number, node, search_level, true);
                 }
             }
         }
