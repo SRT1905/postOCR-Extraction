@@ -3,12 +3,32 @@ using System;
 
 namespace SmartOCR
 {
+    /// <summary>
+    /// Container class that is used to store data from single Word document paragraph.
+    /// </summary>
     internal class ParagraphContainer : IComparable<ParagraphContainer>
     {
-        public decimal HorizontalLocation;
-        public decimal VerticalLocation;
-        public string Text;
+        /// <summary>
+        /// Indicates distance from left edge of paragraph to left edge of page.
+        /// Measured in points (72 point = 1 inch).
+        /// </summary>
+        public decimal HorizontalLocation { get; set; }
+        
+        /// <summary>
+        /// Indicates distance from top edge of paragraph to top edge of page.
+        /// Measured in points (72 point = 1 inch).
+        /// </summary>
+        public decimal VerticalLocation { get; set; }
+        
+        /// <summary>
+        /// Paragraph text.
+        /// </summary>
+        public string Text { get; set; }
 
+        /// <summary>
+        /// Initializes instance of <see cref="ParagraphContainer"/> object that stores information from <see cref="Range"/> object.
+        /// </summary>
+        /// <param name="range">Representation of single Word document paragraph.</param>
         public ParagraphContainer(Range range)
         {
             HorizontalLocation = ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
@@ -16,12 +36,23 @@ namespace SmartOCR
             Text = RemoveInvalidChars(range.Text);
         }
 
+        /// <summary>
+        /// Gets paragraph location specified by <see cref="WdInformation"/> enumeration.
+        /// </summary>
+        /// <param name="range">Representation of single Word document paragraph.</param>
+        /// <param name="information"><see cref="WdInformation"/> object that represents type of returned location.</param>
+        /// <returns>Position of paragraph within document page.</returns>
         private decimal ValidateLocation(Range range, WdInformation information)
         {
             decimal temp = (decimal)range.Words[1].Information[information];
             return decimal.Round(temp, 1);
         }
 
+        /// <summary>
+        /// Removes characters that interfere with meaningful text content.
+        /// </summary>
+        /// <param name="check_string">Text to process.</param>
+        /// <returns>Paragraph text, cleansed of invalid characters.</returns>
         private string RemoveInvalidChars(string check_string)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f"};

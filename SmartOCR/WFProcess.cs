@@ -7,23 +7,23 @@ namespace SmartOCR
     /// </summary>
     internal class WFProcess : IProcess
     {
-        #region Fields
         /// <summary>
         /// Collection of files to parse.
         /// </summary>
         private readonly List<string> files = new List<string>();
+
         /// <summary>
         /// Path to external config file.
         /// </summary>
         private readonly string config_file;
+
         private readonly string document_type;
+
         /// <summary>
         /// Path to output workbook.
         /// </summary>
         private readonly string output_file;
-        #endregion
 
-        #region Constructors
         /// <summary>
         /// Initializes class instance with values from provided form.
         /// </summary>
@@ -35,9 +35,7 @@ namespace SmartOCR
             document_type = form.document_type;
             output_file = form.output_file;
         }
-        #endregion
 
-        #region Public methods
         public void ExecuteProcessing()
         {
             using (ParseEntryPoint entryPoint = new ParseEntryPoint(document_type, files, config_file, output_file))
@@ -45,6 +43,5 @@ namespace SmartOCR
                 entryPoint.TryGetData();
             }
         }
-        #endregion
     }
 }

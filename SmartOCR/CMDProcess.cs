@@ -10,7 +10,7 @@ namespace SmartOCR
     /// </summary>
     public class CMDProcess : IProcess
     {
-        #region Fields
+        
         /// <summary>
         /// Specifies the type of entered command propmt arguments
         /// </summary>
@@ -20,28 +20,27 @@ namespace SmartOCR
             Directory,
             File
         }
+
         /// <summary>
         /// Title of document type.
         /// </summary>
         private readonly string document_type;
+  
         /// <summary>
         /// Specification of entered arguments.
         /// </summary>
         private readonly PathType entered_path_type;
+    
         /// <summary>
         /// Collection of entered command propmpt arguments.
         /// </summary>
         private readonly List<string> _args;
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Indicates whether command prompt arguments were successfully defined.
         /// </summary>
         public bool ReadyToProcess { get; }
-        #endregion
-
-        #region Constructors
+        
         /// <summary>
         /// Initializes CMD processing object: identifies document type, type of entered paths and files by those paths.
         /// </summary>
@@ -61,9 +60,7 @@ namespace SmartOCR
                 ReadyToProcess = false;
             }
         }
-        #endregion
-
-        #region Public methods
+        
         public void ExecuteProcessing()
         {
             if (document_type == null || entered_path_type == PathType.None)
@@ -76,9 +73,7 @@ namespace SmartOCR
                 entryPoint.TryGetData();
             }
         }
-        #endregion
-
-        #region Private methods
+        
         /// <summary>
         /// Processes entered path type and path argument(s).
         /// </summary>
@@ -91,6 +86,7 @@ namespace SmartOCR
             }
             return new List<string>(_args);
         }
+      
         /// <summary>
         /// Gets files from directories, provided in Args field.
         /// Files with .docx extension are taken.
@@ -107,6 +103,7 @@ namespace SmartOCR
             }
             return directories;
         }
+      
         /// <summary>
         /// Checks whether provided document type is in compliance with supportable document types.
         /// </summary>
@@ -134,7 +131,5 @@ namespace SmartOCR
             }
             return PathType.None;
         }
-        #endregion
-
     }
 }
