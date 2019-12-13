@@ -147,8 +147,8 @@ namespace SmartOCR
             var files = new List<string>();
             for (int i = 0; i < file_paths.Count; i++)
             {
-                string single_file = files[i];
-                if (File.Exists(single_file) && !single_file.StartsWith("~"))
+                string single_file = file_paths[i];
+                if (File.Exists(single_file) && !single_file.Contains("~"))
                 {
                     files.Add(single_file);
                 }

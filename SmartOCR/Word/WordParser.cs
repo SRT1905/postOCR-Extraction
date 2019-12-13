@@ -29,8 +29,10 @@ namespace SmartOCR
 
         private void AddChildrenToFieldNode(TreeNode field_node, Dictionary<string, SimilarityDescription> collected_data, double max_similarity)
         {
-            foreach (string key in collected_data.Keys)
+            var keys = collected_data.Keys.ToList();
+            for (int i = 0; i < keys.Count; i++)
             {
+                string key = keys[i];
                 if (max_similarity == collected_data[key].Ratio)
                 {
                     AddSingleChildToFieldNode(field_node, key);
@@ -55,10 +57,13 @@ namespace SmartOCR
             Regex regex_object = Utilities.CreateRegexpObject(field_node.Content.RE_Pattern);
             Dictionary<string, SimilarityDescription> collected_data = new Dictionary<string, SimilarityDescription>();
 
-            foreach (long line in line_mapping.Keys)
+            var keys = line_mapping.Keys.ToList();
+            for (int key_index = 0; key_index < keys.Count; key_index++)
             {
-                foreach (ParagraphContainer container in line_mapping[line])
+                long line = keys[key_index];
+                for (int container_index = 0; container_index < line_mapping[line].Count; container_index++)
                 {
+                    ParagraphContainer container = line_mapping[line][container_index];
                     if (regex_object.IsMatch(container.Text))
                     {
                         List<SimilarityDescription> matched_data_collection = GetMatchesFromParagraph(container.Text, regex_object, field_node.Content.CheckValue);
@@ -81,8 +86,9 @@ namespace SmartOCR
         {
             MatchCollection matches = re_object.Matches(text_to_check);
             List<SimilarityDescription> found_values = new List<SimilarityDescription>();
-            foreach (Match single_match in matches)
+            for (int i = 0; i < matches.Count; i++)
             {
+                Match single_match = matches[i];
                 if (single_match.Groups.Count > 1)
                 {
                     for (int group_i = 1; group_i < single_match.Groups.Count; group_i++)
@@ -132,14 +138,15 @@ namespace SmartOCR
             return found_values_collection;
         }
 
-
         private void OffsetSearch(long line_number, TreeNode line_node, long search_level, bool add_to_parent = false)
         {
             var line_node_content = line_node.Content;
             var line_numbers = GetOffsetLines(line_number, line_node_content);
 
-            foreach (string key in line_numbers.Keys)
+            var keys = line_numbers.Keys.ToList();
+            for (int i = 0; i < keys.Count; i++)
             {
+                string key = keys[i];
                 string[] splitted_key = key.Split('|');
                 long offset_index = long.Parse(splitted_key[0]);
                 decimal horizontal_position = decimal.Parse(splitted_key[1]);
@@ -219,33 +226,14 @@ namespace SmartOCR
             while (line_index < line_node_content.Lines.Count)
             {
                 long line_number = line_node_content.Lines[line_index];
-                bool check_status = false;
-                if (line_mapping.ContainsKey(line_number))
-                {
-                    decimal paragraph_horizontal_location = line_node_content.HorizontalParagraph;
-                    Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
-                    var line_checker = new LineContentChecker(line_mapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
-                    check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
-                    if (check_status)
-                    {
-                        line_node_content.HorizontalParagraph = line_checker.paragraph_horizontal_location;
-                    }
-                    else
-                    {
-                        line_node_content.HorizontalParagraph = paragraph_horizontal_location;
-                    }
-                    line_node_content.FoundValue = line_checker.joined_matches;
-                }
+
+                bool check_status = line_mapping.ContainsKey(line_number)
+                    ? TryMatchLineData(line_node_content, line_number)
+                    : false;
                 if (check_status)
                 {
                     SetOffsetChildrenLines(line_node, line_number);
-                    int child_index = 0;
-                    while (child_index < line_node.Children.Count)
-                    {
-                        TreeNode child_node = line_node.Children[child_index];
-                        ProcessLineNode(child_node, search_level + 1);
-                        child_index++;
-                    }
+                    ProcessLineNodeChildren(line_node, search_level);
                 }
                 else
                 {
@@ -255,11 +243,42 @@ namespace SmartOCR
             }
         }
 
+        private void ProcessLineNodeChildren(TreeNode line_node, long search_level)
+        {
+            int child_index = 0;
+            while (child_index < line_node.Children.Count)
+            {
+                TreeNode child_node = line_node.Children[child_index];
+                ProcessLineNode(child_node, search_level + 1);
+                child_index++;
+            }
+        }
+
+        private bool TryMatchLineData(TreeNodeContent line_node_content, long line_number)
+        {
+            bool check_status;
+            decimal paragraph_horizontal_location = line_node_content.HorizontalParagraph;
+            Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
+            var line_checker = new LineContentChecker(line_mapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
+            check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
+            if (check_status)
+            {
+                line_node_content.HorizontalParagraph = line_checker.paragraph_horizontal_location;
+            }
+            else
+            {
+                line_node_content.HorizontalParagraph = paragraph_horizontal_location;
+            }
+            line_node_content.FoundValue = line_checker.joined_matches;
+            return check_status;
+        }
+
         private void ProcessValue(TreeNode node, long search_level)
         {
             var node_content = node.Content;
-            foreach (long line_number in node_content.Lines)
+            for (int i = 0; i < node_content.Lines.Count; i++)
             {
+                long line_number = node_content.Lines[i];
                 if (!line_mapping.ContainsKey(line_number))
                 {
                     OffsetSearch(line_number, node, search_level, true);
@@ -336,8 +355,9 @@ namespace SmartOCR
         {
             var node_content = node.Content;
 
-            foreach (TreeNode child in node.Children)
+            for (int i = 0; i < node.Children.Count; i++)
             {
+                TreeNode child = node.Children[i];
                 var child_content = child.Content;
                 child_content.HorizontalParagraph = node_content.HorizontalParagraph;
                 List<long> keys = line_mapping.Keys.ToList();
