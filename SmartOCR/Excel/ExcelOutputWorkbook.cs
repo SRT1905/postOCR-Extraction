@@ -39,14 +39,13 @@ namespace SmartOCR
             for (i = 1; i <= source_ws.Cells[source_ws.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
             {
                 if (source_ws.Cells[i, 1].Value2.ToString().ToLower().Contains("field name"))
-                    break;
+                { 
+                    break; 
+                }
             }
             Range header_range = source_ws.Range[source_ws.Cells[i, 2], source_ws.Cells[i, source_ws.Columns.Count].End[XlDirection.xlToLeft]];
-            Range first_cell = (Range)output_worksheet.Range[output_worksheet.Cells[1, 1],
-                                                             output_worksheet.Cells[header_range.Rows.Count, header_range.Columns.Count]];
-            first_cell.Value2 = header_range.Value2;
-            first_cell.Rows.AutoFit();
-            first_cell.Columns.AutoFit();
+            Range first_cell = (Range)output_worksheet.Cells.Item[1, 1];
+            header_range.Copy(first_cell);
 
             new_wb.Worksheets[1].Delete();
             return new_wb;
