@@ -19,20 +19,17 @@ namespace SmartOCR
                     }
                 }
             }
+            else if (args.Length >= 2)
+            {
+                var cmdProcessor = new CMDProcess(args);
+                if (cmdProcessor.ReadyToProcess)
+                {
+                    cmdProcessor.ExecuteProcessing();
+                }
+            }
             else
             {
-                if (args.Length >= 2)
-                {
-                    var cmdProcessor = new CMDProcess(args);
-                    if (cmdProcessor.ReadyToProcess)
-                    {
-                        cmdProcessor.ExecuteProcessing();
-                    }
-                }
-                else
-                {
-                    Utilities.PrintInvalidInputMessage();
-                }
+                Utilities.PrintInvalidInputMessage();
             }
         }
     }
