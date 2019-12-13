@@ -2,7 +2,7 @@
 
 namespace SmartOCR
 {
-    internal class TreeNodeContent
+    internal class TreeNodeContent // TODO: add summary.
     {
         public decimal HorizontalParagraph { get; set; }
         public List<long> Lines { get; set; }

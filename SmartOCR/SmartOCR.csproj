@@ -56,7 +56,7 @@
     <Compile Include="Excel\ConfigData.cs" />
     <Compile Include="Excel\ConfigExpression.cs" />
     <Compile Include="Excel\ConfigField.cs" />
-    <Compile Include="Excel\ExcelConfigParser.cs" />
+    <Compile Include="Excel\ConfigParser.cs" />
     <Compile Include="IProcess.cs" />
     <Compile Include="ParseEntryPoint.cs" />
     <Compile Include="SearchTree\TreeNodeContent.cs" />

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SmartOCR
 {
-    internal class SearchTree
+    internal class SearchTree // TODO: add summary.
     {
         private ConfigData ConfigData { get; }
         private TreeNode tree_structure;

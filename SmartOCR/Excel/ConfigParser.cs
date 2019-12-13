@@ -6,27 +6,30 @@ using System.IO;
 
 namespace SmartOCR
 {
-    internal class ExcelConfigParser
+
+    internal class ConfigParser // TODO: add summary.
     {
         public static Workbook config_wb;
 
-        public ExcelConfigParser()
+        public ConfigParser()
         {
             if (config_wb == null)
-                config_wb = GetInternalConfig();
+            {
+                config_wb = GetInternalConfigWorkbook();
+            }
         }
 
-        public ExcelConfigParser(string config_file)
+        public ConfigParser(string config_file)
         {
-            config_wb = GetExternalConfig(config_file);
+            config_wb = GetExternalConfigWorkbook(config_file);
         }
 
-        private Workbook GetExternalConfig(string path)
+        private Workbook GetExternalConfigWorkbook(string path)
         {
             return ExcelApplication.OpenExcelWorkbook(path);
         }
 
-        private Workbook GetInternalConfig()
+        private Workbook GetInternalConfigWorkbook()
         {
             string temp_path = Path.GetTempFileName();
             File.WriteAllBytes(temp_path, ConfigContainer.config);

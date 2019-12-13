@@ -5,8 +5,15 @@ using System.Runtime.InteropServices;
 
 namespace SmartOCR
 {
+    /// <summary>
+    /// Performs communication with MS Excel application.
+    /// </summary>
     internal class ExcelApplication
     {
+        /// <summary>
+        /// Gets existing Excel application or initializes a new one.
+        /// </summary>
+        /// <returns>Excel application.</returns>
         private static Application instance;
 
         public static Application GetExcelApplication()
@@ -23,6 +30,9 @@ namespace SmartOCR
             return instance;
         }
 
+        /// <summary>
+        /// Closes Excel application without saving any changes.
+        /// </summary>
         public static void ExitExcelApplication()
         {
             Application app = GetExcelApplication();
@@ -34,12 +44,21 @@ namespace SmartOCR
             GC.Collect();
         }
 
+        /// <summary>
+        /// Gets workbook in Excel application.
+        /// </summary>
+        /// <param name="path">Path to workbook file.</param>
+        /// <returns>Workbook representation.</returns>
         public static Workbook OpenExcelWorkbook(string path)
         {
             Application app = GetExcelApplication();
             return TryGetWorkbook(app.Workbooks, path);
         }
 
+        /// <summary>
+        /// Gets active workbook in Excel application, closes it 
+        /// and tries to delete the file, if its location is in Temp directory.
+        /// </summary>
         public static void CloseActiveExcelWorkbook()
         {
             Application app = GetExcelApplication();
@@ -47,6 +66,10 @@ namespace SmartOCR
             TryDeleteTempFile(app.ActiveWorkbook.Path);
         }
 
+        /// <summary>
+        /// Check if file by provided path is in Temp directory.
+        /// </summary>
+        /// <param name="path">File path to check.</param>
         private static void TryDeleteTempFile(string path)
         {
             if (Path.GetDirectoryName(path) == Path.GetTempPath())
@@ -55,6 +78,15 @@ namespace SmartOCR
             }
         }
 
+        /// <summary>
+        /// Tries to get <see cref="Workbook"/> by file path.
+        /// If no <see cref="Workbook"/> is found,
+        /// then application opens <see cref="Workbook"/> by path.
+        /// </summary>
+        /// <param name="workbooks">Collection of <see cref="Workbook"/> 
+        /// objects in application.</param>
+        /// <param name="path">File path to check.</param>
+        /// <returns>Found or opened <see cref="Workbook"/> object.</returns>
         private static Workbook TryGetWorkbook(Workbooks workbooks, string path)
         {
             try

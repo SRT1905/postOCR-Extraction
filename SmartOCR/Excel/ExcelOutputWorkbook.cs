@@ -1,13 +1,28 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SmartOCR
 {
+    /// <summary>
+    /// Used to create and populate output Excel workbook that would contain data collected from search tree.
+    /// </summary>
     internal class ExcelOutputWorkbook
     {
+        /// <summary>
+        /// Output workbook instance.
+        /// </summary>
         private static Workbook instance;
+        /// <summary>
+        /// Worksheet that would contain collected data.
+        /// </summary>
         private static Worksheet output_worksheet;
 
+        /// <summary>
+        /// Gets output workbook with worksheet specified by <paramref name="doc_type"/>.
+        /// </summary>
+        /// <param name="doc_type">Name of document type.</param>
+        /// <returns></returns>
         public static Workbook GetOutputWorkbook(string doc_type)
         {
             if (instance == null)
@@ -17,14 +32,19 @@ namespace SmartOCR
             return instance;
         }
 
+        /// <summary>
+        /// Creates new output workbook with worksheet specified by <paramref name="doc_type"/>.
+        /// </summary>
+        /// <param name="doc_type"></param>
+        /// <returns><see cref="Workbook"/> instance added to <see cref="Workbooks"/> collection.</returns>
         private static Workbook CreateOutputWorkbook(string doc_type)
         {
-            if (ExcelConfigParser.config_wb == null)
+            if (ConfigParser.config_wb == null)
             {
-                new ExcelConfigParser();
+                new ConfigParser();
             }
 
-            Workbook source_wb = ExcelConfigParser.config_wb;
+            Workbook source_wb = ConfigParser.config_wb;
             Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
             Worksheet source_ws = GetWorksheetByName(source_wb, doc_type);
@@ -51,6 +71,12 @@ namespace SmartOCR
             return new_wb;
         }
 
+        /// <summary>
+        /// Tries to find <see cref="Worksheet"/> specified by name in <see cref="Workbook"/>.
+        /// </summary>
+        /// <param name="workbook"><see cref="Workbook"/> instance.</param>
+        /// <param name="sheet_name"><see cref="Worksheet"/> name.</param>
+        /// <returns>Found <see cref="Worksheet"/> or null.</returns>
         private static Worksheet GetWorksheetByName(Workbook workbook, string sheet_name)
         {
             foreach (Worksheet item in workbook.Worksheets)
@@ -61,11 +87,17 @@ namespace SmartOCR
             return null;
         }
 
+        /// <summary>
+        /// Performs matching between worksheet field scheme and <paramref name="values"/> keys and returns values to sheet.
+        /// </summary>
+        /// <param name="values">Mapping between field names and found values.</param>
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
             long row_to_input = GetLastRowInWorksheet();
-            foreach (string key in values.Keys)
+            var keys = values.Keys.ToList();
+            for (int i = 0; i < keys.Count; i++)
             {
+                string key = keys[i];
                 long column_index = FindColumnIndex(key);
                 if (column_index != 0)
                 {
@@ -74,17 +106,28 @@ namespace SmartOCR
             }
         }
 
+        /// <summary>
+        /// Searches for match between <paramref name="field_name"/> and first row values.
+        /// </summary>
+        /// <param name="field_name">Field name to search.</param>
+        /// <returns>Index of matched column.</returns>
         private static long FindColumnIndex(string field_name)
         {
             long last_column = output_worksheet.Cells[1, output_worksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
             for (long i = 1; i <= last_column; i++)
             {
                 if (output_worksheet.Cells[1, i].Value2 == field_name)
+                {
                     return i;
+                }
             }
             return 0;
         }
 
+        /// <summary>
+        /// Gets first empty row in <see cref="Worksheet"/> used range.
+        /// </summary>
+        /// <returns>Index of row.</returns>
         private static long GetLastRowInWorksheet()
         {
             return output_worksheet.UsedRange.Rows[output_worksheet.UsedRange.Rows.Count].Row + 1;

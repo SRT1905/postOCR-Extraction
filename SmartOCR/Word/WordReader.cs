@@ -132,6 +132,28 @@ namespace SmartOCR
         private SortedDictionary<decimal, List<ParagraphContainer>> GetDataFromParagraphs(long page_index)
         {
             var document_content = new SortedDictionary<decimal, List<ParagraphContainer>>();
+            List<ParagraphContainer> valid_paragraphs = GetValidParagraphs(page_index);
+
+            for (int i = 0; i < valid_paragraphs.Count; i++)
+            {
+                ParagraphContainer single_paragraph = valid_paragraphs[i];
+                decimal location = single_paragraph.VerticalLocation;
+                if (!document_content.ContainsKey(location))
+                {
+                    document_content.Add(location, new List<ParagraphContainer>());
+                }
+                document_content[location].Add(single_paragraph);
+            }
+            return document_content;
+        }
+
+        /// <summary>
+        /// Gets valid paragraphs, wrapped in <see cref="ParagraphContainer"/> instances, from specific page.
+        /// </summary>
+        /// <param name="page_index">Specific page index.</param>
+        /// <returns>Collection of valid paragraphs.</returns>
+        private List<ParagraphContainer> GetValidParagraphs(long page_index)
+        {
             var valid_paragraphs = new List<ParagraphContainer>();
 
             for (int i = 1; i <= document.Paragraphs.Count; i++)
@@ -152,17 +174,7 @@ namespace SmartOCR
                 }
             }
 
-            for (int i = 0; i < valid_paragraphs.Count; i++)
-            {
-                ParagraphContainer single_paragraph = valid_paragraphs[i];
-                decimal location = single_paragraph.VerticalLocation;
-                if (!document_content.ContainsKey(location))
-                {
-                    document_content.Add(location, new List<ParagraphContainer>());
-                }
-                document_content[location].Add(single_paragraph);
-            }
-            return document_content;
+            return valid_paragraphs;
         }
 
         /// <summary>
@@ -176,11 +188,12 @@ namespace SmartOCR
             for (int i = 1; i <= document.Shapes.Count; i++)
             {
                 Shape shape = document.Shapes[i];
-                if (shape.Anchor.Information[WdInformation.wdActiveEndPageNumber] > page_index)
+                int page_number = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
+                if (page_number > page_index)
                 {
                     return frame_collection;
                 }
-                if (shape.Anchor.Information[WdInformation.wdActiveEndPageNumber] < page_index)
+                if (page_number < page_index)
                 {
                     continue;
                 }

@@ -2,7 +2,7 @@
 
 namespace SmartOCR
 {
-    internal class TreeNode
+    internal class TreeNode // TODO: add summary.
     {
         public TreeNodeContent Content;
         public TreeNode Parent;

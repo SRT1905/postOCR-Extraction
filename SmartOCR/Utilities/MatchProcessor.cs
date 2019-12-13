@@ -52,7 +52,7 @@ namespace SmartOCR
         }
 
         /// <summary>
-        /// Gets first match in collection. Return enclosing group match if there is one.
+        /// Gets first match in collection. Return capturing group if there is one.
         /// </summary>
         /// <param name="matches">Collection of found matches.</param>
         /// <returns>String representation of match.</returns>

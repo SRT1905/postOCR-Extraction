@@ -54,10 +54,10 @@ namespace SmartOCR
         {
             doc_type = type;
             valid_files = GetValidFiles(files);
-            config_data = new ExcelConfigParser().ParseConfig(doc_type);
+            config_data = new ConfigParser().ParseConfig(doc_type);
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
         }
-       
+
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
@@ -68,7 +68,7 @@ namespace SmartOCR
         {
             doc_type = type;
             valid_files = GetValidFiles(files);
-            config_data = new ExcelConfigParser(config_file).ParseConfig(doc_type);
+            config_data = new ConfigParser(config_file).ParseConfig(doc_type);
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
         }
       
