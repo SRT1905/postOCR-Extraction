@@ -64,9 +64,6 @@ namespace SmartOCR
         #endregion
 
         #region Public methods
-        /// <summary>
-        /// Calls for processing of identified documents.
-        /// </summary>
         public void ExecuteProcessing()
         {
             if (document_type == null || entered_path_type == PathType.None)
