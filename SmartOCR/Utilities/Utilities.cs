@@ -6,8 +6,14 @@ using System.Threading;
 
 namespace SmartOCR
 {
+    /// <summary>
+    /// Provides static methods used accross namespace.
+    /// </summary>
     internal static class Utilities
     {
+        /// <summary>
+        /// Contains names of document types that are supported for processing.
+        /// </summary>
         public static HashSet<string> valid_document_types = new HashSet<string>
             {
                 "invoice_sales",
@@ -15,10 +21,17 @@ namespace SmartOCR
                 "invoice_costs",
             };
 
-        public static Regex CreateRegexpObject(string text_pattern, bool is_global = true, bool ignore_case = true)
+        /// <summary>
+        /// Creates a new <see cref="Regex"/> instance with additional parameters.
+        /// </summary>
+        /// <param name="text_pattern">Search pattern.</param>
+        /// <param name="is_multiline">Indicates that characters '^' and '$' will match beginning and end, respectively, of any line.</param>
+        /// <param name="ignore_case">Indicates that expression will be case-insensitive.</param>
+        /// <returns><see cref="Regex"/> object.</returns>
+        public static Regex CreateRegexpObject(string text_pattern, bool is_multiline = true, bool ignore_case = true)
         {
             RegexOptions options = RegexOptions.ECMAScript;
-            if (is_global)
+            if (is_multiline)
             {
                 options |= RegexOptions.Multiline;
             }
@@ -29,6 +42,11 @@ namespace SmartOCR
             return new Regex(text_pattern, options);
         }
 
+        /// <summary>
+        /// Tries to represent passed string as number.
+        /// </summary>
+        /// <param name="value">String, containing number.</param>
+        /// <returns>String representation of parsed number.</returns>
         public static string NumberProcessing(string value)
         {
             string regional_decimal_separator = GetDecimalSeparator();
@@ -48,6 +66,12 @@ namespace SmartOCR
             return value;
         }
 
+        /// <summary>
+        /// Removes non-numeric characters and replaces decimal separator.
+        /// </summary>
+        /// <param name="value">String, containing number.</param>
+        /// <param name="regional_decimal_separator">Character that is set by regional settings to separate integer and fraction parts of number.</param>
+        /// <returns>String, prepared for parsing.</returns>
         private static string PrepareValueForNumberProcessing(string value, string regional_decimal_separator)
         {
             value = TrimNonNumericChars(value);
@@ -61,11 +85,20 @@ namespace SmartOCR
                                    .ToArray());
         }
 
+        /// <summary>
+        /// Character that is set by regional settings to separate integer and fraction parts of number.
+        /// </summary>
+        /// <returns>String, containing regional decimal separator.</returns>
         private static string GetDecimalSeparator()
         {
             return Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
         }
 
+        /// <summary>
+        /// Trims string of characters that cannot be part of number.
+        /// </summary>
+        /// <param name="value">String, containing number.</param>
+        /// <returns>String, trimmed of invalid characters.</returns>
         private static string TrimNonNumericChars(string value)
         {
             Regex regex = new Regex(@"[\d\.\,\s\\]", RegexOptions.Multiline);
@@ -78,6 +111,11 @@ namespace SmartOCR
             return value;
         }
 
+        /// <summary>
+        /// Tries to process passed string as date.
+        /// </summary>
+        /// <param name="value">String, containing date.</param>
+        /// <returns>String representation of date value.</returns>
         public static string DateProcessing(string value)
         {
             Regex regex_num_date = CreateRegexpObject(@"(\d{2,4})");
@@ -108,6 +146,11 @@ namespace SmartOCR
             return "Дата документа не распознана";
         }
 
+        /// <summary>
+        /// Searches for numerical representation of month in passed string.
+        /// </summary>
+        /// <param name="value">String, containing month.</param>
+        /// <returns>String representation of numerical month.</returns>
         private static string ReturnNumericMonth(string value)
         {
             Dictionary<string, string> month_mapping = new Dictionary<string, string>()
@@ -126,8 +169,10 @@ namespace SmartOCR
                 {"декабр", "12" }, {"dec", "12" }
             };
 
-            foreach (string key in month_mapping.Keys)
+            List<string> keys = month_mapping.Keys.ToList();
+            for (int i = 0; i < keys.Count; i++)
             {
+                string key = keys[i];
                 if (value.Contains(key))
                 {
                     return month_mapping[key];
@@ -136,6 +181,9 @@ namespace SmartOCR
             return "00";
         }
 
+        /// <summary>
+        /// Used to print message to command prompt.
+        /// </summary>
         public static void PrintInvalidInputMessage()
         {
             System.Console.WriteLine("Enter valid document type and path(s) to file/directory.");
