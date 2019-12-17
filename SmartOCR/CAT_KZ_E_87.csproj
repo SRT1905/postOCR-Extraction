@@ -7,10 +7,11 @@
     <ProjectGuid>{F41FD661-8210-4669-BCEB-5FCAA0F2A9A8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>SmartOCR</RootNamespace>
-    <AssemblyName>SmartOCR</AssemblyName>
+    <AssemblyName>CAT_KZ_E_87</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,7 +24,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
