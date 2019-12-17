@@ -84,7 +84,9 @@ namespace SmartOCR
             {
                 return GetFilesFromDirectories();
             }
-            return new List<string>(_args);
+            return new List<string>(_args)
+                .Where(item => !Path.GetFileName(item).StartsWith("~") && item.EndsWith(".docx"))
+                .ToList();
         }
       
         /// <summary>
