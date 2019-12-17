@@ -154,27 +154,20 @@ namespace SmartOCR
         /// <returns>Collection of valid paragraphs.</returns>
         private List<ParagraphContainer> GetValidParagraphs(long page_index)
         {
-            var valid_paragraphs = new List<ParagraphContainer>();
+            Paragraphs paragraphs = document.Paragraphs;
+            int paragraphs_count = paragraphs.Count;
+            var paragraph_collection = new List<ParagraphContainer>();
 
-            for (int i = 1; i <= document.Paragraphs.Count; i++)
+            for (int i = 1; i <= paragraphs_count; i++)
             {
-                Range range = document.Paragraphs[i].Range;
-                int page_number = range.Information[WdInformation.wdActiveEndPageNumber];
-                if (page_number < page_index)
+                var single_range = paragraphs[i].Range;
+                long range_page = single_range.Information[WdInformation.wdActiveEndPageNumber];
+                if (range_page == page_index && single_range.Text.Length > minimal_text_length)
                 {
-                    continue;
-                }
-                if (page_number > page_index)
-                {
-                    break;
-                }
-                if (range.Text.Length > minimal_text_length)
-                {
-                    valid_paragraphs.Add(new ParagraphContainer(range));
+                    paragraph_collection.Add(new ParagraphContainer(single_range));
                 }
             }
-
-            return valid_paragraphs;
+            return paragraph_collection;
         }
 
         /// <summary>
@@ -184,26 +177,27 @@ namespace SmartOCR
         /// <returns>Collection of valid TextFrame objects.</returns>
         private List<TextFrame> GetValidTextFrames(long page_index)
         {
-            List<TextFrame> frame_collection = new List<TextFrame>();
-            for (int i = 1; i <= document.Shapes.Count; i++)
+            var frames = new List<TextFrame>();
+
+            Shapes shapes = document.Shapes;
+            int shapes_count = shapes.Count;
+            for (int i = 1; i <= shapes_count; i++)
             {
-                Shape shape = document.Shapes[i];
-                int page_number = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
-                if (page_number > page_index)
+                var shape = shapes[i];
+                long shape_page = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
+                if (shape_page == page_index)
                 {
-                    return frame_collection;
-                }
-                if (page_number < page_index)
-                {
-                    continue;
-                }
-                TextFrame frame = shape.TextFrame;
-                if (frame != null && frame.HasText != 0)
-                {
-                    frame_collection.Add(frame);
+                    var frame = shape.TextFrame;
+                    if (frame != null && frame.HasText != 0)
+                    {
+                        if (frame.TextRange.Text.Length > minimal_text_length)
+                        {
+                            frames.Add(frame);
+                        }
+                    }
                 }
             }
-            return frame_collection;
+            return frames;
         }
 
         /// <summary>
@@ -216,11 +210,7 @@ namespace SmartOCR
         {
             for (int i = 0; i < frame_collection.Count; i++)
             {
-                TextFrame frame = frame_collection[i];
-                if (frame.TextRange.Text.Length > minimal_text_length)
-                {
-                    document_content = AddDataFromSingleFrame(document_content, frame);
-                }
+                document_content = AddDataFromSingleFrame(document_content, frame_collection[i]);
             }
             return document_content;
         }
@@ -233,11 +223,7 @@ namespace SmartOCR
         /// <returns>Representation of read document contents, extended by TextFrame contents.</returns>
         private SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> document_content, TextFrame text_frame)
         {
-            List<ParagraphContainer> paragraph_containers = new List<ParagraphContainer>();
-            foreach (Paragraph item in text_frame.TextRange.Paragraphs)
-            {
-                paragraph_containers.Add(new ParagraphContainer(item.Range));
-            }
+            List<ParagraphContainer> paragraph_containers = GetParagraphsFromTextFrame(text_frame);
             for (int i = 0; i < paragraph_containers.Count; i++)
             {
                 ParagraphContainer container = paragraph_containers[i];
@@ -253,7 +239,26 @@ namespace SmartOCR
             }
             return document_content;
         }
-        
+
+        /// <summary>
+        /// Extracts paragraphs from <see cref="TextFrame"/> object.
+        /// </summary>
+        /// <param name="text_frame">A <see cref="TextFrame"/> instance that contains text.</param>
+        /// <returns>A collection of <see cref="ParagraphContainer"/> objects.</returns>
+        private List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame text_frame)
+        {
+            Paragraphs paragraphs = text_frame.TextRange.Paragraphs;
+            int paragraphs_count = paragraphs.Count;
+
+            var paragraph_containers = new List<ParagraphContainer>();
+            for (int i = 1; i <= paragraphs_count; i++)
+            { 
+                paragraph_containers.Add(new ParagraphContainer(paragraphs[i].Range));
+            }
+
+            return paragraph_containers;
+        }
+
         /// <summary>
         /// Groups document contents, arranged by vertical location on page, in separate lines.
         /// </summary>
