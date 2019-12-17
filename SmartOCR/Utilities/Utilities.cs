@@ -186,8 +186,8 @@ namespace SmartOCR
         /// </summary>
         public static void PrintInvalidInputMessage()
         {
-            System.Console.WriteLine("Enter valid document type and path(s) to file/directory.");
-            System.Console.ReadKey();
+            Console.WriteLine("Enter valid document type and path(s) to file/directory.");
+            Thread.Sleep(2000);
         }
     }
 }
