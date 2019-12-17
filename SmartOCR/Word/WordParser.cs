@@ -7,7 +7,7 @@ namespace SmartOCR
 {
     internal class WordParser // TODO: add summary.
     {
-        private const long similarity_search_threshold = 8;
+        private const long similarity_search_threshold = 5; // TODO: decrease to 5.
 
         private readonly SearchTree tree_structure;
         private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;
@@ -186,7 +186,7 @@ namespace SmartOCR
                 pattern = node.Content.RE_Pattern;
                 horizontal_position = position;
             }
-            TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position) ;
+            TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position);
             child_node.Content.FoundValue = found_value;
             tree_structure.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
         }
@@ -197,7 +197,7 @@ namespace SmartOCR
             for (int field_index = 0; field_index < tree_structure.Children.Count; field_index++)
             {
                 TreeNode field_node = tree_structure.Children[field_index];
-                var node_content = field_node.Content;
+                TreeNodeContent node_content = field_node.Content;
                 if (node_content.Lines[0] == 0)
                 {
                     GetDataFromUndefinedNode(field_node);
