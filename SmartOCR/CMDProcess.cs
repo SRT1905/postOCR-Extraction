@@ -99,7 +99,7 @@ namespace SmartOCR
             for (int i = 0; i < _args.Count; i++)
             {
                 string single_directory = _args[i];
-                directories.AddRange(Directory.GetFiles(single_directory).Where(item => !item.Contains("~") && item.EndsWith(".docx")));
+                directories.AddRange(Directory.GetFiles(single_directory).Where(item => !Path.GetFileName(item).StartsWith("~") && item.EndsWith(".docx")));
             }
             return directories;
         }
