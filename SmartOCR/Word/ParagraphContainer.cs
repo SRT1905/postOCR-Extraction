@@ -37,6 +37,17 @@ namespace SmartOCR
         }
 
         /// <summary>
+        /// Initializes instance of <see cref="ParagraphContainer"/> object that stores provided locations and text.
+        /// </summary>
+        /// <param name="range">Representation of single Word document paragraph.</param>
+        public ParagraphContainer(double horizontal_location, double vertical_location, string text)
+        {
+            HorizontalLocation = ValidateLocation(horizontal_location);
+            VerticalLocation = ValidateLocation(vertical_location);
+            Text = RemoveInvalidChars(text);
+        }
+
+        /// <summary>
         /// Gets paragraph location specified by <see cref="WdInformation"/> enumeration.
         /// </summary>
         /// <param name="range">Representation of single Word document paragraph.</param>
@@ -45,6 +56,17 @@ namespace SmartOCR
         private decimal ValidateLocation(Range range, WdInformation information)
         {
             decimal temp = (decimal)range.Words[1].Information[information];
+            return decimal.Round(temp, 1);
+        }
+
+        /// <summary>
+        /// Casts provided number to <see cref="decimal"/>.
+        /// </summary>
+        /// <param name="number">Number that represents paragraph location on page.</param>
+        /// <returns>Position of paragraph within document page.</returns>
+        private decimal ValidateLocation(double number)
+        {
+            decimal temp = (decimal)number;
             return decimal.Round(temp, 1);
         }
 
