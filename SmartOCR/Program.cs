@@ -8,28 +8,17 @@ namespace SmartOCR
         [STAThread]
         private static void Main(string[] args)
         {
-            if (args.Length == 0)
+            if (args.Length < 2)
             {
-                Application.EnableVisualStyles();
-                using (StartForm form = new StartForm())
-                {
-                    if (form.ShowDialog() == DialogResult.OK)
-                    {
-                        new WFProcess(form).ExecuteProcessing();
-                    }
-                }
+                Utilities.PrintInvalidInputMessage();
             }
-            else if (args.Length >= 2)
+            else
             {
                 var cmdProcessor = new CMDProcess(args);
                 if (cmdProcessor.ReadyToProcess)
                 {
                     cmdProcessor.ExecuteProcessing();
                 }
-            }
-            else
-            {
-                Utilities.PrintInvalidInputMessage();
             }
         }
     }
