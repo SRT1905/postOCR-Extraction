@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace SmartOCR
@@ -59,14 +60,14 @@ namespace SmartOCR
             RE_Pattern = splitted_input[0];
             LineOffset = string.IsNullOrEmpty(splitted_input[1])
                 ? 0
-                : int.Parse(splitted_input[1]);
+                : int.Parse(splitted_input[1], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
             HorizontalStatus = string.IsNullOrEmpty(splitted_input[2])
                 ? 0
-                : int.Parse(splitted_input[2]);
+                : int.Parse(splitted_input[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
             
             if (Math.Abs(HorizontalStatus) > 1)
             {
-                throw new ArgumentOutOfRangeException("Horizontal position status must be in range [-1; 1].");
+                throw new ArgumentOutOfRangeException(nameof(HorizontalStatus));
             }
         }
     }

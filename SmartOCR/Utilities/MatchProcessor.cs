@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace SmartOCR
@@ -72,7 +73,7 @@ namespace SmartOCR
         {
             var processed_number = Utilities.NumberProcessing(matches[0].Value);
             return double.TryParse(processed_number, out double result) 
-                ? result.ToString() 
+                ? result.ToString(CultureInfo.CurrentCulture) 
                 : string.Empty;
         }
 
