@@ -37,6 +37,11 @@ namespace SmartOCR
         private readonly List<string> _args;
 
         /// <summary>
+        /// Path to external config file.
+        /// </summary>
+        private readonly string config_file;
+
+        /// <summary>
         /// Indicates whether command prompt arguments were successfully defined.
         /// </summary>
         public bool ReadyToProcess { get; }
@@ -50,8 +55,9 @@ namespace SmartOCR
             try
             {
                 document_type = ValidateDocumentType(args[0]);
-                entered_path_type = ValidatePath(args[1]);
-                _args = args.Skip(1).ToList();
+                config_file = File.Exists(args[1]) ? args[1] : null;
+                entered_path_type = ValidatePath(args[2]);
+                _args = args.Skip(2).ToList();
                 ReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
@@ -63,12 +69,17 @@ namespace SmartOCR
         
         public void ExecuteProcessing()
         {
-            if (document_type == null || entered_path_type == PathType.None)
+            if (document_type == null || entered_path_type == PathType.None || config_file == null)
             {
                 Utilities.PrintInvalidInputMessage();
                 return;
             }
-            using (var entryPoint = new ParseEntryPoint(document_type, GetFilesFromArgs()))
+            string output_file = Path.Combine(Path.GetDirectoryName(config_file), "output.xlsx");
+            while (File.Exists(output_file))
+            {
+                continue;
+            }
+            using (var entryPoint = new ParseEntryPoint(document_type, GetFilesFromArgs(), config_file, output_file))
             {
                 entryPoint.TryGetData();
             }
