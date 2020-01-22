@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace SmartOCR
 {
@@ -71,7 +72,7 @@ namespace SmartOCR
                 short_string = right_string;
                 long_string = left_string;
             }
-            return long_string.ToLower() == short_string.ToLower()
+            return long_string.ToLower(CultureInfo.CurrentCulture) == short_string.ToLower(CultureInfo.CurrentCulture)
                 ? 1
                 : (long_string.Length - ComputeLevensteinDistance(long_string, short_string)) / long_string.Length;
         }

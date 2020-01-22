@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -136,7 +137,7 @@ namespace SmartOCR
             if (regex_alpha_month.IsMatch(value))
             {
                 GroupCollection groups = regex_alpha_month.Matches(value)[0].Groups;
-                string month = ReturnNumericMonth(groups[2].Value.ToLower());
+                string month = ReturnNumericMonth(groups[2].Value.ToLower(CultureInfo.CurrentCulture));
                 string date_value = $"{month}/{groups[1].Value}/{groups[3].Value}";
                 return DateTime.TryParse(date_value, out DateTime _)
                     ? date_value

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -43,8 +44,8 @@ namespace SmartOCR
         private void AddSingleChildToFieldNode(TreeNode field_node, string key)
         {
             var content = field_node.Content;
-            long line = long.Parse(key.Split('|')[0]);
-            decimal horizontal_location = decimal.Parse(key.Split('|')[2]);
+            long line = long.Parse(key.Split('|')[0], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
+            decimal horizontal_location = decimal.Parse(key.Split('|')[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
@@ -148,8 +149,8 @@ namespace SmartOCR
             {
                 string key = keys[i];
                 string[] splitted_key = key.Split('|');
-                long offset_index = long.Parse(splitted_key[0]);
-                decimal horizontal_position = decimal.Parse(splitted_key[1]);
+                long offset_index = long.Parse(splitted_key[0], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
+                decimal horizontal_position = decimal.Parse(splitted_key[1], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
                 if (add_to_parent)
                 {
                     var parent = line_node.Parent;

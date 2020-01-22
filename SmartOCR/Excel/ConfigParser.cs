@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace SmartOCR
@@ -48,7 +49,7 @@ namespace SmartOCR
             for (header_row = 1; header_row <= source_ws.Cells.Item[source_ws.Rows.Count, 1].End[XlDirection.xlUp].Row; header_row++)
             {
                 string cell_value = source_ws.Cells.Item[header_row, 1].Value2;
-                if (cell_value.ToLower().Contains("field name"))
+                if (cell_value.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
                 {
                     break;
                 }

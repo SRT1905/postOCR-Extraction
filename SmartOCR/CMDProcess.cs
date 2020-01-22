@@ -90,7 +90,7 @@ namespace SmartOCR
                 return GetFilesFromDirectories();
             }
             return new List<string>(_args)
-                .Where(item => !Path.GetFileName(item).StartsWith("~") && item.EndsWith(".docx"))
+                .Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
         }
       
@@ -106,7 +106,7 @@ namespace SmartOCR
             for (int i = 0; i < _args.Count; i++)
             {
                 string single_directory = _args[i];
-                directories.AddRange(Directory.GetFiles(single_directory).Where(item => !Path.GetFileName(item).StartsWith("~") && item.EndsWith(".docx")));
+                directories.AddRange(Directory.GetFiles(single_directory).Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)));
             }
             return directories;
         }
