@@ -33,7 +33,7 @@ namespace SmartOCR
             tree_structure = root;
         }
 
-        private TreeNode AddFieldNode(TreeNode root_node, ConfigField field_data)
+        private static TreeNode AddFieldNode(TreeNode root_node, ConfigField field_data)
         {
             var paragraph_collection = new List<long>() { 0 };
 
@@ -97,7 +97,7 @@ namespace SmartOCR
             }
         }
 
-        private void AddSearchValuesToChildlessNode(TreeNode node, int initial_value_index, List<ConfigExpression> values_collection)
+        private static void AddSearchValuesToChildlessNode(TreeNode node, int initial_value_index, List<ConfigExpression> values_collection)
         {
             ConfigExpression single_value_definition = values_collection[initial_value_index];
             var content = new TreeNodeContent()
@@ -119,7 +119,7 @@ namespace SmartOCR
             node.AddChild(new_node);
         }
 
-        private void AddSearchValuesToSingleNode(string field_name, TreeNode node, List<ConfigExpression> values_collection, int initial_value_index)
+        private static void AddSearchValuesToSingleNode(string field_name, TreeNode node, List<ConfigExpression> values_collection, int initial_value_index)
         {
             TreeNode single_paragraph_node = node;
             for (int value_index = initial_value_index; value_index < values_collection.Count; value_index++)

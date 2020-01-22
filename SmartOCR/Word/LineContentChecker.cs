@@ -158,7 +158,7 @@ namespace SmartOCR
         /// <param name="re_object"><see cref="Regex"/> object that is used to test text.</param>
         /// <param name="text_to_check"></param>
         /// <returns>Collection of found matches.</returns>
-        private List<string> GetMatchesFromParagraph(Regex re_object, string text_to_check)
+        private static List<string> GetMatchesFromParagraph(Regex re_object, string text_to_check)
         {
             MatchCollection matches = re_object.Matches(text_to_check);
             var found_values = new List<string>();
@@ -189,7 +189,7 @@ namespace SmartOCR
         /// <param name="text_to_check"></param>
         /// <param name="check_value">Value used for similarity check with found match.</param>
         /// <returns>Collection of <see cref="SimilarityDescription"/> objects, containing matches and similarity ratios.</returns>
-        private List<SimilarityDescription> GetMatchesFromParagraph(Regex re_object, string text_to_check, string check_value)
+        private static List<SimilarityDescription> GetMatchesFromParagraph(Regex re_object, string text_to_check, string check_value)
         {
             MatchCollection matches = re_object.Matches(text_to_check);
             List<SimilarityDescription> found_values = new List<SimilarityDescription>();

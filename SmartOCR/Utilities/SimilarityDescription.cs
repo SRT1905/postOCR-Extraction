@@ -83,7 +83,7 @@ namespace SmartOCR
         /// <param name="long_string"></param>
         /// <param name="short_string"></param>
         /// <returns>Number of required operations.</returns>
-        private double ComputeLevensteinDistance(string long_string, string short_string)
+        private static double ComputeLevensteinDistance(string long_string, string short_string)
         {
             int long_length = long_string.Length;
             int short_length = short_string.Length;

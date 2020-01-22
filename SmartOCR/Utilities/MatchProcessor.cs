@@ -57,7 +57,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="matches">Collection of found matches.</param>
         /// <returns>String representation of match.</returns>
-        private string ProcessString(MatchCollection matches)
+        private static string ProcessString(MatchCollection matches)
         {
             return matches[0].Groups.Count > 1 
                 ? matches[0].Groups[1].Value 
@@ -69,7 +69,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="matches">Collection of found matches.</param>
         /// <returns>String representation of numeric match.</returns>
-        private string ProcessNumber(MatchCollection matches)
+        private static string ProcessNumber(MatchCollection matches)
         {
             var processed_number = Utilities.NumberProcessing(matches[0].Value);
             return double.TryParse(processed_number, out double result) 
@@ -82,7 +82,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="matches">Collection of found matches.</param>
         /// <returns>String representation of date match.</returns>
-        private string ProcessDate(MatchCollection matches)
+        private static string ProcessDate(MatchCollection matches)
         {
             string result = matches[0].Groups[1].Length != 0 
                 ? matches[0].Groups[1].Value 

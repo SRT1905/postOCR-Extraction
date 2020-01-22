@@ -64,7 +64,7 @@ namespace SmartOCR
             return data;
         }
 
-        private ConfigField GetFieldDefinition(Worksheet source_ws, long header_row, long field_column)
+        private static ConfigField GetFieldDefinition(Worksheet source_ws, long header_row, long field_column)
         {
             string field_name = source_ws.Cells.Item[header_row, field_column].Value2;
             string value_type = source_ws.Cells.Item[header_row + 1, field_column].Value2;

@@ -228,7 +228,7 @@ namespace SmartOCR
         /// <param name="document_content">Representation of read document contents.</param>
         /// <param name="frame_collection">Collection of TextFrame objects.</param>
         /// <returns>Representation of document contents that is extended by TextFrame objects.</returns>
-        private SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<decimal, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
+        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<decimal, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
         {
             for (int i = 0; i < frame_collection.Count; i++)
             {
@@ -243,7 +243,7 @@ namespace SmartOCR
         /// <param name="document_content">Representation of read document contents.</param>
         /// <param name="text_frame">TextFrame object containing text.</param>
         /// <returns>Representation of read document contents, extended by TextFrame contents.</returns>
-        private SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> document_content, TextFrame text_frame)
+        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> document_content, TextFrame text_frame)
         {
             List<ParagraphContainer> paragraph_containers = GetParagraphsFromTextFrame(text_frame);
             for (int i = 0; i < paragraph_containers.Count; i++)
@@ -267,7 +267,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="text_frame">A <see cref="TextFrame"/> instance that contains text.</param>
         /// <returns>A collection of <see cref="ParagraphContainer"/> objects.</returns>
-        private List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame text_frame)
+        private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame text_frame)
         {
             Paragraphs paragraphs = text_frame.TextRange.Paragraphs;
             int paragraphs_count = paragraphs.Count;
@@ -286,7 +286,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="document_content">Representation of read document contents.</param>
         /// <returns></returns>
-        private SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
+        private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
         {
             var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>();
             try
@@ -328,7 +328,7 @@ namespace SmartOCR
         /// <param name="paragraph_collection">Collection of ParagraphContainer objects.</param>
         /// <param name="text_range_container">ParagraphContainer instance to add.</param>
         /// <returns>Updated collection of ParagraphContainer objects.</returns>
-        private List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraph_collection, ParagraphContainer text_range_container)
+        private static List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraph_collection, ParagraphContainer text_range_container)
         {
             paragraph_collection.Add(text_range_container);
             paragraph_collection.Sort();

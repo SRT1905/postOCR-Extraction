@@ -28,7 +28,7 @@ namespace SmartOCR
             return tree_structure.GetValuesFromTree();
         }
 
-        private void AddChildrenToFieldNode(TreeNode field_node, Dictionary<string, SimilarityDescription> collected_data, double max_similarity)
+        private static void AddChildrenToFieldNode(TreeNode field_node, Dictionary<string, SimilarityDescription> collected_data, double max_similarity)
         {
             var keys = collected_data.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
@@ -41,7 +41,7 @@ namespace SmartOCR
             }
         }
 
-        private void AddSingleChildToFieldNode(TreeNode field_node, string key)
+        private static void AddSingleChildToFieldNode(TreeNode field_node, string key)
         {
             var content = field_node.Content;
             long line = long.Parse(key.Split('|')[0], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
@@ -83,7 +83,7 @@ namespace SmartOCR
             }
         }
 
-        private List<SimilarityDescription> GetMatchesFromParagraph(string text_to_check, Regex re_object, string check_value)
+        private static List<SimilarityDescription> GetMatchesFromParagraph(string text_to_check, Regex re_object, string check_value)
         {
             MatchCollection matches = re_object.Matches(text_to_check);
             List<SimilarityDescription> found_values = new List<SimilarityDescription>();
@@ -323,7 +323,7 @@ namespace SmartOCR
             }
         }
 
-        private int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection, decimal position, bool return_next_largest)
+        private static int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection, decimal position, bool return_next_largest)
         {
             List<decimal> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
             int location = locations.BinarySearch(position);
@@ -342,7 +342,7 @@ namespace SmartOCR
             return location--;
         }
 
-        private void PropagateStatusInTree(bool status, TreeNode node)
+        private static void PropagateStatusInTree(bool status, TreeNode node)
         {
             TreeNode temp_node = node;
             while (temp_node.Parent.Content.Name != "root")

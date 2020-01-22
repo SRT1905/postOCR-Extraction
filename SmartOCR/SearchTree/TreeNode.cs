@@ -24,7 +24,7 @@ namespace SmartOCR
             this.Content = content;
         }
 
-        private TreeNode CreateNode(string new_name = "", string pattern = "", string value_type = "", long found_line = 0, string new_value = "", string node_label = "", long horizontal_paragraph = 0)
+        private static TreeNode CreateNode(string new_name = "", string pattern = "", string value_type = "", long found_line = 0, string new_value = "", string node_label = "", long horizontal_paragraph = 0)
         {
             var new_node = new TreeNode
             {
@@ -100,7 +100,7 @@ namespace SmartOCR
             return new_node;
         }
 
-        private TreeNodeContent PopulateNodeContent(string new_name = "", string pattern = "", string value_type = "",
+        private static TreeNodeContent PopulateNodeContent(string new_name = "", string pattern = "", string value_type = "",
                                                     long found_line = 0, string new_value = "", string node_label = "",
                                                     long horizontal_paragraph = 0)
         {
