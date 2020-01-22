@@ -55,7 +55,18 @@ namespace SmartOCR
                     ReadyToProcess = false;
                     return;
                 }
-                config_file = File.Exists(args[0]) ? args[0] : null;
+                if (Directory.Exists(args[0]))
+                {
+                    List<string> files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly).ToList();
+                    if (files.Count != 0)
+                    {
+                        config_file = files[0];
+                    }
+                }
+                else
+                {
+                    config_file = args[0];
+                }
                 entered_path_type = ValidatePath(args[1]);
                 _args = args.Skip(1).ToList();
                 ReadyToProcess = true;
@@ -74,7 +85,17 @@ namespace SmartOCR
                 Utilities.PrintInvalidInputMessage();
                 return;
             }
-            string output_file = Path.Combine(Path.GetDirectoryName(config_file), "output.xlsx");
+
+            string output_file;
+            if (entered_path_type == PathType.Directory)
+            {
+                output_file = Path.Combine(_args[0], "output.xlsx");
+            }
+            else
+            {
+                output_file = Path.Combine(Path.GetDirectoryName(_args[0]), "output.xlsx");
+            }
+            
             while (File.Exists(output_file))
             {
                 continue;
