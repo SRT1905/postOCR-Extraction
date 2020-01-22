@@ -64,7 +64,7 @@ namespace SmartOCR
             this.paragraph_horizontal_location = paragraph_location;
             if (Math.Abs(search_status) > 1)
             {
-                throw new ArgumentOutOfRangeException("search_status", "Must be in range [-1; 1]");
+                throw new ArgumentOutOfRangeException(nameof(search_status), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
             }
             this.search_status = search_status;
             SetSearchIndexes();

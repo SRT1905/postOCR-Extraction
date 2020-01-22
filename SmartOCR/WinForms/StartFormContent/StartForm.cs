@@ -31,11 +31,11 @@ namespace SmartOCR
             string initial_directory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                dialog.Filter = "Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb";
+                dialog.Filter = Properties.Resources.openFileDialogExcelFilter;
                 dialog.Multiselect = false;
                 dialog.InitialDirectory = initial_directory;
                 dialog.RestoreDirectory = true;
-                dialog.Title = "Select config file";
+                dialog.Title = Properties.Resources.openConfigFileDialogTitle;
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
@@ -79,7 +79,7 @@ namespace SmartOCR
         {
             using (FolderBrowserDialog dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Select directory with valid files";
+                dialog.Description = Properties.Resources.folderBrowserDialogDescription;
                 dialog.ShowNewFolderButton = true;
             
                 if (dialog.ShowDialog() == DialogResult.OK)
@@ -169,7 +169,7 @@ namespace SmartOCR
             string initial_directory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             using (SaveFileDialog dialog = new SaveFileDialog())
             {
-                dialog.Filter = "Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb";
+                dialog.Filter = Properties.Resources.openFileDialogExcelFilter;
                 dialog.InitialDirectory = initial_directory;
                 dialog.RestoreDirectory = true;
                 if (dialog.ShowDialog() == DialogResult.OK)

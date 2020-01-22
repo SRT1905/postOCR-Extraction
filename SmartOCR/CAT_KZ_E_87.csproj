@@ -82,6 +82,11 @@
     <Compile Include="Excel\ConfigParser.cs" />
     <Compile Include="IProcess.cs" />
     <Compile Include="ParseEntryPoint.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SearchTree\TreeNodeContent.cs" />
     <Compile Include="WFProcess.cs" />
     <Compile Include="WinForms\StartFormContent\StartForm.cs">
@@ -114,6 +119,10 @@
     <EmbeddedResource Include="ConfigContainer.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ConfigContainer.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\StartFormContent\StartForm.resx">
       <DependentUpon>StartForm.cs</DependentUpon>
