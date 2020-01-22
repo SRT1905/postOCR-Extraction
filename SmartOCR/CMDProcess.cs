@@ -49,6 +49,12 @@ namespace SmartOCR
         {
             try
             {
+                if (args == null)
+                {
+                    Utilities.PrintInvalidInputMessage();
+                    ReadyToProcess = false;
+                    return;
+                }
                 config_file = File.Exists(args[0]) ? args[0] : null;
                 entered_path_type = ValidatePath(args[1]);
                 _args = args.Skip(1).ToList();
