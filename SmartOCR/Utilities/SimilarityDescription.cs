@@ -88,8 +88,11 @@ namespace SmartOCR
             int long_length = long_string.Length;
             int short_length = short_string.Length;
 
-            int[,] costs = new int[long_length + 1, short_length + 1];
-
+            int[][] costs = new int[long_length + 1][];
+            for (int i = 0; i < costs.Length; i++)
+            {
+                costs[i] = new int[short_length + 1];
+            }
             if (long_length == 0)
             {
                 return short_length;
@@ -100,21 +103,21 @@ namespace SmartOCR
                 return long_length;
             }
 
-            for (int i = 0; i <= long_length; costs[i, 0] = i++) ;
-            for (int j = 0; j <= short_length; costs[0, j] = j++) ;
+            for (int i = 0; i <= long_length; costs[i][0] = i++) ;
+            for (int j = 0; j <= short_length; costs[0][j] = j++) ;
             for (int i = 1; i <= long_length; i++)
             {
                 for (int j = 1; j <= short_length; j++)
                 {
                     int cost = (short_string[j - 1] == long_string[i - 1]) ? 0 : 1;
-                    costs[i, j] = Math.Min(
+                    costs[i][j] = Math.Min(
                         Math.Min(
-                            costs[i - 1, j] + 1,
-                            costs[i, j - 1] + 1),
-                        costs[i - 1, j - 1] + cost);
+                            costs[i - 1][j] + 1,
+                            costs[i][j - 1] + 1),
+                        costs[i - 1][j - 1] + cost);
                 }
             }
-            return costs[long_length, short_length];
+            return costs[long_length][short_length];
         }
     }
 }
