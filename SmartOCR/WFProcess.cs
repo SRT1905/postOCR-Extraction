@@ -28,9 +28,9 @@ namespace SmartOCR
         /// <param name="form">Instance of start form.</param>
         public WFProcess(StartForm form)
         {
-            files = form.found_files;
-            config_file = form.config_file;
-            output_file = form.output_file;
+            files = form.FoundFiles;
+            config_file = form.ConfigFile;
+            output_file = form.OutputFile;
         }
 
         public void ExecuteProcessing()

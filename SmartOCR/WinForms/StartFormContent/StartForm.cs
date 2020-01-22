@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Windows.Forms;
@@ -8,13 +9,13 @@ namespace SmartOCR
     public partial class StartForm : Form
     {
 
-        public string config_file;
-        public string search_directory;
-        public string charge_code;
-        public List<string> found_files;
-        public string search_pattern;
-        public string document_type;
-        public string output_file;
+        public string ConfigFile { get; set; }
+        public string SearchDirectory { get; set; }
+        public string ChargeCode { get; set; }
+        public List<string> FoundFiles { get; } = new List<string>();
+        public string SearchPattern { get; set; }
+        public string DocumentType { get; set; }
+        public string OutputFile { get; set; }
         private bool is_output_valid;
         public StartForm()
         {
@@ -39,7 +40,7 @@ namespace SmartOCR
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    config_file = dialog.FileName;
+                    ConfigFile = dialog.FileName;
                     textbox_input_config.Text = dialog.FileName;
                 }
             }
@@ -70,7 +71,7 @@ namespace SmartOCR
 
         private void Textbox_chargecode_Validated(object sender, System.EventArgs e)
         {
-            charge_code = textbox_chargecode.Text;
+            ChargeCode = textbox_chargecode.Text;
             errorprovider.SetError(textbox_chargecode, string.Empty);
             TryEnableRunButton();
         }
@@ -84,7 +85,7 @@ namespace SmartOCR
             
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    search_directory = dialog.SelectedPath;
+                    SearchDirectory = dialog.SelectedPath;
                     textbox_directory.Text = dialog.SelectedPath;
                 }
             }
@@ -94,10 +95,10 @@ namespace SmartOCR
         {
             bool status = !new List<bool>()
             {
-                textbox_chargecode.Text != string.Empty,
+                !string.IsNullOrEmpty(textbox_chargecode.Text),
                 Directory.Exists(textbox_directory.Text),
                 File.Exists(textbox_input_config.Text),
-                textbox_file_specification.Text != string.Empty,
+                !string.IsNullOrEmpty(textbox_file_specification.Text),
                 combobox_doc_types.SelectedIndex != -1,
             }.Contains(false);
             button_run.Enabled = status;
@@ -126,17 +127,17 @@ namespace SmartOCR
 
         private void Button_run_Click(object sender, System.EventArgs e)
         {
-            search_pattern = textbox_file_specification.Text;
-            found_files = GetFilesFromInput();
-            document_type = combobox_doc_types.SelectedItem.ToString();
-            is_output_valid = File.Exists(output_file) || string.IsNullOrEmpty(output_file);
+            SearchPattern = textbox_file_specification.Text;
+            FoundFiles.AddRange(GetFilesFromInput());
+            DocumentType = combobox_doc_types.SelectedItem.ToString();
+            is_output_valid = File.Exists(OutputFile) || string.IsNullOrEmpty(OutputFile);
         }
 
         private void StartForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (button_run.Enabled && TryEnableRunButton())
             {
-                if (found_files.Count == 0)
+                if (FoundFiles.Count == 0)
                 {
                     e.Cancel = true;
                     errorprovider.SetError(button_run, "No files were found. Check input parameters.");
@@ -156,9 +157,9 @@ namespace SmartOCR
                 : SearchOption.TopDirectoryOnly;
             try
             {
-                return Directory.EnumerateFiles(search_directory, search_pattern, search_option).ToList();
+                return Directory.EnumerateFiles(SearchDirectory, SearchPattern, search_option).ToList();
             }
-            catch (System.Exception)
+            catch (ArgumentException)
             {
                 return new List<string>();
             }
@@ -174,7 +175,7 @@ namespace SmartOCR
                 dialog.RestoreDirectory = true;
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    output_file = dialog.FileName;
+                    OutputFile = dialog.FileName;
                     textbox_save_location.Text = dialog.FileName;
                 }
             }
