@@ -24,7 +24,12 @@ namespace SmartOCR
         /// Representation of Word document that is being read.
         /// </summary>
         private readonly Document document;
-        
+
+        /// <summary>
+        /// Editable counter of read paragraphs.
+        /// </summary>
+        private int ParagraphCounter = 1;
+
         /// <summary>
         /// Represents document contents grouped in separate lines.
         /// </summary>
@@ -158,10 +163,19 @@ namespace SmartOCR
             int paragraphs_count = paragraphs.Count;
             var paragraph_collection = new List<ParagraphContainer>();
 
-            for (int i = 1; i <= paragraphs_count; i++)
+            for (int i = ParagraphCounter; i <= paragraphs_count; i++)
             {
                 var single_range = paragraphs[i].Range;
                 long range_page = single_range.Information[WdInformation.wdActiveEndPageNumber];
+                if (range_page < page_index)
+                {
+                    continue;
+                }
+                if (range_page > page_index)
+                {
+                    ParagraphCounter = i;
+                    break;
+                }
                 if (range_page == page_index && single_range.Text.Length > minimal_text_length)
                 {
                     paragraph_collection.Add(new ParagraphContainer(single_range));
@@ -185,6 +199,14 @@ namespace SmartOCR
             {
                 var shape = shapes[i];
                 long shape_page = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
+                if (shape_page < page_index)
+                {
+                    continue;
+                }
+                if (shape_page > page_index)
+                {
+                    break;
+                }
                 if (shape_page == page_index)
                 {
                     var frame = shape.TextFrame;
@@ -266,10 +288,16 @@ namespace SmartOCR
         /// <returns></returns>
         private SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
         {
-            var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>()
+            var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>();
+            try
             {
-                {1, document_content.Values.First()},
-            };
+                new_document_content.Add(1, document_content.Values.First());
+            }
+            catch (InvalidOperationException)
+            {
+                return new_document_content;
+            }
+
             for (int i = 1; i < document_content.Count; i++)
             {
                 decimal current_location = document_content.Keys.ElementAt(i);
