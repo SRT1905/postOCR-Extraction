@@ -23,8 +23,6 @@ namespace SmartOCR
         /// </summary>
         private ConfigData config_data = new ConfigData();
         
-        private string doc_type;
-        
         /// <summary>
         /// Path to output file (default location equals assembly location).
         /// </summary>
@@ -36,11 +34,6 @@ namespace SmartOCR
         private Workbook output_wb;
         
         /// <summary>
-        /// Collection of supported document types.
-        /// </summary>
-        private HashSet<string> valid_doc_types = Utilities.valid_document_types;
-        
-        /// <summary>
         /// Collection of files to process.
         /// </summary>
         private List<string> valid_files = new List<string>();
@@ -48,38 +41,33 @@ namespace SmartOCR
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses internal config data and default output location.
         /// </summary>
-        /// <param name="type">Document type.</param>
         /// <param name="files">Collection of files to process.</param>
-        public ParseEntryPoint(string type, List<string> files)
+        public ParseEntryPoint(List<string> files)
         {
-            doc_type = type;
             valid_files = GetValidFiles(files);
-            config_data = new ConfigParser().ParseConfig(doc_type);
-            output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
+            config_data = new ConfigParser().ParseConfig();
+            output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
 
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
-        /// <param name="type">Document type.</param>
         /// <param name="files">Collection of files to process.</param>
         /// <param name="config_file">Path to external Excel workbook with config data.</param>
-        public ParseEntryPoint(string type, List<string> files, string config_file)
+        public ParseEntryPoint(List<string> files, string config_file)
         {
-            doc_type = type;
             valid_files = GetValidFiles(files);
-            config_data = new ConfigParser(config_file).ParseConfig(doc_type);
-            output_wb = ExcelOutputWorkbook.GetOutputWorkbook(doc_type);
+            config_data = new ConfigParser(config_file).ParseConfig();
+            output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
       
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
-        /// <param name="type">Document type.</param>
         /// <param name="files">Collection of files to process.</param>
         /// <param name="config_file">Path to external Excel workbook with config data.</param>
         /// <param name="output_file">Path to existing output Excel workbook.</param>
-        public ParseEntryPoint(string type, List<string> files, string config_file, string output_file) : this(type, files, config_file)
+        public ParseEntryPoint(List<string> files, string config_file, string output_file) : this(files, config_file)
         {
             output_location = output_file;
         }
@@ -91,7 +79,7 @@ namespace SmartOCR
         /// <returns>Indicator that processing was successful.</returns>
         public bool TryGetData()
         {
-            if (valid_files.Count == 0 || !valid_doc_types.Contains(doc_type))
+            if (valid_files.Count == 0)
             {
                 return false;
             }
@@ -162,10 +150,8 @@ namespace SmartOCR
         private void DisposeFields()
         {
             config_data = null;
-            doc_type = null;
             output_location = null;
             output_wb = null;
-            valid_doc_types = null;
             valid_files = null;
         }
     }

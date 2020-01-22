@@ -22,11 +22,6 @@ namespace SmartOCR
         }
 
         /// <summary>
-        /// Title of document type.
-        /// </summary>
-        private readonly string document_type;
-  
-        /// <summary>
         /// Specification of entered arguments.
         /// </summary>
         private readonly PathType entered_path_type;
@@ -54,10 +49,9 @@ namespace SmartOCR
         {
             try
             {
-                document_type = ValidateDocumentType(args[0]);
-                config_file = File.Exists(args[1]) ? args[1] : null;
-                entered_path_type = ValidatePath(args[2]);
-                _args = args.Skip(2).ToList();
+                config_file = File.Exists(args[0]) ? args[0] : null;
+                entered_path_type = ValidatePath(args[1]);
+                _args = args.Skip(1).ToList();
                 ReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
@@ -69,7 +63,7 @@ namespace SmartOCR
         
         public void ExecuteProcessing()
         {
-            if (document_type == null || entered_path_type == PathType.None || config_file == null)
+            if (entered_path_type == PathType.None || config_file == null)
             {
                 Utilities.PrintInvalidInputMessage();
                 return;
@@ -79,7 +73,7 @@ namespace SmartOCR
             {
                 continue;
             }
-            using (var entryPoint = new ParseEntryPoint(document_type, GetFilesFromArgs(), config_file, output_file))
+            using (var entryPoint = new ParseEntryPoint(GetFilesFromArgs(), config_file, output_file))
             {
                 entryPoint.TryGetData();
             }
@@ -115,16 +109,6 @@ namespace SmartOCR
                 directories.AddRange(Directory.GetFiles(single_directory).Where(item => !Path.GetFileName(item).StartsWith("~") && item.EndsWith(".docx")));
             }
             return directories;
-        }
-      
-        /// <summary>
-        /// Checks whether provided document type is in compliance with supportable document types.
-        /// </summary>
-        /// <param name="doc_type">Document type, entered from command propmt.</param>
-        /// <returns>String representation of internally defined document type.</returns>
-        private string ValidateDocumentType(string doc_type)
-        {
-            return Utilities.valid_document_types.FirstOrDefault(item => item.Contains(doc_type));
         }
 
         /// <summary>

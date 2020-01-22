@@ -17,8 +17,6 @@ namespace SmartOCR
         /// </summary>
         private readonly string config_file;
 
-        private readonly string document_type;
-
         /// <summary>
         /// Path to output workbook.
         /// </summary>
@@ -32,13 +30,12 @@ namespace SmartOCR
         {
             files = form.found_files;
             config_file = form.config_file;
-            document_type = form.document_type;
             output_file = form.output_file;
         }
 
         public void ExecuteProcessing()
         {
-            using (ParseEntryPoint entryPoint = new ParseEntryPoint(document_type, files, config_file, output_file))
+            using (ParseEntryPoint entryPoint = new ParseEntryPoint(files, config_file, output_file))
             {
                 entryPoint.TryGetData();
             }

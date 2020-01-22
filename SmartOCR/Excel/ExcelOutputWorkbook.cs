@@ -1,4 +1,5 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,25 +20,23 @@ namespace SmartOCR
         private static Worksheet output_worksheet;
 
         /// <summary>
-        /// Gets output workbook with worksheet specified by <paramref name="doc_type"/>.
+        /// Gets output workbook.
         /// </summary>
-        /// <param name="doc_type">Name of document type.</param>
         /// <returns></returns>
-        public static Workbook GetOutputWorkbook(string doc_type)
+        public static Workbook GetOutputWorkbook()
         {
             if (instance == null)
             {
-                instance = CreateOutputWorkbook(doc_type);
+                instance = CreateOutputWorkbook();
             }
             return instance;
         }
 
         /// <summary>
-        /// Creates new output workbook with worksheet specified by <paramref name="doc_type"/>.
+        /// Creates new output workbook.
         /// </summary>
-        /// <param name="doc_type"></param>
         /// <returns><see cref="Workbook"/> instance added to <see cref="Workbooks"/> collection.</returns>
-        private static Workbook CreateOutputWorkbook(string doc_type)
+        private static Workbook CreateOutputWorkbook()
         {
             if (ConfigParser.config_wb == null)
             {
@@ -47,7 +46,15 @@ namespace SmartOCR
             Workbook source_wb = ConfigParser.config_wb;
             Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
-            Worksheet source_ws = GetWorksheetByName(source_wb, doc_type);
+            Worksheet source_ws;
+            try
+            {
+                source_ws = source_wb.Worksheets[1];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             if (source_ws == null)
             {
                 return null;
@@ -69,22 +76,6 @@ namespace SmartOCR
 
             new_wb.Worksheets[1].Delete();
             return new_wb;
-        }
-
-        /// <summary>
-        /// Tries to find <see cref="Worksheet"/> specified by name in <see cref="Workbook"/>.
-        /// </summary>
-        /// <param name="workbook"><see cref="Workbook"/> instance.</param>
-        /// <param name="sheet_name"><see cref="Worksheet"/> name.</param>
-        /// <returns>Found <see cref="Worksheet"/> or null.</returns>
-        private static Worksheet GetWorksheetByName(Workbook workbook, string sheet_name)
-        {
-            foreach (Worksheet item in workbook.Worksheets)
-            {
-                if (item.Name.Contains(sheet_name))
-                    return item;
-            }
-            return null;
         }
 
         /// <summary>

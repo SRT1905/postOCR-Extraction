@@ -36,16 +36,9 @@ namespace SmartOCR
             return ExcelApplication.OpenExcelWorkbook(temp_path);
         }
         
-        public ConfigData ParseConfig(string doc_type)
+        public ConfigData ParseConfig()
         {
-            foreach (Worksheet item in config_wb.Worksheets)
-            {
-                if (item.Name.Contains(doc_type))
-                {
-                    return GetConfigData(item);
-                }
-            }
-            return null;
+            return GetConfigData(config_wb.Worksheets[1]);
         }
 
         private ConfigData GetConfigData(Worksheet source_ws)

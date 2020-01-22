@@ -8,7 +8,7 @@ namespace SmartOCR
         [STAThread]
         private static void Main(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length < 2)
             {
                 Utilities.PrintInvalidInputMessage();
             }
