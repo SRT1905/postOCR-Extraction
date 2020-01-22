@@ -79,6 +79,15 @@ namespace SmartOCR.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Null config field was provided..
+        /// </summary>
+        internal static string nullConfigField {
+            get {
+                return ResourceManager.GetString("nullConfigField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select config file.
         /// </summary>
         internal static string openConfigFileDialogTitle {

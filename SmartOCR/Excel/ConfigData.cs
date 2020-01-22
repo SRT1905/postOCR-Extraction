@@ -61,7 +61,7 @@ namespace SmartOCR
             }
             else
             {
-                throw new ArgumentNullException("Null config field was provided.");
+                throw new ArgumentNullException(nameof(field), Properties.Resources.nullConfigField);
             }
         }
     }

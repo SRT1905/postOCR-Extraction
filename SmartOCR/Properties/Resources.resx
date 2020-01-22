@@ -123,6 +123,9 @@
   <data name="invalidInputMessage" xml:space="preserve">
     <value>Enter valid document type and path(s) to file/directory.</value>
   </data>
+  <data name="nullConfigField" xml:space="preserve">
+    <value>Null config field was provided.</value>
+  </data>
   <data name="openConfigFileDialogTitle" xml:space="preserve">
     <value>Select config file</value>
   </data>
