@@ -8,7 +8,7 @@ namespace SmartOCR
 {
     internal class WordParser // TODO: add summary.
     {
-        private const long similarity_search_threshold = 5; // TODO: decrease to 5.
+        private const long similarity_search_threshold = 5;
 
         private readonly SearchTree tree_structure;
         private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;

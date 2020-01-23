@@ -12,8 +12,9 @@ namespace SmartOCR
     {
         /// <summary>
         /// Defines limits of single document line.
+        /// 72 points = 1 inch.
         /// </summary>
-        private const byte vertical_position_offset = 5;
+        private const byte vertical_position_offset = 6;
        
         /// <summary>
         /// Defines lower bound of document text element length.
@@ -289,6 +290,7 @@ namespace SmartOCR
         private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
         {
             var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>();
+            
             try
             {
                 new_document_content.Add(1, document_content.Values.First());
@@ -301,24 +303,22 @@ namespace SmartOCR
             for (int i = 1; i < document_content.Count; i++)
             {
                 decimal current_location = document_content.Keys.ElementAt(i);
-                decimal previous_location = document_content.Keys.ElementAt(i - 1);
-                if (previous_location - vertical_position_offset <= current_location && current_location <= previous_location + 5)
+                decimal previous_location = new_document_content[new_document_content.Count][0].VerticalLocation;
+                if (previous_location - vertical_position_offset <= current_location && current_location <= previous_location + vertical_position_offset)
                 {
-                    if (new_document_content.ContainsKey(i))
-                    {
-                        new_document_content[i].AddRange(document_content[current_location]);
-                        new_document_content[i].Sort();
-                    }
-                    else
-                    {
-                        new_document_content.Add(i + 1, document_content[current_location]);
-                    }
+                    new_document_content[new_document_content.Count].AddRange(document_content[current_location]);
                 }
                 else
                 {
-                    new_document_content.Add(i + 1, document_content[current_location]);
+                    new_document_content.Add(new_document_content.Count + 1, document_content[current_location]);
                 }
             }
+
+            foreach (KeyValuePair<long, List<ParagraphContainer>> item in new_document_content)
+            {
+                item.Value.Sort();
+            }
+
             return new_document_content;
         }
         
