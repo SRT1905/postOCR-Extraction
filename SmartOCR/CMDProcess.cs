@@ -57,13 +57,13 @@ namespace SmartOCR
                 }
                 if (Directory.Exists(args[0]))
                 {
-                    List<string> files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly).ToList();
-                    if (files.Count != 0)
+                    string[] files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly);
+                    if (files.Length != 0)
                     {
                         config_file = files[0];
                     }
                 }
-                else
+                else if (File.Exists(args[0]))
                 {
                     config_file = args[0];
                 }
