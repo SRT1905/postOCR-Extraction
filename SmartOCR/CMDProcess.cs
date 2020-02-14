@@ -62,6 +62,11 @@ namespace SmartOCR
                     {
                         config_file = files[0];
                     }
+                    else
+                    {
+                        Console.WriteLine(Properties.Resources.noConfigFileFound);
+                        return;
+                    }
                 }
                 else if (File.Exists(args[0]))
                 {
