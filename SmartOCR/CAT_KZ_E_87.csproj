@@ -78,8 +78,10 @@
     <Compile Include="CMDProcess.cs" />
     <Compile Include="Excel\ConfigData.cs" />
     <Compile Include="Excel\ConfigExpression.cs" />
+    <Compile Include="Excel\ConfigExpressionBase.cs" />
     <Compile Include="Excel\ConfigField.cs" />
     <Compile Include="Excel\ConfigParser.cs" />
+    <Compile Include="Excel\TableConfigExpression.cs" />
     <Compile Include="IProcess.cs" />
     <Compile Include="ParseEntryPoint.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

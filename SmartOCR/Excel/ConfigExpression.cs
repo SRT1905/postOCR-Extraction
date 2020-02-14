@@ -1,19 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace SmartOCR
 {
     /// <summary>
     /// Describes single search expression defined in Excel config file.
     /// </summary>
-    class ConfigExpression
+    class ConfigExpression : ConfigExpressionBase
     {
-        /// <summary>
-        /// Describes regular expression pattern.
-        /// </summary>
-        public string RE_Pattern { get; set; }
-
         /// <summary>
         /// Shows how offset should be search line, comparing to one, where previous search pattern was matched.
         /// </summary>
@@ -40,24 +35,9 @@ namespace SmartOCR
         /// Extracts data from Excel cell contents.
         /// </summary>
         /// <param name="input">Excel cell contents, containing regular expression pattern, line offset and horizontal search status.</param>
-        private void ParseInput(string input)
+        protected override List<string> ParseInput(string input)
         {
-            var splitted_input = input.Split(';').ToList();
-            while (!(int.TryParse(splitted_input[1], out _) || string.IsNullOrEmpty(splitted_input[1])))
-            {
-                splitted_input[0] = $"{splitted_input[0]};{splitted_input[1]}";
-                for (int i = 2; i < splitted_input.Count; i++)
-                {
-                    splitted_input[i - 1] = splitted_input[i];
-                }
-                splitted_input.RemoveAt(splitted_input.Count - 1);
-            }
-            while (splitted_input.Count < 3)
-            {
-                splitted_input.Add(null);
-            }
-
-            RE_Pattern = splitted_input[0];
+            List<string> splitted_input = base.ParseInput(input);
             LineOffset = string.IsNullOrEmpty(splitted_input[1])
                 ? 0
                 : int.Parse(splitted_input[1], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
@@ -67,8 +47,9 @@ namespace SmartOCR
             
             if (Math.Abs(HorizontalStatus) > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(HorizontalStatus));
+                throw new ArgumentOutOfRangeException(nameof(input), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
             }
+            return splitted_input;
         }
     }
 }
