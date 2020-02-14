@@ -34,7 +34,9 @@ namespace SmartOCR
         /// <summary>
         /// Represents document contents grouped in separate lines.
         /// </summary>
-        public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; set; }
+        public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; }
+
+        public List<WordTable> WordTables { get; private set; }
 
         /// <summary>
         /// Initializes instance of WordReader class that has document to read.
@@ -43,6 +45,7 @@ namespace SmartOCR
         public WordReader(Document document)
         {
             LineMapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            WordTables = new List<WordTable>(document.Tables.Count);
             this.document = document;
         }
 
@@ -69,6 +72,9 @@ namespace SmartOCR
                 var page_content = ReadSinglePage(i);
                 UpdateLineMapping(page_content);
             }
+
+            GetTables();
+
         }
 
         /// <summary>
@@ -333,6 +339,14 @@ namespace SmartOCR
             paragraph_collection.Add(text_range_container);
             paragraph_collection.Sort();
             return paragraph_collection;
+        }
+
+        private void GetTables()
+        {
+            for (int table_count = 1; table_count <= document.Tables.Count; table_count++)
+            {
+                WordTables.Add(new WordTable(document.Tables[table_count]));
+            }
         }
     }
 }
