@@ -24,7 +24,7 @@ namespace SmartOCR
 
         public void PopulateTree()
         {
-            var root = new TreeNode().CreateRoot();
+            TreeNode root = TreeNode.CreateRoot();
             foreach (ConfigField field in ConfigData.Fields)
             {
                 TreeNode field_node = AddFieldNode(root, field);
@@ -63,7 +63,7 @@ namespace SmartOCR
             return node;
         }
 
-        public void AddSearchValues(ConfigField field_data, TreeNode node, int initial_value_index = 0)
+        public static void AddSearchValues(ConfigField field_data, TreeNode node, int initial_value_index = 0)
         {
             var node_content = node.Content;
             if (node_content.NodeLabel == "Terminal")

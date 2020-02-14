@@ -79,6 +79,15 @@ namespace SmartOCR.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to location configuration file..
+        /// </summary>
+        internal static string noConfigFileFound {
+            get {
+                return ResourceManager.GetString("noConfigFileFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Null config field was provided..
         /// </summary>
         internal static string nullConfigField {
@@ -106,7 +115,7 @@ namespace SmartOCR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Must be in range [-1; 1].
+        ///   Looks up a localized string similar to Horizontal offset status must be in range [-1; 1].
         /// </summary>
         internal static string outOfRangeParagraphHorizontalLocationStatus {
             get {

@@ -33,7 +33,7 @@ namespace SmartOCR
             return new_node;
         }
 
-        public TreeNode CreateRoot()
+        public static TreeNode CreateRoot()
         {
             return CreateNode("root");
         }

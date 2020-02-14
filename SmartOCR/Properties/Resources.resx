@@ -123,6 +123,9 @@
   <data name="invalidInputMessage" xml:space="preserve">
     <value>Enter valid document type and path(s) to file/directory.</value>
   </data>
+  <data name="noConfigFileFound" xml:space="preserve">
+    <value>Unable to location configuration file.</value>
+  </data>
   <data name="nullConfigField" xml:space="preserve">
     <value>Null config field was provided.</value>
   </data>
@@ -133,6 +136,6 @@
     <value>Excel spreadsheet (*.xlsx; *.xlsm; *.xlsb)|*.xlsx;*.xlsm;*.xlsb</value>
   </data>
   <data name="outOfRangeParagraphHorizontalLocationStatus" xml:space="preserve">
-    <value>Must be in range [-1; 1]</value>
+    <value>Horizontal offset status must be in range [-1; 1]</value>
   </data>
 </root>
