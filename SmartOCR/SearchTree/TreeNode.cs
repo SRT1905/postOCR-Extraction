@@ -4,7 +4,7 @@ namespace SmartOCR
 {
     internal class TreeNode // TODO: add summary.
     {
-        public TreeNodeContent Content;
+        public ITreeNodeContent Content;
         public TreeNode Parent;
         public List<TreeNode> Children;
 
@@ -19,7 +19,7 @@ namespace SmartOCR
             Parent = parent_node;
         }
 
-        public TreeNode(TreeNodeContent content) : this()
+        public TreeNode(ITreeNodeContent content) : this()
         {
             this.Content = content;
         }
@@ -69,11 +69,21 @@ namespace SmartOCR
 
         public TreeNode AddChild(TreeNode node, long new_line)
         {
-            TreeNodeContent node_content = node.Content;
-            return AddChild(
-                node_content.Name, node_content.RE_Pattern, new_line,
-                node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
-                node_content.HorizontalParagraph);
+            if (node.Content is TreeNodeContent)
+            {
+                TreeNodeContent node_content = (TreeNodeContent)node.Content;
+                return AddChild(
+                    node_content.Name, node_content.RE_Pattern, new_line,
+                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
+                    node_content.HorizontalParagraph);
+            }
+            else
+            {
+                TableTreeNodeContent node_content = (TableTreeNodeContent)node.Content;
+                return AddChild(
+                    node_content.Name, node_content.RE_Pattern, new_line,
+                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel);
+            }
         }
 
         public TreeNode AddChild(TreeNode node)

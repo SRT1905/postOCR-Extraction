@@ -89,6 +89,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SearchTree\ITreeNodeContent.cs" />
+    <Compile Include="SearchTree\TableTreeNodeContent.cs" />
     <Compile Include="SearchTree\TreeNodeContent.cs" />
     <Compile Include="WFProcess.cs" />
     <Compile Include="WinForms\StartFormContent\StartForm.cs">

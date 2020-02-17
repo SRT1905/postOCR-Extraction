@@ -2,10 +2,11 @@
 
 namespace SmartOCR
 {
-    internal class TreeNodeContent : ITreeNodeContent
+    internal class TableTreeNodeContent : ITreeNodeContent
     // TODO: add summary.
     {
-        public decimal HorizontalParagraph { get; set; }
+        public int Row { get; set; }
+        public int Column { get; set; }
         public List<long> Lines { get; set; }
         public string Name { get; set; }
         public string NodeLabel { get; set; }
@@ -14,17 +15,15 @@ namespace SmartOCR
         public string CheckValue { get; set; }
         public string FoundValue { get; set; }
         public string ValueType { get; set; }
-        public int HorizontalStatus { get; set; }
-        public int LineOffset { get; set; }
 
-        public TreeNodeContent()
+        public TableTreeNodeContent()
         {
             Lines = new List<long>();
         }
 
-        public TreeNodeContent(TreeNodeContent content) : this()
+        public TableTreeNodeContent(TableTreeNodeContent content) : this()
         {
-            HorizontalParagraph = content.HorizontalParagraph;
+            Row = content.Row;
             Name = content.Name;
             NodeLabel = content.NodeLabel;
             RE_Pattern = content.RE_Pattern;
@@ -32,8 +31,7 @@ namespace SmartOCR
             CheckValue = content.CheckValue;
             FoundValue = content.FoundValue;
             ValueType = content.ValueType;
-            HorizontalStatus = content.HorizontalStatus;
-            LineOffset = content.LineOffset;
+            Column = content.Column;
         }
     }
 }
