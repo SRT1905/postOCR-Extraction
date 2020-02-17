@@ -71,7 +71,7 @@ namespace SmartOCR
                 return;
             }
 
-            List<ConfigExpression> values_collection = field_data.Expressions;
+            List<ConfigExpressionBase> values_collection = field_data.Expressions;
             if (node.Children.Count == 0 && values_collection.Count < initial_value_index + 1)
             {
                 AddSearchValuesToChildlessNode(node, initial_value_index - 1, values_collection);
@@ -97,19 +97,36 @@ namespace SmartOCR
             }
         }
 
-        private static void AddSearchValuesToChildlessNode(TreeNode node, int initial_value_index, List<ConfigExpression> values_collection)
+        private static void AddSearchValuesToChildlessNode(TreeNode node, int initial_value_index, List<ConfigExpressionBase> values_collection)
         {
-            ConfigExpression single_value_definition = values_collection[initial_value_index];
-            var content = new TreeNodeContent()
+            ITreeNodeContent content;
+            if (values_collection[initial_value_index] is ConfigExpression)
             {
-                Name = node.Content.Name,
-                NodeLabel = $"Search {initial_value_index}",
-                RE_Pattern = single_value_definition.RE_Pattern,
-                HorizontalParagraph = node.Content.HorizontalParagraph,
-                HorizontalStatus = single_value_definition.HorizontalStatus,
-                ValueType = node.Content.ValueType,
-                LineOffset = single_value_definition.LineOffset
-            };
+                ConfigExpression single_value_definition = (ConfigExpression)values_collection[initial_value_index];
+                content = new TreeNodeContent()
+                {
+                    Name = node.Content.Name,
+                    NodeLabel = $"Search {initial_value_index}",
+                    RE_Pattern = single_value_definition.RE_Pattern,
+                    HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
+                    HorizontalStatus = single_value_definition.HorizontalStatus,
+                    ValueType = node.Content.ValueType,
+                    LineOffset = single_value_definition.LineOffset
+                };
+            }
+            else
+            {
+                TableConfigExpression single_value_definition = (TableConfigExpression)values_collection[initial_value_index];
+                content = new TableTreeNodeContent()
+                {
+                    Name = node.Content.Name,
+                    NodeLabel = $"Search {initial_value_index}",
+                    RE_Pattern = single_value_definition.RE_Pattern,
+                    Column = ((TableTreeNodeContent)node.Content).Column,
+                    ValueType = node.Content.ValueType,
+                    Row = single_value_definition.RowOffset
+                };
+            }
             if (initial_value_index + 1 == values_collection.Count)
             {
                 content.NodeLabel = "Terminal";
@@ -119,24 +136,40 @@ namespace SmartOCR
             node.AddChild(new_node);
         }
 
-        private static void AddSearchValuesToSingleNode(string field_name, TreeNode node, List<ConfigExpression> values_collection, int initial_value_index)
+        private static void AddSearchValuesToSingleNode(string field_name, TreeNode node, List<ConfigExpressionBase> values_collection, int initial_value_index)
         {
             TreeNode single_paragraph_node = node;
             for (int value_index = initial_value_index; value_index < values_collection.Count; value_index++)
             {
-                ConfigExpression single_value_definition = values_collection[value_index];
-                long offset_line = single_paragraph_node.Content.Lines[0];
-
-                var content = new TreeNodeContent
+                ITreeNodeContent content;
+                if (values_collection[value_index] is ConfigExpression)
                 {
-                    Name = field_name,
-                    NodeLabel = $"Search {value_index}",
-                    RE_Pattern = single_value_definition.RE_Pattern,
-                    HorizontalParagraph = single_paragraph_node.Content.HorizontalParagraph,
-                    ValueType = single_paragraph_node.Content.ValueType,
-                    HorizontalStatus = single_value_definition.HorizontalStatus,
-                    LineOffset = single_value_definition.LineOffset
-                };
+                    ConfigExpression single_value_definition = (ConfigExpression)values_collection[value_index];
+                    content = new TreeNodeContent()
+                    {
+                        Name = field_name,
+                        NodeLabel = $"Search {value_index}",
+                        RE_Pattern = single_value_definition.RE_Pattern,
+                        HorizontalParagraph = ((TreeNodeContent)single_paragraph_node.Content).HorizontalParagraph,
+                        ValueType = single_paragraph_node.Content.ValueType,
+                        HorizontalStatus = single_value_definition.HorizontalStatus,
+                        LineOffset = single_value_definition.LineOffset
+                    };
+                }
+                else
+                {
+                    TableConfigExpression single_value_definition = (TableConfigExpression)values_collection[value_index];
+                    content = new TableTreeNodeContent()
+                    {
+                        Name = field_name,
+                        NodeLabel = $"Search {value_index}",
+                        RE_Pattern = single_value_definition.RE_Pattern,
+                        ValueType = single_paragraph_node.Content.ValueType,
+                        Column = single_value_definition.ColumnOffset,
+                        Row = single_value_definition.RowOffset
+                    };
+                }
+                long offset_line = single_paragraph_node.Content.Lines[0];
 
                 if (value_index + 1 == values_collection.Count)
                 {

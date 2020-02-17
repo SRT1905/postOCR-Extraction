@@ -141,7 +141,7 @@ namespace SmartOCR
 
         private void OffsetSearch(long line_number, TreeNode line_node, long search_level, bool add_to_parent = false)
         {
-            var line_node_content = line_node.Content;
+            TreeNodeContent line_node_content = (TreeNodeContent)line_node.Content;
             var line_numbers = GetOffsetLines(line_number, line_node_content);
 
             var keys = line_numbers.Keys.ToList();
@@ -189,7 +189,7 @@ namespace SmartOCR
             }
             TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position);
             child_node.Content.FoundValue = found_value;
-            tree_structure.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
+            SearchTree.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
         }
 
 
@@ -198,7 +198,7 @@ namespace SmartOCR
             for (int field_index = 0; field_index < tree_structure.Children.Count; field_index++)
             {
                 TreeNode field_node = tree_structure.Children[field_index];
-                TreeNodeContent node_content = field_node.Content;
+                ITreeNodeContent node_content = field_node.Content;
                 if (node_content.Lines[0] == 0)
                 {
                     GetDataFromUndefinedNode(field_node);
@@ -216,7 +216,7 @@ namespace SmartOCR
 
         private void ProcessLineNode(TreeNode line_node, long search_level = 0)
         {
-            var line_node_content = line_node.Content;
+            TreeNodeContent line_node_content = (TreeNodeContent)line_node.Content;
             if (line_node_content.NodeLabel == "Terminal")
             {
                 ProcessValue(line_node, search_level);
@@ -276,7 +276,7 @@ namespace SmartOCR
 
         private void ProcessValue(TreeNode node, long search_level)
         {
-            var node_content = node.Content;
+            TreeNodeContent node_content = (TreeNodeContent)node.Content;
             for (int i = 0; i < node_content.Lines.Count; i++)
             {
                 long line_number = node_content.Lines[i];
@@ -354,12 +354,12 @@ namespace SmartOCR
 
         private void SetOffsetChildrenLines(TreeNode node, long line)
         {
-            var node_content = node.Content;
+            TreeNodeContent node_content = (TreeNodeContent)node.Content;
 
             for (int i = 0; i < node.Children.Count; i++)
             {
                 TreeNode child = node.Children[i];
-                var child_content = child.Content;
+                TreeNodeContent child_content = (TreeNodeContent)child.Content;
                 child_content.HorizontalParagraph = node_content.HorizontalParagraph;
                 List<long> keys = line_mapping.Keys.ToList();
                 int line_index = keys.IndexOf(line) + child_content.LineOffset;
@@ -382,7 +382,7 @@ namespace SmartOCR
             }
             double max_similarity = collected_data.Values.ToList().Max(item => item.Ratio);
             AddChildrenToFieldNode(field_node, collected_data, max_similarity);
-            tree_structure.AddSearchValues(config_data[field_node.Content.Name], field_node);
+            SearchTree.AddSearchValues(config_data[field_node.Content.Name], field_node);
         }
     }
 }
