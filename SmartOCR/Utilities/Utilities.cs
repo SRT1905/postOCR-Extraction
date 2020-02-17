@@ -180,5 +180,11 @@ namespace SmartOCR
             Console.WriteLine(Properties.Resources.invalidInputMessage);
             Thread.Sleep(2000);
         }
+        public static void Debug(string format, int debugLevel = 0, params object[] args)
+        {
+            Console.Write(new string('\t', debugLevel));
+            Console.Write ("# ");
+            Console.WriteLine(format, args);
+        }
     }
 }
