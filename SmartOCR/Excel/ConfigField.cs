@@ -32,7 +32,7 @@ namespace SmartOCR
         /// <summary>
         /// Collection of search expressions that define search process for current field.
         /// </summary>
-        public List<ConfigExpression> Expressions { get; } = new List<ConfigExpression>();
+        public List<ConfigExpressionBase> Expressions { get; } = new List<ConfigExpressionBase>();
 
         /// <summary>
         /// Initializes a new <see cref="ConfigField"/> instance with name and value type.
@@ -86,8 +86,6 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException($"Null config expression for field {this.Name} was provided.");
             }
-            
         }
-
     }
 }
