@@ -13,16 +13,6 @@ namespace SmartOCR
     internal static class Utilities
     {
         /// <summary>
-        /// Contains names of document types that are supported for processing.
-        /// </summary>
-        public static HashSet<string> valid_document_types = new HashSet<string>
-            {
-                "invoice_sales",
-                "settlement",
-                "invoice_costs",
-            };
-
-        /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
         /// <param name="text_pattern">Search pattern.</param>

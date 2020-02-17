@@ -89,16 +89,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SearchTree\ITreeNodeContent.cs" />
-    <Compile Include="SearchTree\TableTreeNodeContent.cs" />
-    <Compile Include="SearchTree\TreeNodeContent.cs" />
-    <Compile Include="WFProcess.cs" />
-    <Compile Include="WinForms\StartFormContent\StartForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WinForms\StartFormContent\StartForm.Designer.cs">
-      <DependentUpon>StartForm.cs</DependentUpon>
-    </Compile>
+    <Compile Include="SearchTree\NodeContent\ITreeNodeContent.cs" />
+    <Compile Include="SearchTree\NodeContent\TableTreeNodeContent.cs" />
+    <Compile Include="SearchTree\NodeContent\TreeNodeContent.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />
     <Compile Include="SearchTree\SearchTree.cs" />
     <Compile Include="Utilities\SimilarityDescription.cs" />
@@ -127,9 +120,6 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinForms\StartFormContent\StartForm.resx">
-      <DependentUpon>StartForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
