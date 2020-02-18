@@ -1,34 +1,43 @@
-﻿using System.Collections.Generic;
-using Word = Microsoft.Office.Interop.Word;
+﻿using Microsoft.Office.Interop.Word;
+using System;
 
 namespace SmartOCR
 {
-    internal class WordTable
+    class WordTable
     {
-        private readonly List<List<string>> table_contents = new List<List<string>>();
+        private readonly string[][] _cells;
         public string this[int Row, int Column]
         {
             get
             {
-                return table_contents[Row][Column];
-            }
-        }
-
-        public WordTable(Word.Table table)
-        {
-            InitializeTable(table);
-        }
-        private void InitializeTable(Word.Table table)
-        {
-            for (int i = 1; i <= table.Rows.Count; i++)
-            {
-                var row_list = new List<string>();
-                for (int j = 1; j <= table.Columns.Count; j++)
+                if (_cells.Length > Row || Row < 0)
                 {
-                    row_list.Add(table.Cell(i, j).Range.Text);
+                    return null;
                 }
-                table_contents.Add(row_list);
+                if (_cells[Row].Length > Column || Column < 0)
+                {
+                    return null;
+                }
+                return _cells[Row][Column];
             }
+        }
+        public WordTable(Table wordTable)
+        {
+            _cells = new string[wordTable.Rows.Count][];
+            for (int i = 0; i < wordTable.Rows.Count; i++)
+            {
+                _cells[i] = new string[wordTable.Columns.Count];
+            }
+            foreach (Cell cell in wordTable.Range.Cells)
+            {
+                _cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
+            }
+        }
+        private string RemoveInvalidChars(string check_string)
+        {
+            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
+            string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join("", temp).Replace("\v", " ");
         }
     }
 }

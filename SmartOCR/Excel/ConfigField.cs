@@ -44,7 +44,7 @@ namespace SmartOCR
             Name = name;
             ValueType = value_type;
         }
-        
+
         /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
         /// </summary>

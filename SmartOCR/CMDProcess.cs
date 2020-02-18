@@ -10,7 +10,7 @@ namespace SmartOCR
     /// </summary>
     public class CMDProcess : IProcess
     {
-        
+
         /// <summary>
         /// Specifies the type of entered command propmt arguments
         /// </summary>
@@ -25,7 +25,7 @@ namespace SmartOCR
         /// Specification of entered arguments.
         /// </summary>
         private readonly PathType entered_path_type;
-    
+
         /// <summary>
         /// Collection of entered command propmpt arguments.
         /// </summary>
@@ -40,7 +40,7 @@ namespace SmartOCR
         /// Indicates whether command prompt arguments were successfully defined.
         /// </summary>
         public bool ReadyToProcess { get; }
-        
+
         /// <summary>
         /// Initializes CMD processing object: identifies document type, type of entered paths and files by those paths.
         /// </summary>
@@ -82,7 +82,7 @@ namespace SmartOCR
                 ReadyToProcess = false;
             }
         }
-        
+
         public void ExecuteProcessing()
         {
             if (entered_path_type == PathType.None || config_file == null)
@@ -100,7 +100,7 @@ namespace SmartOCR
             {
                 output_file = Path.Combine(Path.GetDirectoryName(_args[0]), "output.xlsx");
             }
-            
+
             while (File.Exists(output_file))
             {
                 continue;
@@ -110,7 +110,7 @@ namespace SmartOCR
                 entryPoint.TryGetData();
             }
         }
-        
+
         /// <summary>
         /// Processes entered path type and path argument(s).
         /// </summary>
@@ -125,7 +125,7 @@ namespace SmartOCR
                 .Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
         }
-      
+
         /// <summary>
         /// Gets files from directories, provided in Args field.
         /// Files with .docx extension are taken.

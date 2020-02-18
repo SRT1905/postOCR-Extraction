@@ -59,8 +59,8 @@ namespace SmartOCR
         /// <returns>String representation of match.</returns>
         private static string ProcessString(MatchCollection matches)
         {
-            return matches[0].Groups.Count > 1 
-                ? matches[0].Groups[1].Value 
+            return matches[0].Groups.Count > 1
+                ? matches[0].Groups[1].Value
                 : matches[0].Value;
         }
 
@@ -72,8 +72,8 @@ namespace SmartOCR
         private static string ProcessNumber(MatchCollection matches)
         {
             var processed_number = Utilities.NumberProcessing(matches[0].Value);
-            return double.TryParse(processed_number, out double result) 
-                ? result.ToString(CultureInfo.CurrentCulture) 
+            return double.TryParse(processed_number, out double result)
+                ? result.ToString(CultureInfo.CurrentCulture)
                 : string.Empty;
         }
 
@@ -84,12 +84,12 @@ namespace SmartOCR
         /// <returns>String representation of date match.</returns>
         private static string ProcessDate(MatchCollection matches)
         {
-            string result = matches[0].Groups[1].Length != 0 
-                ? matches[0].Groups[1].Value 
+            string result = matches[0].Groups[1].Length != 0
+                ? matches[0].Groups[1].Value
                 : matches[0].Value;
             result = Utilities.DateProcessing(result);
-            return DateTime.TryParse(result, out DateTime _) 
-                ? result 
+            return DateTime.TryParse(result, out DateTime _)
+                ? result
                 : string.Empty;
         }
     }

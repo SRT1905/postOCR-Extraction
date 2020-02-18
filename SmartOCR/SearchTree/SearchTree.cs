@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace SmartOCR
 {
@@ -220,7 +218,7 @@ namespace SmartOCR
                         return found_data[true];
                     }
                     return found_data[false];
-                    
+
                 }
             }
             return new HashSet<string>();

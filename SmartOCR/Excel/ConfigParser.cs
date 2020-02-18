@@ -1,7 +1,4 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
@@ -36,7 +33,7 @@ namespace SmartOCR
             File.WriteAllBytes(temp_path, ConfigContainer.config);
             return ExcelApplication.OpenExcelWorkbook(temp_path);
         }
-        
+
         public ConfigData ParseConfig()
         {
             return GetConfigData(config_wb.Worksheets[1]);

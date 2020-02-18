@@ -111,6 +111,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ConfigContainer.resx</DependentUpon>
     </Compile>
+    <Compile Include="Word\WordTable.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ConfigContainer.resx">

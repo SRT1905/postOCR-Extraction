@@ -13,13 +13,13 @@ namespace SmartOCR
         /// Measured in points (72 point = 1 inch).
         /// </summary>
         public decimal HorizontalLocation { get; set; }
-        
+
         /// <summary>
         /// Indicates distance from top edge of paragraph to top edge of page.
         /// Measured in points (72 point = 1 inch).
         /// </summary>
         public decimal VerticalLocation { get; set; }
-        
+
         /// <summary>
         /// Paragraph text.
         /// </summary>
@@ -77,7 +77,7 @@ namespace SmartOCR
         /// <returns>Paragraph text, cleansed of invalid characters.</returns>
         private string RemoveInvalidChars(string check_string)
         {
-            string[] separators = new string[] { "\r", "\a", "\t", "\f"};
+            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
             string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("", temp).Replace("\v", " ");
         }

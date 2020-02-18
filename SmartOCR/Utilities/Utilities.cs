@@ -183,7 +183,7 @@ namespace SmartOCR
         public static void Debug(string format, int debugLevel = 0, params object[] args)
         {
             Console.Write(new string('\t', debugLevel));
-            Console.Write ("# ");
+            Console.Write("# ");
             Console.WriteLine(format, args);
         }
     }

@@ -14,27 +14,27 @@ namespace SmartOCR
         /// Collection of paragraphs to check.
         /// </summary>
         private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
-   
+
         /// <summary>
         /// Indicates whether all paragraphs or some selection should be tested.
         /// </summary>
         private readonly int search_status;
- 
+
         /// <summary>
         /// Indicates index of first paragraph to test.
         /// </summary>
         private int start_index;
-  
+
         /// <summary>
         /// Indicates index of last paragraph to test.
         /// </summary>
         private int finish_index;
- 
+
         /// <summary>
         /// Used to indicate position of first/last paragraph to test and to indicate matched paragraph location.
         /// </summary>
         public decimal paragraph_horizontal_location;
- 
+
         /// <summary>
         /// Represents all matches in paragraph.
         /// </summary>
@@ -101,7 +101,7 @@ namespace SmartOCR
             List<int> locations = paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
             int location = locations.BinarySearch((int)paragraph_horizontal_location);
             if (location < 0)
-            { 
+            {
                 location = ~location;
             }
             if (return_next_largest)
@@ -171,7 +171,7 @@ namespace SmartOCR
                     {
                         Group group_item = single_match.Groups[group_i];
                         found_values.Add(group_item.Value);
-                        
+
                     }
                 }
                 else

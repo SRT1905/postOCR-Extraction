@@ -13,7 +13,7 @@ namespace SmartOCR
         /// Collection of config fields.
         /// </summary>
         public List<ConfigField> Fields { get; }
-        
+
         /// <summary>
         /// Gets config field at the specified index.
         /// </summary>

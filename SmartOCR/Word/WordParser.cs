@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -13,10 +12,12 @@ namespace SmartOCR
         private readonly SearchTree tree_structure;
         private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;
         private readonly ConfigData config_data;
+        private readonly List<WordTable> tables;
 
-        public WordParser(SortedDictionary<long, List<ParagraphContainer>> document_content, ConfigData config_data)
+        public WordParser(WordReader reader, ConfigData config_data)
         {
-            line_mapping = document_content;
+            line_mapping = reader.LineMapping;
+            tables = reader.TableCollection;
             tree_structure = new SearchTree(config_data);
             this.config_data = config_data;
         }
@@ -369,7 +370,7 @@ namespace SmartOCR
                     child_content.Lines.Clear();
                     child_content.Lines.Add(offset_line);
                 }
-                
+
             }
         }
 

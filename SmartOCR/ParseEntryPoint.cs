@@ -3,7 +3,6 @@ using Microsoft.Office.Interop.Word;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace SmartOCR
@@ -22,22 +21,22 @@ namespace SmartOCR
         /// Object that describes config fields and their search expressions.
         /// </summary>
         private ConfigData config_data = new ConfigData();
-        
+
         /// <summary>
         /// Path to output file (default location equals assembly location).
         /// </summary>
         private string output_location = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), output_file_name);
-        
+
         /// <summary>
         /// Instance of output Excel workbook.
         /// </summary>
         private Workbook output_wb;
-        
+
         /// <summary>
         /// Collection of files to process.
         /// </summary>
         private List<string> valid_files = new List<string>();
-        
+
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses internal config data and default output location.
         /// </summary>
@@ -60,7 +59,7 @@ namespace SmartOCR
             config_data = new ConfigParser(config_file).ParseConfig();
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
-      
+
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
@@ -71,7 +70,7 @@ namespace SmartOCR
         {
             output_location = output_file;
         }
-        
+
 
         /// <summary>
         /// Tries to get data, described in config data, from provided files.
@@ -86,7 +85,7 @@ namespace SmartOCR
             GetDataFromFiles();
             return true;
         }
-    
+
         /// <summary>
         /// Disposes of field values and open Office applications.
         /// </summary>
@@ -96,7 +95,7 @@ namespace SmartOCR
             WordApplication.ExitWordApplication();
             ExcelApplication.ExitExcelApplication();
         }
-        
+
         /// <summary>
         /// Gets data from each provided file and returns result to output Excel workbook.
         /// </summary>
@@ -120,11 +119,10 @@ namespace SmartOCR
             Document document = WordApplication.OpenWordDocument(item);
             var reader = new WordReader(document);
             reader.ReadDocument();
-            WordParser wordParser = new WordParser(reader.LineMapping, config_data);
+            var wordParser = new WordParser(reader, config_data);
             reader.Dispose();
             return wordParser.ParseDocument();
         }
-
         /// <summary>
         /// Checks whether provided file paths are valid - they exists and do not start with '~' symbol.
         /// </summary>
@@ -143,7 +141,6 @@ namespace SmartOCR
             }
             return files;
         }
-      
         /// <summary>
         /// Sets instance fields values to null.
         /// </summary>

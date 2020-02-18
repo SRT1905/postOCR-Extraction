@@ -66,8 +66,8 @@ namespace SmartOCR
             for (i = 1; i <= source_ws.Cells[source_ws.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
             {
                 if (source_ws.Cells[i, 1].Value2.ToString().ToLower().Contains("field name"))
-                { 
-                    break; 
+                {
+                    break;
                 }
             }
             Range header_range = source_ws.Range[source_ws.Cells[i, 2], source_ws.Cells[i, source_ws.Columns.Count].End[XlDirection.xlToLeft]];

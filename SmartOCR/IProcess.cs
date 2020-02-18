@@ -5,9 +5,9 @@
     /// </summary>
     internal interface IProcess
 
-{       /// <summary>
-        /// Calls for processing of identified documents.
-        /// </summary>
+    {       /// <summary>
+            /// Calls for processing of identified documents.
+            /// </summary>
         void ExecuteProcessing();
     }
 }

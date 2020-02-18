@@ -44,7 +44,7 @@ namespace SmartOCR
             HorizontalStatus = string.IsNullOrEmpty(splitted_input[2])
                 ? 0
                 : int.Parse(splitted_input[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
-            
+
             if (Math.Abs(HorizontalStatus) > 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(input), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);

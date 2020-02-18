@@ -12,7 +12,7 @@ namespace SmartOCR
         /// Lower bound of valid similarity ratio.
         /// </summary>
         private const double similarity_ratio_threshold = 0.66;
-    
+
         /// <summary>
         /// Margin, by which found string length may vary in comparison with check string.
         /// </summary>
@@ -22,7 +22,7 @@ namespace SmartOCR
         /// Represents percentage of closeness between two strings.
         /// </summary>
         public double Ratio { get; }
-    
+
         /// <summary>
         /// Saved value of found string.
         /// </summary>

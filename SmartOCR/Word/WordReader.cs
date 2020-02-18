@@ -15,12 +15,12 @@ namespace SmartOCR
         /// 72 points = 1 inch.
         /// </summary>
         private const byte vertical_position_offset = 6;
-       
+
         /// <summary>
         /// Defines lower bound of document text element length.
         /// </summary>
         private const byte minimal_text_length = 2;
-        
+
         /// <summary>
         /// Representation of Word document that is being read.
         /// </summary>
@@ -36,6 +36,8 @@ namespace SmartOCR
         /// </summary>
         public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; }
 
+        public List<WordTable> TableCollection { get; private set; }
+
         /// <summary>
         /// Initializes instance of WordReader class that has document to read.
         /// </summary>
@@ -43,6 +45,7 @@ namespace SmartOCR
         public WordReader(Document document)
         {
             LineMapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            TableCollection = new List<WordTable>();
             this.document = document;
         }
 
@@ -69,6 +72,7 @@ namespace SmartOCR
                 var page_content = ReadSinglePage(i);
                 UpdateLineMapping(page_content);
             }
+            TableCollection = GetTables();
         }
 
         /// <summary>
@@ -90,7 +94,7 @@ namespace SmartOCR
         /// <returns>Document contents, grouped by lines.</returns>
         private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long page_index)
         {
-            var document_content = GetDataFromParagraphs(page_index);
+            SortedDictionary<decimal, List<ParagraphContainer>> document_content = GetDataFromParagraphs(page_index);
             List<TextFrame> frame_collection = GetValidTextFrames(page_index);
             document_content = AddDataFromFrames(document_content, frame_collection);
             return GroupParagraphsByLine(document_content);
@@ -160,7 +164,7 @@ namespace SmartOCR
         /// <returns>Collection of valid paragraphs.</returns>
         private List<ParagraphContainer> GetValidParagraphs(long page_index)
         {
-            Paragraphs paragraphs = document.Paragraphs;
+            var paragraphs = document.Paragraphs;
             int paragraphs_count = paragraphs.Count;
             var paragraph_collection = new List<ParagraphContainer>();
 
@@ -194,7 +198,7 @@ namespace SmartOCR
         {
             var frames = new List<TextFrame>();
 
-            Shapes shapes = document.Shapes;
+            var shapes = document.Shapes;
             int shapes_count = shapes.Count;
             for (int i = 1; i <= shapes_count; i++)
             {
@@ -275,7 +279,7 @@ namespace SmartOCR
 
             var paragraph_containers = new List<ParagraphContainer>();
             for (int i = 1; i <= paragraphs_count; i++)
-            { 
+            {
                 paragraph_containers.Add(new ParagraphContainer(paragraphs[i].Range));
             }
 
@@ -290,7 +294,7 @@ namespace SmartOCR
         private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
         {
             var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>();
-            
+
             try
             {
                 new_document_content.Add(1, document_content.Values.First());
@@ -321,7 +325,7 @@ namespace SmartOCR
 
             return new_document_content;
         }
-        
+
         /// <summary>
         /// Adds ParagraphContainer instance to collection with maintaining sort order.
         /// </summary>
@@ -333,6 +337,15 @@ namespace SmartOCR
             paragraph_collection.Add(text_range_container);
             paragraph_collection.Sort();
             return paragraph_collection;
+        }
+        private List<WordTable> GetTables()
+        {
+            var newList = new List<WordTable>(document.Tables.Count);
+            for (int i = 1; i <= document.Tables.Count; i++)
+            {
+                newList.Add(new WordTable(document.Tables[i]));
+            }
+            return newList;
         }
     }
 }
