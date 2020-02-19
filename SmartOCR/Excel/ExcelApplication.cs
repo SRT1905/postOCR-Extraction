@@ -8,7 +8,7 @@ namespace SmartOCR
     /// <summary>
     /// Performs communication with MS Excel application.
     /// </summary>
-    internal class ExcelApplication
+    public static class ExcelApplication
     {
         /// <summary>
         /// Gets existing Excel application or initializes a new one.
@@ -93,7 +93,7 @@ namespace SmartOCR
             {
                 return workbooks[path];
             }
-            catch (Exception)
+            catch (System.Runtime.InteropServices.COMException)
             {
                 return workbooks.Open(path);
             }

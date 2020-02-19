@@ -2,14 +2,14 @@
 
 namespace SmartOCR
 {
-    internal interface ITreeNodeContent
+    public interface ITreeNodeContent
     {
         string CheckValue { get; set; }
         string FoundValue { get; set; }
-        List<long> Lines { get; set; }
+        List<long> Lines { get; }
         string Name { get; set; }
         string NodeLabel { get; set; }
-        string RE_Pattern { get; set; }
+        string RegExPattern { get; set; }
         bool Status { get; set; }
         string ValueType { get; set; }
     }

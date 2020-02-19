@@ -3,7 +3,7 @@ using System;
 
 namespace SmartOCR
 {
-    class WordTable
+    public class WordTable
     {
         private readonly string[][] _cells;
         public string this[int Row, int Column]
@@ -23,6 +23,10 @@ namespace SmartOCR
         }
         public WordTable(Table wordTable)
         {
+            if (wordTable == null)
+            {
+                throw new ArgumentNullException(nameof(wordTable));
+            }
             _cells = new string[wordTable.Rows.Count][];
             for (int i = 0; i < wordTable.Rows.Count; i++)
             {

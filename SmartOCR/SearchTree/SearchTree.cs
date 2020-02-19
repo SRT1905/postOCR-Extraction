@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    internal class SearchTree // TODO: add summary.
+    public class SearchTree // TODO: add summary.
     {
         private ConfigData ConfigData { get; }
         private TreeNode tree_structure;
 
-        public SearchTree(ConfigData config_data)
+        public SearchTree(ConfigData configData)
         {
-            this.ConfigData = config_data;
+            this.ConfigData = configData;
         }
 
         public List<TreeNode> Children
@@ -38,7 +39,7 @@ namespace SmartOCR
             TreeNodeContent content = new TreeNodeContent()
             {
                 Name = field_data.Name,
-                RE_Pattern = field_data.RE_Pattern,
+                RegExPattern = field_data.RegExPattern,
                 NodeLabel = "Field",
                 ValueType = field_data.ValueType,
                 CheckValue = field_data.ExpectedName,
@@ -61,21 +62,29 @@ namespace SmartOCR
             return node;
         }
 
-        public static void AddSearchValues(ConfigField field_data, TreeNode node, int initial_value_index = 0)
+        public static void AddSearchValues(ConfigField fieldData, TreeNode node, int initialValueIndex = 0)
         {
+            if (fieldData == null)
+            {
+                throw new ArgumentNullException(nameof(fieldData));
+            }
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
             var node_content = node.Content;
             if (node_content.NodeLabel == "Terminal")
             {
                 return;
             }
 
-            List<ConfigExpressionBase> values_collection = field_data.Expressions;
-            if (node.Children.Count == 0 && values_collection.Count < initial_value_index + 1)
+            List<ConfigExpressionBase> values_collection = fieldData.Expressions;
+            if (node.Children.Count == 0 && values_collection.Count < initialValueIndex + 1)
             {
-                AddSearchValuesToChildlessNode(node, initial_value_index - 1, values_collection);
+                AddSearchValuesToChildlessNode(node, initialValueIndex - 1, values_collection);
             }
 
-            if (values_collection.Count < initial_value_index + 1)
+            if (values_collection.Count < initialValueIndex + 1)
             {
                 return;
             }
@@ -86,12 +95,12 @@ namespace SmartOCR
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     TreeNode child = node.Children[i];
-                    AddSearchValuesToSingleNode(field_name, child, values_collection, initial_value_index);
+                    AddSearchValuesToSingleNode(field_name, child, values_collection, initialValueIndex);
                 }
             }
             else
             {
-                AddSearchValuesToSingleNode(field_name, node, values_collection, initial_value_index);
+                AddSearchValuesToSingleNode(field_name, node, values_collection, initialValueIndex);
             }
         }
 
@@ -105,7 +114,7 @@ namespace SmartOCR
                 {
                     Name = node.Content.Name,
                     NodeLabel = $"Search {initial_value_index}",
-                    RE_Pattern = single_value_definition.RE_Pattern,
+                    RegExPattern = single_value_definition.RegExPattern,
                     HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
                     HorizontalStatus = single_value_definition.HorizontalStatus,
                     ValueType = node.Content.ValueType,
@@ -119,10 +128,10 @@ namespace SmartOCR
                 {
                     Name = node.Content.Name,
                     NodeLabel = $"Search {initial_value_index}",
-                    RE_Pattern = single_value_definition.RE_Pattern,
+                    RegExPattern = single_value_definition.RegExPattern,
                     Column = ((TableTreeNodeContent)node.Content).Column,
                     ValueType = node.Content.ValueType,
-                    Row = single_value_definition.RowOffset
+                    Row = single_value_definition.Row
                 };
             }
             if (initial_value_index + 1 == values_collection.Count)
@@ -147,7 +156,7 @@ namespace SmartOCR
                     {
                         Name = field_name,
                         NodeLabel = $"Search {value_index}",
-                        RE_Pattern = single_value_definition.RE_Pattern,
+                        RegExPattern = single_value_definition.RegExPattern,
                         HorizontalParagraph = ((TreeNodeContent)single_paragraph_node.Content).HorizontalParagraph,
                         ValueType = single_paragraph_node.Content.ValueType,
                         HorizontalStatus = single_value_definition.HorizontalStatus,
@@ -161,10 +170,10 @@ namespace SmartOCR
                     {
                         Name = field_name,
                         NodeLabel = $"Search {value_index}",
-                        RE_Pattern = single_value_definition.RE_Pattern,
+                        RegExPattern = single_value_definition.RegExPattern,
                         ValueType = single_paragraph_node.Content.ValueType,
-                        Column = single_value_definition.ColumnOffset,
-                        Row = single_value_definition.RowOffset
+                        Column = single_value_definition.Column,
+                        Row = single_value_definition.Row
                     };
                 }
                 long offset_line = single_paragraph_node.Content.Lines[0];

@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    internal class TableTreeNodeContent : ITreeNodeContent
+    public class TableTreeNodeContent : ITreeNodeContent
     // TODO: add summary.
     {
         public int Row { get; set; }
         public int Column { get; set; }
-        public List<long> Lines { get; set; }
+        public List<long> Lines { get;}
         public string Name { get; set; }
         public string NodeLabel { get; set; }
-        public string RE_Pattern { get; set; }
+        public string RegExPattern { get; set; }
         public bool Status { get; set; }
         public string CheckValue { get; set; }
         public string FoundValue { get; set; }
@@ -23,10 +24,14 @@ namespace SmartOCR
 
         public TableTreeNodeContent(TableTreeNodeContent content) : this()
         {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
             Row = content.Row;
             Name = content.Name;
             NodeLabel = content.NodeLabel;
-            RE_Pattern = content.RE_Pattern;
+            RegExPattern = content.RegExPattern;
             Status = content.Status;
             CheckValue = content.CheckValue;
             FoundValue = content.FoundValue;

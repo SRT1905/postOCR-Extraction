@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    internal class TreeNode // TODO: add summary.
+    public class TreeNode // TODO: add summary.
     {
-        public ITreeNodeContent Content;
-        public TreeNode Parent;
-        public List<TreeNode> Children;
+        public ITreeNodeContent Content { get; set; }
+        public TreeNode Parent { get; set; }
+        public List<TreeNode> Children { get; }
 
         public TreeNode()
         {
@@ -14,9 +15,9 @@ namespace SmartOCR
             Content = new TreeNodeContent();
         }
 
-        public TreeNode(TreeNode parent_node) : this()
+        public TreeNode(TreeNode parentNode) : this()
         {
-            Parent = parent_node;
+            Parent = parentNode;
         }
 
         public TreeNode(ITreeNodeContent content) : this()
@@ -38,18 +39,18 @@ namespace SmartOCR
             return CreateNode("root");
         }
 
-        public TreeNode AddChild(string new_name = "", string pattern = "", long found_line = 0, string value_type = "", string new_value = "", string node_label = "", decimal horizontal_paragraph = 0)
+        public TreeNode AddChild(string newName = "", string pattern = "", long foundLine = 0, string valueType = "", string newValue = "", string nodeLabel = "", decimal horizontalParagraph = 0)
         {
             TreeNodeContent content = new TreeNodeContent()
             {
-                Name = new_name,
-                RE_Pattern = pattern,
-                ValueType = value_type,
-                CheckValue = new_value,
-                NodeLabel = node_label,
-                HorizontalParagraph = horizontal_paragraph
+                Name = newName,
+                RegExPattern = pattern,
+                ValueType = valueType,
+                CheckValue = newValue,
+                NodeLabel = nodeLabel,
+                HorizontalParagraph = horizontalParagraph
             };
-            content.Lines.Add(found_line);
+            content.Lines.Add(foundLine);
             TreeNode new_node = new TreeNode(content)
             {
                 Parent = this
@@ -67,13 +68,17 @@ namespace SmartOCR
             return new_node;
         }
 
-        public TreeNode AddChild(TreeNode node, long new_line)
+        public TreeNode AddChild(TreeNode node, long newLine)
         {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
             if (node.Content is TreeNodeContent)
             {
                 TreeNodeContent node_content = (TreeNodeContent)node.Content;
                 return AddChild(
-                    node_content.Name, node_content.RE_Pattern, new_line,
+                    node_content.Name, node_content.RegExPattern, newLine,
                     node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
                     node_content.HorizontalParagraph);
             }
@@ -81,13 +86,17 @@ namespace SmartOCR
             {
                 TableTreeNodeContent node_content = (TableTreeNodeContent)node.Content;
                 return AddChild(
-                    node_content.Name, node_content.RE_Pattern, new_line,
+                    node_content.Name, node_content.RegExPattern, newLine,
                     node_content.ValueType, node_content.CheckValue, node_content.NodeLabel);
             }
         }
 
         public TreeNode AddChild(TreeNode node)
         {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
             if (node.Parent == null)
             {
                 node.Parent = this;
@@ -96,15 +105,15 @@ namespace SmartOCR
             return node;
         }
 
-        public TreeNode AddSibling(long line_number = 0)
+        public TreeNode AddSibling(long lineNumber = 0)
         {
             TreeNode new_node = new TreeNode(this.Content);
-            new_node.Content.Lines.Add(line_number);
+            new_node.Content.Lines.Add(lineNumber);
             new_node.Parent = this.Parent;
             var parent_lines = Parent.Content.Lines;
-            if (!parent_lines.Contains(line_number))
+            if (!parent_lines.Contains(lineNumber))
             {
-                parent_lines.Add(line_number);
+                parent_lines.Add(lineNumber);
             }
 
             return new_node;
@@ -117,7 +126,7 @@ namespace SmartOCR
             var content = new TreeNodeContent()
             {
                 Name = new_name,
-                RE_Pattern = pattern,
+                RegExPattern = pattern,
                 CheckValue = new_value,
                 ValueType = value_type,
                 HorizontalParagraph = horizontal_paragraph,

@@ -1,25 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SmartOCR
 {
-    internal class WordParser // TODO: add summary.
+    public class WordParser // TODO: add summary.
     {
         private const long similarity_search_threshold = 5;
 
-        private readonly SearchTree tree_structure;
-        private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;
         private readonly ConfigData config_data;
+        private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;
         private readonly List<WordTable> tables;
+        private readonly SearchTree tree_structure;
 
-        public WordParser(WordReader reader, ConfigData config_data)
+        public WordParser(WordReader reader, ConfigData configData)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
             line_mapping = reader.LineMapping;
             tables = reader.TableCollection;
-            tree_structure = new SearchTree(config_data);
-            this.config_data = config_data;
+            tree_structure = new SearchTree(configData);
+            this.config_data = configData;
         }
 
         public Dictionary<string, string> ParseDocument()
@@ -50,13 +55,13 @@ namespace SmartOCR
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
-                field_node.AddChild(found_line: line, pattern: content.RE_Pattern, new_value: content.CheckValue, node_label: "Line", horizontal_paragraph: horizontal_location);
+                field_node.AddChild(foundLine: line, pattern: content.RegExPattern, newValue: content.CheckValue, nodeLabel: "Line", horizontalParagraph: horizontal_location);
             }
         }
 
         private void GetDataFromUndefinedNode(TreeNode field_node)
         {
-            Regex regex_object = Utilities.CreateRegexpObject(field_node.Content.RE_Pattern);
+            Regex regex_object = Utilities.CreateRegexpObject(field_node.Content.RegExPattern);
             Dictionary<string, SimilarityDescription> collected_data = new Dictionary<string, SimilarityDescription>();
 
             var keys = line_mapping.Keys.ToList();
@@ -117,7 +122,7 @@ namespace SmartOCR
 
         private Dictionary<string, string> GetOffsetLines(long line_number, TreeNodeContent content)
         {
-            Regex regex_obj = Utilities.CreateRegexpObject(content.RE_Pattern);
+            Regex regex_obj = Utilities.CreateRegexpObject(content.RegExPattern);
             var found_values_collection = new Dictionary<string, string>();
             List<long> keys = line_mapping.Keys.ToList();
             int line_index = keys.IndexOf(line_number);
@@ -132,7 +137,7 @@ namespace SmartOCR
                         var line_checker = new LineContentChecker(line_mapping[line]);
                         if (line_checker.CheckLineContents(regex_obj, content.CheckValue))
                         {
-                            found_values_collection.Add(string.Join("|", line, line_checker.paragraph_horizontal_location), line_checker.joined_matches);
+                            found_values_collection.Add(string.Join("|", line, line_checker.ParagraphHorizontalLocation), line_checker.JoinedMatches);
                         }
                     }
                 }
@@ -179,16 +184,16 @@ namespace SmartOCR
             {
                 var first_child_content = node.Children.First().Content;
                 node_label = first_child_content.NodeLabel;
-                pattern = first_child_content.RE_Pattern;
+                pattern = first_child_content.RegExPattern;
                 horizontal_position = position;
             }
             else
             {
                 node_label = node.Content.NodeLabel;
-                pattern = node.Content.RE_Pattern;
+                pattern = node.Content.RegExPattern;
                 horizontal_position = position;
             }
-            TreeNode child_node = node.AddChild(found_line: offset_index, pattern: pattern, node_label: node_label, horizontal_paragraph: horizontal_position);
+            TreeNode child_node = node.AddChild(foundLine: offset_index, pattern: pattern, nodeLabel: node_label, horizontalParagraph: horizontal_position);
             child_node.Content.FoundValue = found_value;
             SearchTree.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
         }
@@ -260,18 +265,18 @@ namespace SmartOCR
         {
             bool check_status;
             decimal paragraph_horizontal_location = line_node_content.HorizontalParagraph;
-            Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RE_Pattern);
+            Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RegExPattern);
             var line_checker = new LineContentChecker(line_mapping[line_number], paragraph_horizontal_location, line_node_content.HorizontalStatus);
             check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
             if (check_status)
             {
-                line_node_content.HorizontalParagraph = line_checker.paragraph_horizontal_location;
+                line_node_content.HorizontalParagraph = line_checker.ParagraphHorizontalLocation;
             }
             else
             {
                 line_node_content.HorizontalParagraph = paragraph_horizontal_location;
             }
-            line_node_content.FoundValue = line_checker.joined_matches;
+            line_node_content.FoundValue = line_checker.JoinedMatches;
             return check_status;
         }
 
@@ -307,7 +312,7 @@ namespace SmartOCR
                     for (int paragraph_index = start_index; paragraph_index <= finish_index; paragraph_index++)
                     {
                         string paragraph_text = paragraph_collection[paragraph_index].Text;
-                        Regex regex_obj = Utilities.CreateRegexpObject(node_content.RE_Pattern);
+                        Regex regex_obj = Utilities.CreateRegexpObject(node_content.RegExPattern);
 
                         MatchProcessor match_processor = new MatchProcessor(paragraph_text, regex_obj, node_content.ValueType);
                         if (!string.IsNullOrEmpty(match_processor.Result))
@@ -376,7 +381,7 @@ namespace SmartOCR
 
         private void UpdateFieldNode(Dictionary<string, SimilarityDescription> collected_data, TreeNode field_node)
         {
-            field_node.Children = new List<TreeNode>();
+            field_node.Children.Clear();
             if (field_node.Content.Lines.Count != 0)
             {
                 field_node.Content.Lines.RemoveAt(0);

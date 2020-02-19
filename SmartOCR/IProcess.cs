@@ -3,7 +3,7 @@
     /// <summary>
     /// Provides mechanism for initial input processing.
     /// </summary>
-    internal interface IProcess
+    public interface IProcess
 
     {       /// <summary>
             /// Calls for processing of identified documents.

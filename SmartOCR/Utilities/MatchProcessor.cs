@@ -7,7 +7,7 @@ namespace SmartOCR
     /// <summary>
     /// Used to process regular expression match as distinct data type value.
     /// </summary>
-    internal class MatchProcessor
+    public class MatchProcessor
     {
         /// <summary>
         /// Match, processed as distinct datatype value.
@@ -17,11 +17,16 @@ namespace SmartOCR
         /// <summary>
         /// Initializes a new <see cref="MatchProcessor"/> instance that takes data type, <see cref="Regex"/> object and text to check.
         /// </summary>
-        /// <param name="regex_obj"><see cref="Regex"/> object that is used to test paragraphs.</param>
-        /// <param name="value_type">Data type of found matches.</param>
-        public MatchProcessor(string text_to_check, Regex regex_obj, string value_type)
+        /// <param name="regExObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
+        /// <param name="valueType">Data type of found matches.</param>
+        public MatchProcessor(string textToCheck, Regex regExObject, string valueType)
         {
-            Result = ProcessValue(text_to_check, regex_obj, value_type);
+            if (regExObject == null)
+            {
+                Result = null;
+                return;
+            }
+            Result = ProcessValue(textToCheck, regExObject, valueType);
         }
 
         /// <summary>

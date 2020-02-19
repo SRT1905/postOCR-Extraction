@@ -7,7 +7,7 @@ namespace SmartOCR
     /// <summary>
     /// Used as a container of config data from Excel workbook.
     /// </summary>
-    class ConfigData
+    public class ConfigData
     {
         /// <summary>
         /// Collection of config fields.
@@ -30,13 +30,13 @@ namespace SmartOCR
         /// <summary>
         /// Gets config field by the specified string index.
         /// </summary>
-        /// <param name="index">String representation of element to get.</param>
+        /// <param name="name">String representation of element to get.</param>
         /// <returns>Single config field.</returns>
-        public ConfigField this[string index]
+        public ConfigField this[string name]
         {
             get
             {
-                return Fields.Where(single_field => single_field.Name == index).First();
+                return Fields.Where(single_field => single_field.Name == name).First();
             }
         }
 

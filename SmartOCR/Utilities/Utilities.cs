@@ -10,27 +10,27 @@ namespace SmartOCR
     /// <summary>
     /// Provides static methods used accross namespace.
     /// </summary>
-    internal static class Utilities
+    public static class Utilities
     {
         /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
-        /// <param name="text_pattern">Search pattern.</param>
-        /// <param name="is_multiline">Indicates that characters '^' and '$' will match beginning and end, respectively, of any line.</param>
-        /// <param name="ignore_case">Indicates that expression will be case-insensitive.</param>
+        /// <param name="textPattern">Search pattern.</param>
+        /// <param name="isMultiline">Indicates that characters '^' and '$' will match beginning and end, respectively, of any line.</param>
+        /// <param name="ignoreCase">Indicates that expression will be case-insensitive.</param>
         /// <returns><see cref="Regex"/> object.</returns>
-        public static Regex CreateRegexpObject(string text_pattern, bool is_multiline = true, bool ignore_case = true)
+        public static Regex CreateRegexpObject(string textPattern, bool isMultiline = true, bool ignoreCase = true)
         {
             RegexOptions options = RegexOptions.ECMAScript;
-            if (is_multiline)
+            if (isMultiline)
             {
                 options |= RegexOptions.Multiline;
             }
-            if (ignore_case)
+            if (ignoreCase)
             {
                 options |= RegexOptions.IgnoreCase;
             }
-            return new Regex(text_pattern, options);
+            return new Regex(textPattern, options);
         }
 
         /// <summary>
@@ -182,8 +182,8 @@ namespace SmartOCR
         }
         public static void Debug(string format, int debugLevel = 0, params object[] args)
         {
+            Console.Write(Properties.Resources.debugHashtag);
             Console.Write(new string('\t', debugLevel));
-            Console.Write("# ");
             Console.WriteLine(format, args);
         }
     }

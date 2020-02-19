@@ -6,7 +6,7 @@ namespace SmartOCR
     /// <summary>
     /// Performs communication with MS Word application.
     /// </summary>
-    internal static class WordApplication
+    public static class WordApplication
     {
         /// <summary>
         /// Single instance of Word application.
@@ -48,11 +48,11 @@ namespace SmartOCR
         /// <summary>
         /// Opens document in Word application and makes document active.
         /// </summary>
-        /// <param name="file_path">Path to document file.</param>
+        /// <param name="filePath">Path to document file.</param>
         /// <returns>Document representation.</returns>
-        public static Document OpenWordDocument(string file_path)
+        public static Document OpenWordDocument(string filePath)
         {
-            Document document = GetWordApplication().Documents.Open(file_path);
+            Document document = GetWordApplication().Documents.Open(filePath);
             document.Activate();
             return document;
         }
@@ -72,6 +72,10 @@ namespace SmartOCR
         /// <param name="document"></param>
         public static void CloseDocument(Document document)
         {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
             document.Close(WdSaveOptions.wdDoNotSaveChanges);
         }
     }

@@ -8,7 +8,7 @@ namespace SmartOCR
     /// <summary>
     /// Performs collection and grouping of document contents.
     /// </summary>
-    internal class WordReader : IDisposable
+    public sealed class WordReader : IDisposable
     {
         /// <summary>
         /// Defines limits of single document line.
@@ -78,12 +78,12 @@ namespace SmartOCR
         /// <summary>
         /// Performs data reading from single document page.
         /// </summary>
-        /// <param name="page_index">Index of page to read, starting from 1.</param>
-        public void ReadDocument(long page_index)
+        /// <param name="pageIndex">Index of page to read, starting from 1.</param>
+        public void ReadDocument(long pageIndex)
         {
-            if (page_index >= 1)
+            if (pageIndex >= 1)
             {
-                LineMapping = ReadSinglePage(page_index);
+                LineMapping = ReadSinglePage(pageIndex);
             }
         }
 

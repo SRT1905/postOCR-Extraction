@@ -7,7 +7,7 @@ namespace SmartOCR
     /// <summary>
     /// Describes single search field defined in Excel config file.
     /// </summary>
-    internal class ConfigField
+    public class ConfigField
     {
         /// <summary>
         /// Data type of searched value.
@@ -17,7 +17,7 @@ namespace SmartOCR
         /// <summary>
         /// Regular expression pattern.
         /// </summary>
-        public string RE_Pattern { get; set; }
+        public string RegExPattern { get; set; }
 
         /// <summary>
         /// Field name.
@@ -25,7 +25,7 @@ namespace SmartOCR
         public string Name { get; }
 
         /// <summary>
-        /// String value that is used to check similarity between it and values that match <see cref="RE_Pattern"/>.
+        /// String value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
         /// </summary>
         public string ExpectedName { get; set; }
 
@@ -38,11 +38,11 @@ namespace SmartOCR
         /// Initializes a new <see cref="ConfigField"/> instance with name and value type.
         /// </summary>
         /// <param name="name">Field name.</param>
-        /// <param name="value_type">Data type of searched value.</param>
-        public ConfigField(string name, string value_type)
+        /// <param name="valueType">Data type of searched value.</param>
+        public ConfigField(string name, string valueType)
         {
             Name = name;
-            ValueType = value_type;
+            ValueType = valueType;
         }
 
         /// <summary>
@@ -51,6 +51,12 @@ namespace SmartOCR
         /// <param name="input">String representation of Excel cell contents.</param>
         public void ParseFieldExpression(string input)
         {
+            if (input == null)
+            {
+                RegExPattern = Name;
+                ExpectedName = Name;
+                return;
+            }
             var splitted_value = input.Split(';').ToList();
 
             while (splitted_value.Count != 2)
@@ -63,7 +69,7 @@ namespace SmartOCR
                 splitted_value.RemoveAt(splitted_value.Count - 1);
             }
 
-            RE_Pattern = string.IsNullOrEmpty(splitted_value[0])
+            RegExPattern = string.IsNullOrEmpty(splitted_value[0])
                 ? Name
                 : splitted_value[0];
             ExpectedName = string.IsNullOrEmpty(splitted_value[1])
@@ -76,7 +82,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="expression"><see cref="ConfigExpression"/> instance that describes single search expression.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddSearchExpression(ConfigExpression expression)
+        public void AddSearchExpression(ConfigExpressionBase expression)
         {
             if (expression != null)
             {

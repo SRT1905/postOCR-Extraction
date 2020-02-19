@@ -10,7 +10,7 @@ namespace SmartOCR
     /// <summary>
     /// Represents an entry point for processing input from command prompt or start form.
     /// </summary>
-    internal class ParseEntryPoint : IDisposable
+    public sealed class ParseEntryPoint : IDisposable
     {
         /// <summary>
         /// Name of output file with extension.
@@ -43,6 +43,10 @@ namespace SmartOCR
         /// <param name="files">Collection of files to process.</param>
         public ParseEntryPoint(List<string> files)
         {
+            if (files == null)
+            {
+                throw new ArgumentNullException(nameof(files));
+            }
             valid_files = GetValidFiles(files);
             config_data = new ConfigParser().ParseConfig();
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
@@ -52,11 +56,15 @@ namespace SmartOCR
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
         /// <param name="files">Collection of files to process.</param>
-        /// <param name="config_file">Path to external Excel workbook with config data.</param>
-        public ParseEntryPoint(List<string> files, string config_file)
+        /// <param name="configFile">Path to external Excel workbook with config data.</param>
+        public ParseEntryPoint(List<string> files, string configFile)
         {
+            if (files == null)
+            {
+                throw new ArgumentNullException(nameof(files));
+            }
             valid_files = GetValidFiles(files);
-            config_data = new ConfigParser(config_file).ParseConfig();
+            config_data = new ConfigParser(configFile).ParseConfig();
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
 
@@ -64,11 +72,11 @@ namespace SmartOCR
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
         /// <param name="files">Collection of files to process.</param>
-        /// <param name="config_file">Path to external Excel workbook with config data.</param>
-        /// <param name="output_file">Path to existing output Excel workbook.</param>
-        public ParseEntryPoint(List<string> files, string config_file, string output_file) : this(files, config_file)
+        /// <param name="configFile">Path to external Excel workbook with config data.</param>
+        /// <param name="outputFile">Path to existing output Excel workbook.</param>
+        public ParseEntryPoint(List<string> files, string configFile, string outputFile) : this(files, configFile)
         {
-            output_location = output_file;
+            output_location = outputFile;
         }
 
 

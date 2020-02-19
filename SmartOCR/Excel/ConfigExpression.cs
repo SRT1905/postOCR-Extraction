@@ -7,7 +7,7 @@ namespace SmartOCR
     /// <summary>
     /// Describes single search expression defined in Excel config file.
     /// </summary>
-    class ConfigExpression : ConfigExpressionBase
+    public class ConfigExpression : ConfigExpressionBase
     {
         /// <summary>
         /// Shows how offset should be search line, comparing to one, where previous search pattern was matched.

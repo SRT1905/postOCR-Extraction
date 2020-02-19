@@ -6,7 +6,7 @@ namespace SmartOCR
     /// <summary>
     /// Used to contain similarity properties between two strings.
     /// </summary>
-    internal class SimilarityDescription
+    public class SimilarityDescription
     {
         /// <summary>
         /// Lower bound of valid similarity ratio.
@@ -31,15 +31,23 @@ namespace SmartOCR
         /// <summary>
         /// Initializes a new <see cref="SimilarityDescription"/> instance with strings to be compared.
         /// </summary>
-        /// <param name="found_string">String, found within Word document.</param>
-        /// <param name="check_string"></param>
-        public SimilarityDescription(string found_string, string check_string)
+        /// <param name="foundString">String, found within Word document.</param>
+        /// <param name="checkString"></param>
+        public SimilarityDescription(string foundString, string checkString)
         {
-            if (found_string.Length - string_length_offset <= check_string.Length &&
-                found_string.Length + string_length_offset >= check_string.Length)
+            if (foundString == null)
             {
-                Ratio = GetStringSimilarity(found_string, check_string);
-                Value = found_string;
+                throw new ArgumentNullException(nameof(foundString));
+            }
+            if (checkString == null)
+            {
+                throw new ArgumentNullException(nameof(checkString));
+            }
+            if (foundString.Length - string_length_offset <= checkString.Length &&
+                foundString.Length + string_length_offset >= checkString.Length)
+            {
+                Ratio = GetStringSimilarity(foundString, checkString);
+                Value = foundString;
             }
         }
 

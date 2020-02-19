@@ -6,24 +6,24 @@ namespace SmartOCR
     /// <summary>
     /// Container class that is used to store data from single Word document paragraph.
     /// </summary>
-    internal class ParagraphContainer : IComparable<ParagraphContainer>
+    public class ParagraphContainer : IComparable<ParagraphContainer>
     {
         /// <summary>
         /// Indicates distance from left edge of paragraph to left edge of page.
         /// Measured in points (72 point = 1 inch).
         /// </summary>
-        public decimal HorizontalLocation { get; set; }
+        public decimal HorizontalLocation { get; }
 
         /// <summary>
         /// Indicates distance from top edge of paragraph to top edge of page.
         /// Measured in points (72 point = 1 inch).
         /// </summary>
-        public decimal VerticalLocation { get; set; }
+        public decimal VerticalLocation { get; }
 
         /// <summary>
         /// Paragraph text.
         /// </summary>
-        public string Text { get; set; }
+        public string Text { get; }
 
         /// <summary>
         /// Initializes instance of <see cref="ParagraphContainer"/> object that stores information from <see cref="Range"/> object.
@@ -31,6 +31,10 @@ namespace SmartOCR
         /// <param name="range">Representation of single Word document paragraph.</param>
         public ParagraphContainer(Range range)
         {
+            if (range == null)
+            {
+                throw new ArgumentNullException(nameof(range));
+            }
             HorizontalLocation = ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
             VerticalLocation = ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
             Text = RemoveInvalidChars(range.Text);
@@ -40,10 +44,14 @@ namespace SmartOCR
         /// Initializes instance of <see cref="ParagraphContainer"/> object that stores provided locations and text.
         /// </summary>
         /// <param name="range">Representation of single Word document paragraph.</param>
-        public ParagraphContainer(double horizontal_location, double vertical_location, string text)
+        public ParagraphContainer(double horizontalLocation, double verticalLocation, string text)
         {
-            HorizontalLocation = ValidateLocation(horizontal_location);
-            VerticalLocation = ValidateLocation(vertical_location);
+            HorizontalLocation = ValidateLocation(horizontalLocation);
+            VerticalLocation = ValidateLocation(verticalLocation);
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
             Text = RemoveInvalidChars(text);
         }
 
@@ -94,6 +102,56 @@ namespace SmartOCR
         public override string ToString()
         {
             return $"X: {HorizontalLocation}; Y: {VerticalLocation}; Text: {Text}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj is null)
+            {
+                return false;
+            }
+
+            return this.CompareTo((ParagraphContainer)obj) == 0;
+        }
+
+        public static bool operator ==(ParagraphContainer left, ParagraphContainer right)
+        {
+            return left is null ? right is null : left.Equals(right);
+        }
+
+        public static bool operator !=(ParagraphContainer left, ParagraphContainer right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(ParagraphContainer left, ParagraphContainer right)
+        {
+            return left is null ? right is object : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(ParagraphContainer left, ParagraphContainer right)
+        {
+            return left is null || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(ParagraphContainer left, ParagraphContainer right)
+        {
+            return left is object && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(ParagraphContainer left, ParagraphContainer right)
+        {
+            return left is null ? right is null : left.CompareTo(right) >= 0;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

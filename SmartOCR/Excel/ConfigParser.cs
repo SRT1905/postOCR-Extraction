@@ -5,21 +5,21 @@ using System.IO;
 namespace SmartOCR
 {
 
-    internal class ConfigParser // TODO: add summary.
+    public class ConfigParser // TODO: add summary.
     {
-        public static Workbook config_wb;
+        public static Workbook ConfigWorkbook { get; private set; }
 
         public ConfigParser()
         {
-            if (config_wb == null)
+            if (ConfigWorkbook == null)
             {
-                config_wb = GetInternalConfigWorkbook();
+                ConfigWorkbook = GetInternalConfigWorkbook();
             }
         }
 
-        public ConfigParser(string config_file)
+        public ConfigParser(string configFile)
         {
-            config_wb = GetExternalConfigWorkbook(config_file);
+            ConfigWorkbook = GetExternalConfigWorkbook(configFile);
         }
 
         private Workbook GetExternalConfigWorkbook(string path)
@@ -36,7 +36,7 @@ namespace SmartOCR
 
         public ConfigData ParseConfig()
         {
-            return GetConfigData(config_wb.Worksheets[1]);
+            return GetConfigData(ConfigWorkbook.Worksheets[1]);
         }
 
         private ConfigData GetConfigData(Worksheet source_ws)
@@ -70,7 +70,16 @@ namespace SmartOCR
             long last_row = source_ws.Cells.Item[source_ws.Rows.Count, field_column].End[XlDirection.xlUp].Row;
             for (long i = header_row + 3; i <= last_row; i++)
             {
-                var expression = new ConfigExpression(source_ws.Cells.Item[i, field_column].Value2);
+                ConfigExpressionBase expression;
+                if (value_type == "Table")
+                {
+                    expression = new TableConfigExpression(source_ws.Cells.Item[i, field_column].Value2);
+                }
+                else
+                {
+                    expression = new ConfigExpression(source_ws.Cells.Item[i, field_column].Value2);
+                }
+                
                 field.AddSearchExpression(expression);
             }
             return field;

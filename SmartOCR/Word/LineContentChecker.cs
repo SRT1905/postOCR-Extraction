@@ -8,7 +8,7 @@ namespace SmartOCR
     /// <summary>
     /// Used to test document line contents for matching with regular expression.
     /// </summary>
-    internal class LineContentChecker
+    public class LineContentChecker
     {
         /// <summary>
         /// Collection of paragraphs to check.
@@ -33,12 +33,12 @@ namespace SmartOCR
         /// <summary>
         /// Used to indicate position of first/last paragraph to test and to indicate matched paragraph location.
         /// </summary>
-        public decimal paragraph_horizontal_location;
+        public decimal ParagraphHorizontalLocation { get; set; }
 
         /// <summary>
         /// Represents all matches in paragraph.
         /// </summary>
-        public string joined_matches;
+        public string JoinedMatches { get; set; }
 
         /// <summary>
         /// Initializes instance of <see cref="LineContentChecker"/> that has collection of paragraphs to test.
@@ -46,7 +46,7 @@ namespace SmartOCR
         /// <param name="paragraphs">Collection of paragraphs.</param>
         public LineContentChecker(List<ParagraphContainer> paragraphs)
         {
-            this.paragraphs = paragraphs;
+            this.paragraphs = paragraphs ?? throw new ArgumentNullException(nameof(paragraphs));
             start_index = 0;
             finish_index = paragraphs.Count - 1;
         }
@@ -56,17 +56,18 @@ namespace SmartOCR
         /// Passed location and search status define selection of paragraphs.
         /// </summary>
         /// <param name="paragraphs">Collection of paragraphs.</param>
-        /// <param name="paragraph_location">Location of margin paragraph.</param>
-        /// <param name="search_status">Indicates whether test is performed on all paragraphs or by some margin. Must be in range [-1; 1].</param>
+        /// <param name="paragraphLocation">Location of margin paragraph.</param>
+        /// <param name="searchStatus">Indicates whether test is performed on all paragraphs or by some margin. Must be in range [-1; 1].</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraph_location, int search_status) : this(paragraphs)
+        public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraphLocation, int searchStatus) : this(paragraphs)
         {
-            this.paragraph_horizontal_location = paragraph_location;
-            if (Math.Abs(search_status) > 1)
+            this.ParagraphHorizontalLocation = paragraphLocation;
+            if (Math.Abs(searchStatus) > 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(search_status), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
+                throw new ArgumentOutOfRangeException(nameof(searchStatus),
+                                                      Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
             }
-            this.search_status = search_status;
+            this.search_status = searchStatus;
             SetSearchIndexes();
         }
 
@@ -99,7 +100,7 @@ namespace SmartOCR
         private int GetParagraphByLocation(bool return_next_largest)
         {
             List<int> locations = paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
-            int location = locations.BinarySearch((int)paragraph_horizontal_location);
+            int location = locations.BinarySearch((int)ParagraphHorizontalLocation);
             if (location < 0)
             {
                 location = ~location;
@@ -118,37 +119,41 @@ namespace SmartOCR
         /// <summary>
         /// Tests paragraphs for matching with regular expression and performs similarity check with passed value.
         /// </summary>
-        /// <param name="regex_obj"><see cref="Regex"/> object that is used to test paragraphs.</param>
-        /// <param name="check_value">Value used for similarity check with found match. Can be null, then similarity check is not performed.</param>
+        /// <param name="regExObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
+        /// <param name="checkValue">Value used for similarity check with found match. Can be null, then similarity check is not performed.</param>
         /// <returns>Indicator whether there is match between regular expression and paragraph contents.</returns>
-        public bool CheckLineContents(Regex regex_obj, string check_value)
+        public bool CheckLineContents(Regex regExObject, string checkValue)
         {
+            if (regExObject == null)
+            {
+                throw new ArgumentNullException(nameof(regExObject));
+            }
             for (int location = start_index; location <= finish_index; location++)
             {
                 string paragraph_text = paragraphs[location].Text;
-                if (regex_obj.IsMatch(paragraph_text))
+                if (regExObject.IsMatch(paragraph_text))
                 {
-                    if (string.IsNullOrEmpty(check_value))
+                    if (string.IsNullOrEmpty(checkValue))
                     {
-                        var found_matches = GetMatchesFromParagraph(regex_obj, paragraph_text);
-                        this.joined_matches = string.Join("|", found_matches);
-                        paragraph_horizontal_location = paragraphs[location].HorizontalLocation;
+                        var found_matches = GetMatchesFromParagraph(regExObject, paragraph_text);
+                        this.JoinedMatches = string.Join("|", found_matches);
+                        ParagraphHorizontalLocation = paragraphs[location].HorizontalLocation;
                         return true;
                     }
                     else
                     {
-                        var found_matches = GetMatchesFromParagraph(regex_obj, paragraph_text, check_value);
+                        var found_matches = GetMatchesFromParagraph(regExObject, paragraph_text, checkValue);
                         if (found_matches.Count != 0)
                         {
-                            this.joined_matches = string.Join("|", found_matches.Select(item => item.Value));
-                            paragraph_horizontal_location = paragraphs[location].HorizontalLocation;
+                            this.JoinedMatches = string.Join("|", found_matches.Select(item => item.Value));
+                            ParagraphHorizontalLocation = paragraphs[location].HorizontalLocation;
                             return true;
                         }
                     }
 
                 }
             }
-            paragraph_horizontal_location = 0;
+            ParagraphHorizontalLocation = 0;
             return false;
         }
 

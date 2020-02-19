@@ -8,7 +8,7 @@ namespace SmartOCR
     /// <summary>
     /// Used to create and populate output Excel workbook that would contain data collected from search tree.
     /// </summary>
-    internal class ExcelOutputWorkbook
+    public static class ExcelOutputWorkbook
     {
         /// <summary>
         /// Output workbook instance.
@@ -38,12 +38,12 @@ namespace SmartOCR
         /// <returns><see cref="Workbook"/> instance added to <see cref="Workbooks"/> collection.</returns>
         private static Workbook CreateOutputWorkbook()
         {
-            if (ConfigParser.config_wb == null)
+            if (ConfigParser.ConfigWorkbook == null)
             {
-                new ConfigParser();
+                _ = new ConfigParser();
             }
 
-            Workbook source_wb = ConfigParser.config_wb;
+            Workbook source_wb = ConfigParser.ConfigWorkbook;
             Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
             Worksheet source_ws;
@@ -51,7 +51,7 @@ namespace SmartOCR
             {
                 source_ws = source_wb.Worksheets[1];
             }
-            catch (Exception)
+            catch (System.Runtime.InteropServices.COMException)
             {
                 return null;
             }
@@ -84,6 +84,10 @@ namespace SmartOCR
         /// <param name="values">Mapping between field names and found values.</param>
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
             long row_to_input = GetLastRowInWorksheet();
             var keys = values.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
