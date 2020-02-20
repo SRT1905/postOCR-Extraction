@@ -96,6 +96,7 @@ namespace SmartOCR
         {
             SortedDictionary<decimal, List<ParagraphContainer>> document_content = GetDataFromParagraphs(page_index);
             List<TextFrame> frame_collection = GetValidTextFrames(page_index);
+            TryAddTablesFromFrames(frame_collection);
             document_content = AddDataFromFrames(document_content, frame_collection);
             return GroupParagraphsByLine(document_content);
         }
@@ -340,12 +341,32 @@ namespace SmartOCR
         }
         private List<WordTable> GetTables()
         {
-            var newList = new List<WordTable>(document.Tables.Count);
+            List<WordTable> tables;
+            if (TableCollection.Count == 0)
+            {
+                tables = new List<WordTable>(document.Tables.Count);
+            }
+            else
+            {
+                tables = TableCollection;
+            }
+
             for (int i = 1; i <= document.Tables.Count; i++)
             {
-                newList.Add(new WordTable(document.Tables[i]));
+                tables.Add(new WordTable(document.Tables[i]));
             }
-            return newList;
+
+            return tables;
+        }
+        private void TryAddTablesFromFrames(List<TextFrame> frames)
+        {
+            foreach (var item in frames)
+            {
+                for (int i = 1; i <= item.TextRange.Tables.Count; i++)
+                {
+                    TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
+                }
+            }
         }
     }
 }

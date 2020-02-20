@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Word;
 using System;
+using System.Collections;
 
 namespace SmartOCR
 {
@@ -10,17 +11,39 @@ namespace SmartOCR
         {
             get
             {
-                if (_cells.Length > Row || Row < 0)
+                Row = Row < 0
+                    ? RowCount + Row
+                    : Row;
+                Column = Column < 0
+                    ? ColumnCount + Column
+                    : Column;
+                if (!(0 <= Row && Row <= _cells.Length ))
                 {
                     return null;
                 }
-                if (_cells[Row].Length > Column || Column < 0)
+                if (!(0 <= Column && Column <= _cells[Row].Length))
                 {
                     return null;
                 }
                 return _cells[Row][Column];
             }
         }
+        public int RowCount
+        {
+            get
+            {
+                return _cells.Length;
+            }
+        }
+
+        public int ColumnCount
+        {
+            get
+            {
+                return _cells[0].Length;
+            }
+        }
+
         public WordTable(Table wordTable)
         {
             if (wordTable == null)
