@@ -36,24 +36,51 @@ namespace SmartOCR
         {
             var paragraph_collection = new List<long>() { 0 };
 
-            TreeNodeContent content = new TreeNodeContent()
+            ITreeNodeContent content;
+
+            if (field_data.Expressions[0] is ConfigExpression)
             {
-                Name = field_data.Name,
-                RegExPattern = field_data.RegExPattern,
-                NodeLabel = "Field",
-                ValueType = field_data.ValueType,
-                CheckValue = field_data.ExpectedName,
-            };
-            content.Lines.Add(paragraph_collection[0]);
+                content = new TreeNodeContent()
+                {
+                    Name = field_data.Name,
+                    RegExPattern = field_data.RegExPattern,
+                    NodeLabel = "Field",
+                    ValueType = field_data.ValueType,
+                    CheckValue = field_data.ExpectedName,
+                };
+                content.Lines.Add(paragraph_collection[0]);
+            }
+            else
+            {
+                content = new TableTreeNodeContent()
+                {
+                    Name = field_data.Name,
+                    RegExPattern = field_data.RegExPattern,
+                    NodeLabel = "Field",
+                    ValueType = field_data.ValueType,
+                    CheckValue = field_data.ExpectedName,
+                };
+            }
 
             TreeNode node = new TreeNode(content);
 
             for (int i = 0; i < paragraph_collection.Count; i++)
             {
-                var child_content = new TreeNodeContent(content)
+                ITreeNodeContent child_content;
+                if (content is TreeNodeContent)
                 {
-                    NodeLabel = "Line"
-                };
+                    child_content = new TreeNodeContent((TreeNodeContent)content)
+                    {
+                        NodeLabel = "Line"
+                    };
+                }
+                else
+                {
+                    child_content = new TableTreeNodeContent((TableTreeNodeContent)content)
+                    {
+                        NodeLabel = "Line"
+                    };
+                }
                 child_content.Lines.Add(paragraph_collection[i]);
                 var child_node = new TreeNode(child_content);
                 node.AddChild(child_node);
