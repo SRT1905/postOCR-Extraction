@@ -93,5 +93,9 @@ namespace SmartOCR
                 throw new ArgumentNullException($"Null config expression for field {this.Name} was provided.");
             }
         }
+        public override string ToString()
+        {
+            return $"Config field: {Name}; value type: {ValueType}";
+        }
     }
 }
