@@ -1,12 +1,32 @@
 ﻿using Microsoft.Office.Interop.Word;
 using System;
-using System.Collections;
 
 namespace SmartOCR
 {
     public class WordTable
     {
+        #region Fields
         private readonly string[][] _cells;
+        #endregion
+
+        #region Properties
+        public int RowCount
+        {
+            get
+            {
+                return _cells.Length;
+            }
+        }
+        public int ColumnCount
+        {
+            get
+            {
+                return _cells[0].Length;
+            }
+        }
+        #endregion
+
+        #region Indexers
         public string this[int Row, int Column]
         {
             get
@@ -28,22 +48,9 @@ namespace SmartOCR
                 return _cells[Row][Column];
             }
         }
-        public int RowCount
-        {
-            get
-            {
-                return _cells.Length;
-            }
-        }
+        #endregion
 
-        public int ColumnCount
-        {
-            get
-            {
-                return _cells[0].Length;
-            }
-        }
-
+        #region Constructors
         public WordTable(Table wordTable)
         {
             if (wordTable == null)
@@ -60,11 +67,15 @@ namespace SmartOCR
                 _cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
             }
         }
+        #endregion
+
+        #region Private methods
         private string RemoveInvalidChars(string check_string)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f" };
             string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("", temp).Replace("\v", " ");
         }
+        #endregion
     }
 }

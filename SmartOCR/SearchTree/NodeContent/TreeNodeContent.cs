@@ -6,18 +6,21 @@ namespace SmartOCR
     public class TreeNodeContent : ITreeNodeContent
     // TODO: add summary.
     {
+        #region Properties
+        public string CheckValue { get; set; }
+        public string FoundValue { get; set; }
         public decimal HorizontalParagraph { get; set; }
+        public int HorizontalStatus { get; set; }
+        public int LineOffset { get; set; }
         public List<long> Lines { get;}
         public string Name { get; set; }
         public string NodeLabel { get; set; }
         public string RegExPattern { get; set; }
         public bool Status { get; set; }
-        public string CheckValue { get; set; }
-        public string FoundValue { get; set; }
         public string ValueType { get; set; }
-        public int HorizontalStatus { get; set; }
-        public int LineOffset { get; set; }
+        #endregion
 
+        #region Constructors
         public TreeNodeContent()
         {
             Lines = new List<long>();
@@ -40,5 +43,6 @@ namespace SmartOCR
             HorizontalStatus = content.HorizontalStatus;
             LineOffset = content.LineOffset;
         }
+        #endregion
     }
 }

@@ -8,11 +8,39 @@ namespace SmartOCR
     /// </summary>
     public static class WordApplication
     {
+        #region Static fields
         /// <summary>
         /// Single instance of Word application.
         /// </summary>
         private static Application instance;
+        #endregion
 
+        #region Public static methods
+        /// <summary>
+        /// Closes provided Word document without saving any changes.
+        /// </summary>
+        /// <param name="document"></param>
+        public static void CloseDocument(Document document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+            document.Close(WdSaveOptions.wdDoNotSaveChanges);
+        }
+        /// <summary>
+        /// Closes Word application without saving any changes.
+        /// </summary>
+        public static void ExitWordApplication()
+        {
+            Application app = GetWordApplication();
+            app.Quit(WdSaveOptions.wdDoNotSaveChanges);
+            if (app != null)
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
+            }
+            GC.Collect();
+        }
         /// <summary>
         /// Gets existing Word application or initializes a new one.
         /// </summary>
@@ -30,21 +58,6 @@ namespace SmartOCR
             }
             return instance;
         }
-
-        /// <summary>
-        /// Closes Word application without saving any changes.
-        /// </summary>
-        public static void ExitWordApplication()
-        {
-            Application app = GetWordApplication();
-            app.Quit(WdSaveOptions.wdDoNotSaveChanges);
-            if (app != null)
-            {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
-            }
-            GC.Collect();
-        }
-
         /// <summary>
         /// Opens document in Word application and makes document active.
         /// </summary>
@@ -56,27 +69,6 @@ namespace SmartOCR
             document.Activate();
             return document;
         }
-
-        /// <summary>
-        /// Gets active document in Word application and closes it.
-        /// </summary>
-        public static void CloseActiveWordDocument()
-        {
-            Application application = GetWordApplication();
-            application.ActiveDocument.Close(WdSaveOptions.wdDoNotSaveChanges);
-        }
-
-        /// <summary>
-        /// Closes provided Word document without saving any changes.
-        /// </summary>
-        /// <param name="document"></param>
-        public static void CloseDocument(Document document)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-            document.Close(WdSaveOptions.wdDoNotSaveChanges);
-        }
+        #endregion
     }
 }

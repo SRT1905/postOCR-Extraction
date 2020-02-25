@@ -10,34 +10,38 @@ namespace SmartOCR
     /// </summary>
     public sealed class WordReader : IDisposable
     {
+        #region Private constants
         /// <summary>
         /// Defines limits of single document line.
         /// 72 points = 1 inch.
         /// </summary>
         private const byte vertical_position_offset = 6;
-
         /// <summary>
         /// Defines lower bound of document text element length.
         /// </summary>
         private const byte minimal_text_length = 2;
+        #endregion
 
+        #region Fields
         /// <summary>
         /// Representation of Word document that is being read.
         /// </summary>
         private readonly Document document;
-
         /// <summary>
         /// Editable counter of read paragraphs.
         /// </summary>
         private int ParagraphCounter = 1;
+        #endregion
 
+        #region Properties
         /// <summary>
         /// Represents document contents grouped in separate lines.
         /// </summary>
         public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; }
-
         public List<WordTable> TableCollection { get; private set; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes instance of WordReader class that has document to read.
         /// </summary>
@@ -48,18 +52,9 @@ namespace SmartOCR
             TableCollection = new List<WordTable>();
             this.document = document;
         }
+        #endregion
 
-        /// <summary>
-        /// Closes Word document if it is open.
-        /// </summary>
-        public void Dispose()
-        {
-            if (document != null)
-            {
-                WordApplication.CloseDocument(document);
-            }
-        }
-
+        #region Public methods
         /// <summary>
         /// Performs data reading from all document pages.
         /// </summary>
@@ -74,7 +69,6 @@ namespace SmartOCR
             }
             TableCollection = GetTables();
         }
-
         /// <summary>
         /// Performs data reading from single document page.
         /// </summary>
@@ -86,55 +80,19 @@ namespace SmartOCR
                 LineMapping = ReadSinglePage(pageIndex);
             }
         }
-
         /// <summary>
-        /// Gets grouped document content from specified page.
+        /// Closes Word document if it is open.
         /// </summary>
-        /// <param name="page_index">Index of page to read.</param>
-        /// <returns>Document contents, grouped by lines.</returns>
-        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long page_index)
+        public void Dispose()
         {
-            SortedDictionary<decimal, List<ParagraphContainer>> document_content = GetDataFromParagraphs(page_index);
-            List<TextFrame> frame_collection = GetValidTextFrames(page_index);
-            TryAddTablesFromFrames(frame_collection);
-            document_content = AddDataFromFrames(document_content, frame_collection);
-            return GroupParagraphsByLine(document_content);
-        }
-
-        /// <summary>
-        /// Merges LineMapping dictionary with provided page content.
-        /// </summary>
-        /// <param name="page_content">Grouped content from single page.</param>
-        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> page_content)
-        {
-            if (page_content.Count == 0)
+            if (document != null)
             {
-                return;
-            }
-            List<long> keys = page_content.Keys.ToList();
-            if (page_content.ContainsKey(0))
-            {
-                var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    long key = keys[i];
-                    shifted_mapping.Add(key + 1, page_content[key]);
-                }
-                page_content = shifted_mapping;
-            }
-            if (LineMapping.Count == 0)
-            {
-                LineMapping = page_content;
-                return;
-            }
-            long end_line = LineMapping.Keys.Last();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                long key = keys[i];
-                LineMapping.Add(key + end_line, page_content[key]);
+                WordApplication.CloseDocument(document);
             }
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
         /// Gets data from Paragraph objects on specific page.
         /// </summary>
@@ -157,7 +115,25 @@ namespace SmartOCR
             }
             return document_content;
         }
+        private List<WordTable> GetTables()
+        {
+            List<WordTable> tables;
+            if (TableCollection.Count == 0)
+            {
+                tables = new List<WordTable>(document.Tables.Count);
+            }
+            else
+            {
+                tables = TableCollection;
+            }
 
+            for (int i = 1; i <= document.Tables.Count; i++)
+            {
+                tables.Add(new WordTable(document.Tables[i]));
+            }
+
+            return tables;
+        }
         /// <summary>
         /// Gets valid paragraphs, wrapped in <see cref="ParagraphContainer"/> instances, from specific page.
         /// </summary>
@@ -189,7 +165,6 @@ namespace SmartOCR
             }
             return paragraph_collection;
         }
-
         /// <summary>
         /// Gets TextFrame objects, which contain text, on specific document page.
         /// </summary>
@@ -227,7 +202,65 @@ namespace SmartOCR
             }
             return frames;
         }
+        /// <summary>
+        /// Gets grouped document content from specified page.
+        /// </summary>
+        /// <param name="page_index">Index of page to read.</param>
+        /// <returns>Document contents, grouped by lines.</returns>
+        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long page_index)
+        {
+            SortedDictionary<decimal, List<ParagraphContainer>> document_content = GetDataFromParagraphs(page_index);
+            List<TextFrame> frame_collection = GetValidTextFrames(page_index);
+            TryAddTablesFromFrames(frame_collection);
+            document_content = AddDataFromFrames(document_content, frame_collection);
+            return GroupParagraphsByLine(document_content);
+        }
+        private void TryAddTablesFromFrames(List<TextFrame> frames)
+        {
+            foreach (var item in frames)
+            {
+                for (int i = 1; i <= item.TextRange.Tables.Count; i++)
+                {
+                    TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
+                }
+            }
+        }
+        /// <summary>
+        /// Merges LineMapping dictionary with provided page content.
+        /// </summary>
+        /// <param name="page_content">Grouped content from single page.</param>
+        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> page_content)
+        {
+            if (page_content.Count == 0)
+            {
+                return;
+            }
+            List<long> keys = page_content.Keys.ToList();
+            if (page_content.ContainsKey(0))
+            {
+                var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    long key = keys[i];
+                    shifted_mapping.Add(key + 1, page_content[key]);
+                }
+                page_content = shifted_mapping;
+            }
+            if (LineMapping.Count == 0)
+            {
+                LineMapping = page_content;
+                return;
+            }
+            long end_line = LineMapping.Keys.Last();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                long key = keys[i];
+                LineMapping.Add(key + end_line, page_content[key]);
+            }
+        }
+        #endregion
 
+        #region Private static methods
         /// <summary>
         /// Gets data from TextFrame objects and adds it to document contents container.
         /// </summary>
@@ -242,7 +275,6 @@ namespace SmartOCR
             }
             return document_content;
         }
-
         /// <summary>
         /// Gets data from TextFrame object and adds it to document contents representation.
         /// </summary>
@@ -267,7 +299,6 @@ namespace SmartOCR
             }
             return document_content;
         }
-
         /// <summary>
         /// Extracts paragraphs from <see cref="TextFrame"/> object.
         /// </summary>
@@ -286,7 +317,6 @@ namespace SmartOCR
 
             return paragraph_containers;
         }
-
         /// <summary>
         /// Groups document contents, arranged by vertical location on page, in separate lines.
         /// </summary>
@@ -326,7 +356,6 @@ namespace SmartOCR
 
             return new_document_content;
         }
-
         /// <summary>
         /// Adds ParagraphContainer instance to collection with maintaining sort order.
         /// </summary>
@@ -339,34 +368,6 @@ namespace SmartOCR
             paragraph_collection.Sort();
             return paragraph_collection;
         }
-        private List<WordTable> GetTables()
-        {
-            List<WordTable> tables;
-            if (TableCollection.Count == 0)
-            {
-                tables = new List<WordTable>(document.Tables.Count);
-            }
-            else
-            {
-                tables = TableCollection;
-            }
-
-            for (int i = 1; i <= document.Tables.Count; i++)
-            {
-                tables.Add(new WordTable(document.Tables[i]));
-            }
-
-            return tables;
-        }
-        private void TryAddTablesFromFrames(List<TextFrame> frames)
-        {
-            foreach (var item in frames)
-            {
-                for (int i = 1; i <= item.TextRange.Tables.Count; i++)
-                {
-                    TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
-                }
-            }
-        }
+        #endregion
     }
 }

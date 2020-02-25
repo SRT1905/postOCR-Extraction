@@ -12,31 +12,33 @@ namespace SmartOCR
     /// </summary>
     public sealed class ParseEntryPoint : IDisposable
     {
+        #region Constants
         /// <summary>
         /// Name of output file with extension.
         /// </summary>
         private const string output_file_name = "output.xlsx";
+        #endregion
 
+        #region Fields
         /// <summary>
         /// Object that describes config fields and their search expressions.
         /// </summary>
         private ConfigData config_data = new ConfigData();
-
         /// <summary>
         /// Path to output file (default location equals assembly location).
         /// </summary>
         private string output_location = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), output_file_name);
-
         /// <summary>
         /// Instance of output Excel workbook.
         /// </summary>
         private Workbook output_wb;
-
         /// <summary>
         /// Collection of files to process.
         /// </summary>
         private List<string> valid_files = new List<string>();
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses internal config data and default output location.
         /// </summary>
@@ -51,7 +53,6 @@ namespace SmartOCR
             config_data = new ConfigParser().ParseConfig();
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
-
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
@@ -67,7 +68,6 @@ namespace SmartOCR
             config_data = new ConfigParser(configFile).ParseConfig();
             output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
-
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
         /// </summary>
@@ -78,8 +78,18 @@ namespace SmartOCR
         {
             output_location = outputFile;
         }
+        #endregion
 
-
+        #region Public methods
+        /// <summary>
+        /// Disposes of field values and open Office applications.
+        /// </summary>
+        public void Dispose()
+        {
+            DisposeFields();
+            WordApplication.ExitWordApplication();
+            ExcelApplication.ExitExcelApplication();
+        }
         /// <summary>
         /// Tries to get data, described in config data, from provided files.
         /// </summary>
@@ -93,17 +103,19 @@ namespace SmartOCR
             GetDataFromFiles();
             return true;
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
-        /// Disposes of field values and open Office applications.
+        /// Sets instance fields values to null.
         /// </summary>
-        public void Dispose()
+        private void DisposeFields()
         {
-            DisposeFields();
-            WordApplication.ExitWordApplication();
-            ExcelApplication.ExitExcelApplication();
+            config_data = null;
+            output_location = null;
+            output_wb = null;
+            valid_files = null;
         }
-
         /// <summary>
         /// Gets data from each provided file and returns result to output Excel workbook.
         /// </summary>
@@ -116,7 +128,6 @@ namespace SmartOCR
             }
             output_wb.SaveAs(output_location);
         }
-
         /// <summary>
         /// Performs processing of single document.
         /// </summary>
@@ -149,15 +160,6 @@ namespace SmartOCR
             }
             return files;
         }
-        /// <summary>
-        /// Sets instance fields values to null.
-        /// </summary>
-        private void DisposeFields()
-        {
-            config_data = null;
-            output_location = null;
-            output_wb = null;
-            valid_files = null;
-        }
+        #endregion
     }
 }

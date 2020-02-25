@@ -10,7 +10,7 @@ namespace SmartOCR
     /// </summary>
     public class CMDProcess : IProcess
     {
-
+        #region Enumerations
         /// <summary>
         /// Specifies the type of entered command propmt arguments
         /// </summary>
@@ -20,27 +20,31 @@ namespace SmartOCR
             Directory,
             File
         }
-
+        #endregion
+        
+        #region Fields
+        /// <summary>
+        /// Collection of entered command prompt arguments.
+        /// </summary>
+        private readonly List<string> entered_arguments;
         /// <summary>
         /// Specification of entered arguments.
         /// </summary>
         private readonly PathType entered_path_type;
-
-        /// <summary>
-        /// Collection of entered command propmpt arguments.
-        /// </summary>
-        private readonly List<string> _args;
-
         /// <summary>
         /// Path to external config file.
         /// </summary>
         private readonly string config_file;
+        #endregion
 
+        #region Properties
         /// <summary>
         /// Indicates whether command prompt arguments were successfully defined.
         /// </summary>
         public bool ReadyToProcess { get; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes CMD processing object: identifies document type, type of entered paths and files by those paths.
         /// </summary>
@@ -73,7 +77,7 @@ namespace SmartOCR
                     config_file = args[0];
                 }
                 entered_path_type = ValidatePath(args[1]);
-                _args = args.Skip(1).ToList();
+                entered_arguments = args.Skip(1).ToList();
                 ReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
@@ -82,7 +86,9 @@ namespace SmartOCR
                 ReadyToProcess = false;
             }
         }
-
+        #endregion
+        
+        #region Public methods
         public void ExecuteProcessing()
         {
             if (entered_path_type == PathType.None || config_file == null)
@@ -94,11 +100,11 @@ namespace SmartOCR
             string output_file;
             if (entered_path_type == PathType.Directory)
             {
-                output_file = Path.Combine(_args[0], "output.xlsx");
+                output_file = Path.Combine(entered_arguments[0], "output.xlsx");
             }
             else
             {
-                output_file = Path.Combine(Path.GetDirectoryName(_args[0]), "output.xlsx");
+                output_file = Path.Combine(Path.GetDirectoryName(entered_arguments[0]), "output.xlsx");
             }
 
             while (File.Exists(output_file))
@@ -110,7 +116,9 @@ namespace SmartOCR
                 entryPoint.TryGetData();
             }
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
         /// Processes entered path type and path argument(s).
         /// </summary>
@@ -121,11 +129,10 @@ namespace SmartOCR
             {
                 return GetFilesFromDirectories();
             }
-            return new List<string>(_args)
+            return new List<string>(entered_arguments)
                 .Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
         }
-
         /// <summary>
         /// Gets files from directories, provided in Args field.
         /// Files with .docx extension are taken.
@@ -135,14 +142,13 @@ namespace SmartOCR
         private List<string> GetFilesFromDirectories()
         {
             List<string> directories = new List<string>();
-            for (int i = 0; i < _args.Count; i++)
+            for (int i = 0; i < entered_arguments.Count; i++)
             {
-                string single_directory = _args[i];
+                string single_directory = entered_arguments[i];
                 directories.AddRange(Directory.GetFiles(single_directory).Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)));
             }
             return directories;
         }
-
         /// <summary>
         /// Checks whether argument, provided after document type is path to directory or file.
         /// </summary>
@@ -160,5 +166,6 @@ namespace SmartOCR
             }
             return PathType.None;
         }
+        #endregion
     }
 }

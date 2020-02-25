@@ -12,6 +12,7 @@ namespace SmartOCR
     /// </summary>
     public static class Utilities
     {
+        #region Public static methods
         /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
@@ -32,76 +33,12 @@ namespace SmartOCR
             }
             return new Regex(textPattern, options);
         }
-
-        /// <summary>
-        /// Tries to represent passed string as number.
-        /// </summary>
-        /// <param name="value">String, containing number.</param>
-        /// <returns>String representation of parsed number.</returns>
-        public static string NumberProcessing(string value)
+        public static void Debug(string format, int debugLevel = 0, params object[] args)
         {
-            string regional_decimal_separator = GetDecimalSeparator();
-            value = PrepareValueForNumberProcessing(value, regional_decimal_separator);
-
-            if (double.TryParse(value, out double _))
-            {
-                return value;
-            }
-
-            if (value.Count(single_char => single_char == '.' || single_char == ',') == 1)
-            {
-                value = value.Replace(",", regional_decimal_separator)
-                             .Replace(".", regional_decimal_separator);
-                return double.TryParse(value, out _) ? value : string.Empty;
-            }
-            return value;
+            Console.Write(Properties.Resources.debugHashtag);
+            Console.Write(new string('\t', debugLevel));
+            Console.WriteLine(format, args);
         }
-
-        /// <summary>
-        /// Removes non-numeric characters and replaces decimal separator.
-        /// </summary>
-        /// <param name="value">String, containing number.</param>
-        /// <param name="regional_decimal_separator">Character that is set by regional settings to separate integer and fraction parts of number.</param>
-        /// <returns>String, prepared for parsing.</returns>
-        private static string PrepareValueForNumberProcessing(string value, string regional_decimal_separator)
-        {
-            value = TrimNonNumericChars(value);
-            value = value.Contains(",") && value.Contains(".")
-                ? value.Replace(",", string.Empty)
-                : value.Replace(",", regional_decimal_separator);
-
-            value = value.Replace(".", regional_decimal_separator);
-            return new string(value.ToCharArray()
-                                   .Where(c => !char.IsWhiteSpace(c))
-                                   .ToArray());
-        }
-
-        /// <summary>
-        /// Character that is set by regional settings to separate integer and fraction parts of number.
-        /// </summary>
-        /// <returns>String, containing regional decimal separator.</returns>
-        private static string GetDecimalSeparator()
-        {
-            return Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-        }
-
-        /// <summary>
-        /// Trims string of characters that cannot be part of number.
-        /// </summary>
-        /// <param name="value">String, containing number.</param>
-        /// <returns>String, trimmed of invalid characters.</returns>
-        private static string TrimNonNumericChars(string value)
-        {
-            Regex regex = new Regex(@"[\d\.\,\s\\]", RegexOptions.Multiline);
-            if (regex.IsMatch(value))
-            {
-                MatchCollection matches = regex.Matches(value);
-                var result = string.Join("", matches.Cast<Match>().Select(match => match.Value));
-                return result.Trim().Replace('-', ',');
-            }
-            return value;
-        }
-
         /// <summary>
         /// Tries to process passed string as date.
         /// </summary>
@@ -136,7 +73,66 @@ namespace SmartOCR
 
             return "Дата документа не распознана";
         }
+        /// <summary>
+        /// Tries to represent passed string as number.
+        /// </summary>
+        /// <param name="value">String, containing number.</param>
+        /// <returns>String representation of parsed number.</returns>
+        public static string NumberProcessing(string value)
+        {
+            string regional_decimal_separator = GetDecimalSeparator();
+            value = PrepareValueForNumberProcessing(value, regional_decimal_separator);
 
+            if (double.TryParse(value, out double _))
+            {
+                return value;
+            }
+
+            if (value.Count(single_char => single_char == '.' || single_char == ',') == 1)
+            {
+                value = value.Replace(",", regional_decimal_separator)
+                             .Replace(".", regional_decimal_separator);
+                return double.TryParse(value, out _) ? value : string.Empty;
+            }
+            return value;
+        }
+        /// <summary>
+        /// Used to print message to command prompt.
+        /// </summary>
+        public static void PrintInvalidInputMessage()
+        {
+            Console.WriteLine(Properties.Resources.invalidInputMessage);
+            Thread.Sleep(2000);
+        }
+        #endregion
+
+        #region Private static methods
+        /// <summary>
+        /// Character that is set by regional settings to separate integer and fraction parts of number.
+        /// </summary>
+        /// <returns>String, containing regional decimal separator.</returns>
+        private static string GetDecimalSeparator()
+        {
+            return Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+        }
+        /// <summary>
+        /// Removes non-numeric characters and replaces decimal separator.
+        /// </summary>
+        /// <param name="value">String, containing number.</param>
+        /// <param name="regional_decimal_separator">Character that is set by regional settings to separate integer and fraction parts of number.</param>
+        /// <returns>String, prepared for parsing.</returns>
+        private static string PrepareValueForNumberProcessing(string value, string regional_decimal_separator)
+        {
+            value = TrimNonNumericChars(value);
+            value = value.Contains(",") && value.Contains(".")
+                ? value.Replace(",", string.Empty)
+                : value.Replace(",", regional_decimal_separator);
+
+            value = value.Replace(".", regional_decimal_separator);
+            return new string(value.ToCharArray()
+                                   .Where(c => !char.IsWhiteSpace(c))
+                                   .ToArray());
+        }
         /// <summary>
         /// Searches for numerical representation of month in passed string.
         /// </summary>
@@ -171,20 +167,22 @@ namespace SmartOCR
             }
             return "00";
         }
-
         /// <summary>
-        /// Used to print message to command prompt.
+        /// Trims string of characters that cannot be part of number.
         /// </summary>
-        public static void PrintInvalidInputMessage()
+        /// <param name="value">String, containing number.</param>
+        /// <returns>String, trimmed of invalid characters.</returns>
+        private static string TrimNonNumericChars(string value)
         {
-            Console.WriteLine(Properties.Resources.invalidInputMessage);
-            Thread.Sleep(2000);
+            Regex regex = new Regex(@"[\d\.\,\s\\]", RegexOptions.Multiline);
+            if (regex.IsMatch(value))
+            {
+                MatchCollection matches = regex.Matches(value);
+                var result = string.Join("", matches.Cast<Match>().Select(match => match.Value));
+                return result.Trim().Replace('-', ',');
+            }
+            return value;
         }
-        public static void Debug(string format, int debugLevel = 0, params object[] args)
-        {
-            Console.Write(Properties.Resources.debugHashtag);
-            Console.Write(new string('\t', debugLevel));
-            Console.WriteLine(format, args);
-        }
+        #endregion
     }
 }

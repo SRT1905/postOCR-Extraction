@@ -10,36 +10,37 @@ namespace SmartOCR
     /// </summary>
     public class LineContentChecker
     {
-        /// <summary>
-        /// Collection of paragraphs to check.
-        /// </summary>
-        private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
-
-        /// <summary>
-        /// Indicates whether all paragraphs or some selection should be tested.
-        /// </summary>
-        private readonly int search_status;
-
-        /// <summary>
-        /// Indicates index of first paragraph to test.
-        /// </summary>
-        private int start_index;
-
+        #region Fields
         /// <summary>
         /// Indicates index of last paragraph to test.
         /// </summary>
         private int finish_index;
-
         /// <summary>
-        /// Used to indicate position of first/last paragraph to test and to indicate matched paragraph location.
+        /// Indicates whether all paragraphs or some selection should be tested.
         /// </summary>
-        public decimal ParagraphHorizontalLocation { get; set; }
+        private readonly int search_status;
+        /// <summary>
+        /// Indicates index of first paragraph to test.
+        /// </summary>
+        private int start_index;
+        /// <summary>
+        /// Collection of paragraphs to check.
+        /// </summary>
+        private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
+        #endregion
 
+        #region Properties
         /// <summary>
         /// Represents all matches in paragraph.
         /// </summary>
         public string JoinedMatches { get; set; }
+        /// <summary>
+        /// Used to indicate position of first/last paragraph to test and to indicate matched paragraph location.
+        /// </summary>
+        public decimal ParagraphHorizontalLocation { get; set; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes instance of <see cref="LineContentChecker"/> that has collection of paragraphs to test.
         /// </summary>
@@ -50,7 +51,6 @@ namespace SmartOCR
             start_index = 0;
             finish_index = paragraphs.Count - 1;
         }
-
         /// <summary>
         /// Initializes instance of <see cref="LineContentChecker"/> that has collection of paragraphs to test.
         /// Passed location and search status define selection of paragraphs.
@@ -70,52 +70,9 @@ namespace SmartOCR
             this.search_status = searchStatus;
             SetSearchIndexes();
         }
+        #endregion
 
-        /// <summary>
-        /// Defines lower and upper bounds of testing paragraphs.
-        /// </summary>
-        private void SetSearchIndexes()
-        {
-            switch (search_status)
-            {
-                case 1:
-                    start_index = GetParagraphByLocation(true);
-                    finish_index = paragraphs.Count - 1;
-                    break;
-                case -1:
-                    start_index = 0;
-                    finish_index = GetParagraphByLocation(false);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Looks up index of paragraph, which horizontal location matches passed location.
-        /// </summary>
-        /// <param name="return_next_largest">Indicates that, if location is not matched, 
-        /// index of paragraph with next biggest (or next smallest) location is returned.</param>
-        /// <returns>Index of paragraph with matching location.</returns>
-        private int GetParagraphByLocation(bool return_next_largest)
-        {
-            List<int> locations = paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
-            int location = locations.BinarySearch((int)ParagraphHorizontalLocation);
-            if (location < 0)
-            {
-                location = ~location;
-            }
-            if (return_next_largest)
-            {
-                if (location == paragraphs.Count)
-                {
-                    return location--;
-                }
-                return location;
-            }
-            return location--;
-        }
-
+        #region Public methods
         /// <summary>
         /// Tests paragraphs for matching with regular expression and performs similarity check with passed value.
         /// </summary>
@@ -156,7 +113,55 @@ namespace SmartOCR
             ParagraphHorizontalLocation = 0;
             return false;
         }
+        #endregion
 
+        #region Private methods
+        /// <summary>
+        /// Looks up index of paragraph, which horizontal location matches passed location.
+        /// </summary>
+        /// <param name="return_next_largest">Indicates that, if location is not matched, 
+        /// index of paragraph with next biggest (or next smallest) location is returned.</param>
+        /// <returns>Index of paragraph with matching location.</returns>
+        private int GetParagraphByLocation(bool return_next_largest)
+        {
+            List<int> locations = paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
+            int location = locations.BinarySearch((int)ParagraphHorizontalLocation);
+            if (location < 0)
+            {
+                location = ~location;
+            }
+            if (return_next_largest)
+            {
+                if (location == paragraphs.Count)
+                {
+                    return location--;
+                }
+                return location;
+            }
+            return location--;
+        }
+        /// <summary>
+        /// Defines lower and upper bounds of testing paragraphs.
+        /// </summary>
+        private void SetSearchIndexes()
+        {
+            switch (search_status)
+            {
+                case 1:
+                    start_index = GetParagraphByLocation(true);
+                    finish_index = paragraphs.Count - 1;
+                    break;
+                case -1:
+                    start_index = 0;
+                    finish_index = GetParagraphByLocation(false);
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion
+
+        #region Private static methods
         /// <summary>
         /// Gets matches between regular expression and text.
         /// </summary>
@@ -186,7 +191,6 @@ namespace SmartOCR
             }
             return found_values;
         }
-
         /// <summary>
         /// Gets collection of <see cref="SimilarityDescription"/> objects which indicate ratio of similarity between matched text and check value.
         /// </summary>
@@ -224,5 +228,6 @@ namespace SmartOCR
             }
             return found_values;
         }
+        #endregion
     }
 }

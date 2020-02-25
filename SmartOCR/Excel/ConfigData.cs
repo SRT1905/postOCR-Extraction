@@ -9,11 +9,14 @@ namespace SmartOCR
     /// </summary>
     public class ConfigData
     {
+        #region Properties
         /// <summary>
         /// Collection of config fields.
         /// </summary>
         public List<ConfigField> Fields { get; }
+        #endregion
 
+        #region Indexers
         /// <summary>
         /// Gets config field at the specified index.
         /// </summary>
@@ -26,7 +29,6 @@ namespace SmartOCR
                 return Fields[index];
             }
         }
-
         /// <summary>
         /// Gets config field by the specified string index.
         /// </summary>
@@ -39,7 +41,9 @@ namespace SmartOCR
                 return Fields.Where(single_field => single_field.Name == name).First();
             }
         }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes a new <see cref="ConfigData"/> instance with empty config fields collection.
         /// </summary>
@@ -47,7 +51,9 @@ namespace SmartOCR
         {
             Fields = new List<ConfigField>();
         }
+        #endregion
 
+        #region Public methods
         /// <summary>
         /// Inserts <see cref="ConfigField"/> instance to field collection.
         /// </summary>
@@ -64,5 +70,6 @@ namespace SmartOCR
                 throw new ArgumentNullException(nameof(field), Properties.Resources.nullConfigField);
             }
         }
+        #endregion
     }
 }

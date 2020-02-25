@@ -9,11 +9,11 @@ namespace SmartOCR
     /// </summary>
     public class ConfigExpression : ConfigExpressionBase
     {
+        #region Properties
         /// <summary>
         /// Shows how offset should be search line, comparing to one, where previous search pattern was matched.
         /// </summary>
         public int LineOffset { get; set; }
-
         /// <summary>
         /// Indicates how single line contents should be searched. 
         /// <para>0 - search whole line.</para>
@@ -21,7 +21,9 @@ namespace SmartOCR
         /// <para>-1 - search only paragrapgs to the left of previously found match.</para>
         /// </summary>
         public int HorizontalStatus { get; set; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes a new <see cref="ConfigExpression"/> instance with Excel cell contents.
         /// </summary>
@@ -30,7 +32,9 @@ namespace SmartOCR
         {
             ParseInput(input);
         }
+        #endregion
 
+        #region Protected methods
         /// <summary>
         /// Extracts data from Excel cell contents.
         /// </summary>
@@ -51,5 +55,6 @@ namespace SmartOCR
             }
             return splitted_input;
         }
+        #endregion
     }
 }

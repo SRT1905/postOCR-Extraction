@@ -5,40 +5,64 @@ namespace SmartOCR
 {
     public class TreeNode // TODO: add summary.
     {
+        #region Properties
         public ITreeNodeContent Content { get; set; }
-        public TreeNode Parent { get; set; }
         public List<TreeNode> Children { get; }
+        public TreeNode Parent { get; set; }
+        #endregion
 
+        #region Constructors
         public TreeNode()
         {
             Children = new List<TreeNode>();
             Content = new TreeNodeContent();
         }
-
         public TreeNode(TreeNode parentNode) : this()
         {
             Parent = parentNode;
         }
-
         public TreeNode(ITreeNodeContent content) : this()
         {
             this.Content = content;
         }
+        #endregion
 
-        private static TreeNode CreateNode(string new_name = "", string pattern = "", string value_type = "", long found_line = 0, string new_value = "", string node_label = "", long horizontal_paragraph = 0)
+        #region Public methods
+        public TreeNode AddChild(TreeNode node)
         {
-            var new_node = new TreeNode
+            if (node == null)
             {
-                Content = PopulateNodeContent(new_name, pattern, value_type, found_line, new_value, node_label, horizontal_paragraph)
-            };
-            return new_node;
+                throw new ArgumentNullException(nameof(node));
+            }
+            if (node.Parent == null)
+            {
+                node.Parent = this;
+            }
+            Children.Add(node);
+            return node;
         }
-
-        public static TreeNode CreateRoot()
+        public TreeNode AddChild(TreeNode node, long newLine)
         {
-            return CreateNode("root");
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+            if (node.Content is TreeNodeContent)
+            {
+                TreeNodeContent node_content = (TreeNodeContent)node.Content;
+                return AddChild(
+                    node_content.Name, node_content.RegExPattern, newLine,
+                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
+                    node_content.HorizontalParagraph);
+            }
+            else
+            {
+                TableTreeNodeContent node_content = (TableTreeNodeContent)node.Content;
+                return AddChild(
+                    node_content.Name, node_content.RegExPattern, newLine,
+                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel);
+            }
         }
-
         public TreeNode AddChild(string newName = "", string pattern = "", long foundLine = 0, string valueType = "", string newValue = "", string nodeLabel = "", decimal horizontalParagraph = 0)
         {
             TreeNodeContent content = new TreeNodeContent()
@@ -67,44 +91,6 @@ namespace SmartOCR
             Children.Add(new_node);
             return new_node;
         }
-
-        public TreeNode AddChild(TreeNode node, long newLine)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-            if (node.Content is TreeNodeContent)
-            {
-                TreeNodeContent node_content = (TreeNodeContent)node.Content;
-                return AddChild(
-                    node_content.Name, node_content.RegExPattern, newLine,
-                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
-                    node_content.HorizontalParagraph);
-            }
-            else
-            {
-                TableTreeNodeContent node_content = (TableTreeNodeContent)node.Content;
-                return AddChild(
-                    node_content.Name, node_content.RegExPattern, newLine,
-                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel);
-            }
-        }
-
-        public TreeNode AddChild(TreeNode node)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
-            if (node.Parent == null)
-            {
-                node.Parent = this;
-            }
-            Children.Add(node);
-            return node;
-        }
-
         public TreeNode AddSibling(long lineNumber = 0)
         {
             TreeNode new_node = new TreeNode(this.Content);
@@ -118,6 +104,33 @@ namespace SmartOCR
 
             return new_node;
         }
+        public override string ToString()
+        {
+            if (this.Content != null)
+            {
+                return $"{this.Content.Name}: {this.Content.NodeLabel} node";
+            }
+            return base.ToString();
+        }
+        #endregion
+
+        #region Public static methods
+        public static TreeNode CreateRoot()
+        {
+            return CreateNode("root");
+        }
+        #endregion
+
+        #region Private static methods
+        private static TreeNode CreateNode(string new_name = "", string pattern = "", string value_type = "", long found_line = 0, string new_value = "", string node_label = "", long horizontal_paragraph = 0)
+        {
+            var new_node = new TreeNode
+            {
+                Content = PopulateNodeContent(new_name, pattern, value_type, found_line, new_value, node_label, horizontal_paragraph)
+            };
+            return new_node;
+        }
+
 
         private static TreeNodeContent PopulateNodeContent(string new_name = "", string pattern = "", string value_type = "",
                                                     long found_line = 0, string new_value = "", string node_label = "",
@@ -135,14 +148,6 @@ namespace SmartOCR
             content.Lines.Add(found_line);
             return content;
         }
-
-        public override string ToString()
-        {
-            if (this.Content != null)
-            {
-                return $"{this.Content.Name}: {this.Content.NodeLabel} node";
-            }
-            return base.ToString();
-        }
+        #endregion
     }
 }

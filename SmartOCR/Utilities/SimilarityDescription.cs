@@ -8,26 +8,29 @@ namespace SmartOCR
     /// </summary>
     public class SimilarityDescription
     {
+        #region Prviate constants
         /// <summary>
         /// Lower bound of valid similarity ratio.
         /// </summary>
         private const double similarity_ratio_threshold = 0.66;
-
         /// <summary>
         /// Margin, by which found string length may vary in comparison with check string.
         /// </summary>
         private const byte string_length_offset = 1;
+        #endregion
 
+        #region Properties
         /// <summary>
         /// Represents percentage of closeness between two strings.
         /// </summary>
         public double Ratio { get; }
-
         /// <summary>
         /// Saved value of found string.
         /// </summary>
         public string Value { get; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes a new <see cref="SimilarityDescription"/> instance with strings to be compared.
         /// </summary>
@@ -50,7 +53,9 @@ namespace SmartOCR
                 Value = foundString;
             }
         }
+        #endregion
 
+        #region Public methods
         /// <summary>
         /// Checks whether calculated similiarity ratio is sufficient enough to call two strings similar.
         /// </summary>
@@ -59,7 +64,9 @@ namespace SmartOCR
         {
             return Ratio >= similarity_ratio_threshold;
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
         /// Prepares strings for similarity testing and calculates ratio.
         /// </summary>
@@ -84,7 +91,9 @@ namespace SmartOCR
                 ? 1
                 : (long_string.Length - ComputeLevensteinDistance(long_string, short_string)) / long_string.Length;
         }
+        #endregion
 
+        #region Private static methods
         /// <summary>
         /// Calculates number of string operations, which would take to transform one string to another.
         /// </summary>
@@ -127,5 +136,6 @@ namespace SmartOCR
             }
             return costs[long_length][short_length];
         }
+        #endregion
     }
 }

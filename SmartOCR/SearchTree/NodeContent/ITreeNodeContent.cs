@@ -2,8 +2,9 @@
 
 namespace SmartOCR
 {
-    public interface ITreeNodeContent
+    public interface ITreeNodeContent   
     {
+        #region Properties
         string CheckValue { get; set; }
         string FoundValue { get; set; }
         List<long> Lines { get; }
@@ -12,5 +13,6 @@ namespace SmartOCR
         string RegExPattern { get; set; }
         bool Status { get; set; }
         string ValueType { get; set; }
+        #endregion
     }
 }

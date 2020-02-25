@@ -9,31 +9,30 @@ namespace SmartOCR
     /// </summary>
     public class ConfigField
     {
-        /// <summary>
-        /// Data type of searched value.
-        /// </summary>
-        public string ValueType { get; }
-
-        /// <summary>
-        /// Regular expression pattern.
-        /// </summary>
-        public string RegExPattern { get; set; }
-
-        /// <summary>
-        /// Field name.
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// String value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
-        /// </summary>
-        public string ExpectedName { get; set; }
-
+        #region Properties
         /// <summary>
         /// Collection of search expressions that define search process for current field.
         /// </summary>
         public List<ConfigExpressionBase> Expressions { get; } = new List<ConfigExpressionBase>();
+        /// <summary>
+        /// String value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
+        /// </summary>
+        public string ExpectedName { get; set; }
+        /// <summary>
+        /// Regular expression pattern.
+        /// </summary>
+        public string RegExPattern { get; set; }
+        /// <summary>
+        /// Field name.
+        /// </summary>
+        public string Name { get; }
+        /// <summary>
+        /// Data type of searched value.
+        /// </summary>
+        public string ValueType { get; }
+        #endregion
 
+        #region Constructors
         /// <summary>
         /// Initializes a new <see cref="ConfigField"/> instance with name and value type.
         /// </summary>
@@ -44,7 +43,9 @@ namespace SmartOCR
             Name = name;
             ValueType = valueType;
         }
+        #endregion
 
+        #region Public methods
         /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
         /// </summary>
@@ -76,7 +77,6 @@ namespace SmartOCR
                 ? Name
                 : splitted_value[1];
         }
-
         /// <summary>
         /// Inserts <see cref="ConfigExpression"/> instance to expression collection.
         /// </summary>
@@ -97,5 +97,6 @@ namespace SmartOCR
         {
             return $"Config field: {Name}; value type: {ValueType}";
         }
+        #endregion
     }
 }

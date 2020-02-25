@@ -10,12 +10,25 @@ namespace SmartOCR
     /// </summary>
     public static class ExcelApplication
     {
+        #region Static fields
         /// <summary>
         /// Gets existing Excel application or initializes a new one.
         /// </summary>
         /// <returns>Excel application.</returns>
         private static Application instance;
+        #endregion
 
+        #region Public static methods
+        /// <summary>
+        /// Gets active workbook in Excel application, closes it 
+        /// and tries to delete the file, if its location is in Temp directory.
+        /// </summary>
+        public static void CloseActiveExcelWorkbook()
+        {
+            Application app = GetExcelApplication();
+            app.ActiveWorkbook.Close(XlSaveAction.xlDoNotSaveChanges);
+            TryDeleteTempFile(app.ActiveWorkbook.Path);
+        }
         public static Application GetExcelApplication()
         {
             if (instance == null)
@@ -29,7 +42,6 @@ namespace SmartOCR
             }
             return instance;
         }
-
         /// <summary>
         /// Closes Excel application without saving any changes.
         /// </summary>
@@ -43,7 +55,6 @@ namespace SmartOCR
             }
             GC.Collect();
         }
-
         /// <summary>
         /// Gets workbook in Excel application.
         /// </summary>
@@ -54,18 +65,9 @@ namespace SmartOCR
             Application app = GetExcelApplication();
             return TryGetWorkbook(app.Workbooks, path);
         }
+        #endregion
 
-        /// <summary>
-        /// Gets active workbook in Excel application, closes it 
-        /// and tries to delete the file, if its location is in Temp directory.
-        /// </summary>
-        public static void CloseActiveExcelWorkbook()
-        {
-            Application app = GetExcelApplication();
-            app.ActiveWorkbook.Close(XlSaveAction.xlDoNotSaveChanges);
-            TryDeleteTempFile(app.ActiveWorkbook.Path);
-        }
-
+        #region Private static methods
         /// <summary>
         /// Check if file by provided path is in Temp directory.
         /// </summary>
@@ -77,7 +79,6 @@ namespace SmartOCR
                 File.Delete(path);
             }
         }
-
         /// <summary>
         /// Tries to get <see cref="Workbook"/> by file path.
         /// If no <see cref="Workbook"/> is found,
@@ -98,5 +99,6 @@ namespace SmartOCR
                 return workbooks.Open(path);
             }
         }
+        #endregion
     }
 }

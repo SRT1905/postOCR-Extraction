@@ -10,6 +10,7 @@ namespace SmartOCR
     /// </summary>
     public static class ExcelOutputWorkbook
     {
+        #region Static fields
         /// <summary>
         /// Output workbook instance.
         /// </summary>
@@ -18,7 +19,9 @@ namespace SmartOCR
         /// Worksheet that would contain collected data.
         /// </summary>
         private static Worksheet output_worksheet;
+        #endregion
 
+        #region Public static methods
         /// <summary>
         /// Gets output workbook.
         /// </summary>
@@ -31,7 +34,31 @@ namespace SmartOCR
             }
             return instance;
         }
+        /// <summary>
+        /// Performs matching between worksheet field scheme and <paramref name="values"/> keys and returns values to sheet.
+        /// </summary>
+        /// <param name="values">Mapping between field names and found values.</param>
+        public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
+        {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+            long row_to_input = GetLastRowInWorksheet();
+            var keys = values.Keys.ToList();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                string key = keys[i];
+                long column_index = FindColumnIndex(key);
+                if (column_index != 0)
+                {
+                    output_worksheet.Cells[row_to_input, column_index] = values[key];
+                }
+            }
+        }
+        #endregion
 
+        #region Private static methods
         /// <summary>
         /// Creates new output workbook.
         /// </summary>
@@ -77,30 +104,6 @@ namespace SmartOCR
             new_wb.Worksheets[1].Delete();
             return new_wb;
         }
-
-        /// <summary>
-        /// Performs matching between worksheet field scheme and <paramref name="values"/> keys and returns values to sheet.
-        /// </summary>
-        /// <param name="values">Mapping between field names and found values.</param>
-        public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
-        {
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-            long row_to_input = GetLastRowInWorksheet();
-            var keys = values.Keys.ToList();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                string key = keys[i];
-                long column_index = FindColumnIndex(key);
-                if (column_index != 0)
-                {
-                    output_worksheet.Cells[row_to_input, column_index] = values[key];
-                }
-            }
-        }
-
         /// <summary>
         /// Searches for match between <paramref name="field_name"/> and first row values.
         /// </summary>
@@ -118,7 +121,6 @@ namespace SmartOCR
             }
             return 0;
         }
-
         /// <summary>
         /// Gets first empty row in <see cref="Worksheet"/> used range.
         /// </summary>
@@ -127,5 +129,6 @@ namespace SmartOCR
         {
             return output_worksheet.UsedRange.Rows[output_worksheet.UsedRange.Rows.Count].Row + 1;
         }
+        #endregion
     }
 }

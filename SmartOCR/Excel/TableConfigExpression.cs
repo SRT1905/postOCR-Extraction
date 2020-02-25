@@ -5,13 +5,19 @@ namespace SmartOCR
 {
     public class TableConfigExpression : ConfigExpressionBase
     {
-        public int Row { get; set; }
+        #region Properties
         public int Column { get; set; }
+        public int Row { get; set; }
+        #endregion
 
+        #region Constructors
         public TableConfigExpression(string input)
         {
             ParseInput(input);
         }
+        #endregion
+
+        #region Protected methods
         protected override List<string> ParseInput(string input)
         {
             List<string> splitted_input = base.ParseInput(input);
@@ -23,5 +29,6 @@ namespace SmartOCR
                 : int.Parse(splitted_input[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
             return splitted_input;
         }
+        #endregion
     }
 }

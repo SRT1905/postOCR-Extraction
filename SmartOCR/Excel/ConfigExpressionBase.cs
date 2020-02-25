@@ -5,11 +5,14 @@ namespace SmartOCR
 {
     public class ConfigExpressionBase
     {
+        #region Properties
         /// <summary>
         /// Describes regular expression pattern.
         /// </summary>
         public string RegExPattern { get; set; }
+        #endregion
 
+        #region Protected methods
         protected virtual List<string> ParseInput(string input)
         {
             if (input == null)
@@ -22,9 +25,9 @@ namespace SmartOCR
                 splitted_input[0] = $"{splitted_input[0]};{splitted_input[1]}";
                 for (int i = 2; i < splitted_input.Count; i++)
                 {
-                    splitted_input[i-1] = splitted_input[i];
+                    splitted_input[i - 1] = splitted_input[i];
                 }
-                splitted_input.RemoveAt(splitted_input.Count-1);
+                splitted_input.RemoveAt(splitted_input.Count - 1);
             }
             while (splitted_input.Count < 3)
             {
@@ -34,5 +37,6 @@ namespace SmartOCR
             RegExPattern = splitted_input[0];
             return splitted_input;
         }
+        #endregion
     }
 }

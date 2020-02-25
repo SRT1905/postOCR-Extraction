@@ -7,8 +7,11 @@ namespace SmartOCR
 
     public class ConfigParser // TODO: add summary.
     {
+        #region Static properties
         public static Workbook ConfigWorkbook { get; private set; }
+        #endregion
 
+        #region Constructors
         public ConfigParser()
         {
             if (ConfigWorkbook == null)
@@ -16,29 +19,30 @@ namespace SmartOCR
                 ConfigWorkbook = GetInternalConfigWorkbook();
             }
         }
-
         public ConfigParser(string configFile)
         {
             ConfigWorkbook = GetExternalConfigWorkbook(configFile);
         }
+        #endregion
 
+        #region Public methods
+        public ConfigData ParseConfig()
+        {
+            return GetConfigData(ConfigWorkbook.Worksheets[1]);
+        }
+        #endregion
+
+        #region Private methods
         private Workbook GetExternalConfigWorkbook(string path)
         {
             return ExcelApplication.OpenExcelWorkbook(path);
         }
-
         private Workbook GetInternalConfigWorkbook()
         {
             string temp_path = Path.GetTempFileName();
             File.WriteAllBytes(temp_path, ConfigContainer.config);
             return ExcelApplication.OpenExcelWorkbook(temp_path);
         }
-
-        public ConfigData ParseConfig()
-        {
-            return GetConfigData(ConfigWorkbook.Worksheets[1]);
-        }
-
         private ConfigData GetConfigData(Worksheet source_ws)
         {
             var data = new ConfigData();
@@ -60,7 +64,9 @@ namespace SmartOCR
             }
             return data;
         }
+        #endregion
 
+        #region Private static methods        
         private static ConfigField GetFieldDefinition(Worksheet source_ws, long header_row, long field_column)
         {
             string field_name = source_ws.Cells.Item[header_row, field_column].Value2;
@@ -84,5 +90,6 @@ namespace SmartOCR
             }
             return field;
         }
+        #endregion
     }
 }
