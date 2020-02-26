@@ -86,11 +86,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SearchTree\NodeContent\TreeNodeContent.cs" />
+    <Compile Include="Search\TreeNodeContent.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />
-    <Compile Include="SearchTree\SearchTree.cs" />
+    <Compile Include="Search\SearchTree.cs" />
     <Compile Include="Utilities\SimilarityDescription.cs" />
-    <Compile Include="SearchTree\TreeNode.cs" />
+    <Compile Include="Search\TreeNode.cs" />
     <Compile Include="Utilities\Utilities.cs" />
     <Compile Include="Word\ParagraphContainer.cs" />
     <Compile Include="Word\LineContentChecker.cs" />
