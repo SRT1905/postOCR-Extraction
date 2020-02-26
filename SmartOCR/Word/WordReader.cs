@@ -173,7 +173,6 @@ namespace SmartOCR
         private List<TextFrame> GetValidTextFrames(long pageIndex)
         {
             var frames = new List<TextFrame>();
-
             var shapes = document.Shapes;
             int shapesCount = shapes.Count;
             for (int i = 1; i <= shapesCount; i++)
@@ -188,16 +187,10 @@ namespace SmartOCR
                 {
                     break;
                 }
-                if (shapePage == pageIndex)
+                var frame = shape.TextFrame;
+                if (frame != null && frame.HasText != 0 && frame.TextRange.Text.Length > minimalTextLength)
                 {
-                    var frame = shape.TextFrame;
-                    if (frame != null && frame.HasText != 0)
-                    {
-                        if (frame.TextRange.Text.Length > minimalTextLength)
-                        {
-                            frames.Add(frame);
-                        }
-                    }
+                    frames.Add(frame);
                 }
             }
             return frames;
@@ -217,8 +210,9 @@ namespace SmartOCR
         }
         private void TryAddTablesFromFrames(List<TextFrame> frames)
         {
-            foreach (var item in frames)
+            for (int frameIndex = 0; frameIndex < frames.Count; frameIndex++)
             {
+                TextFrame item = frames[frameIndex];
                 for (int i = 1; i <= item.TextRange.Tables.Count; i++)
                 {
                     TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
@@ -241,11 +235,11 @@ namespace SmartOCR
                 var shiftedMapping = new SortedDictionary<long, List<ParagraphContainer>>();
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    long key = keys[i];
-                    shiftedMapping.Add(key + 1, pageContent[key]);
+                    shiftedMapping.Add(keys[i] + 1, pageContent[keys[i]]);
                 }
                 pageContent = shiftedMapping;
             }
+
             if (LineMapping.Count == 0)
             {
                 LineMapping = pageContent;

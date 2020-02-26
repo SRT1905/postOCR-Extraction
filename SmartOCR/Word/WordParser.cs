@@ -75,48 +75,6 @@ namespace SmartOCR
             childNode.Content.FoundValue = foundValue;
             SearchTree.AddSearchValues(configData[nodeContent.Name], childNode, (int)searchLevel);
         }
-        private void GetDataFromTableNode(TreeNode fieldNode)
-        {
-            TreeNodeContent content = fieldNode.Content;
-            foreach (WordTable singleTable in tables)
-            {
-                bool searchStatus = TryToFindMatchInTable(singleTable, Utilities.CreateRegexpObject(content.RegExPattern), content.CheckValue);
-                if (searchStatus)
-                {
-                    TreeNode childNode = fieldNode.Children[0];
-                    while (childNode.Content.NodeLabel != "Terminal")
-                    {
-                        try
-                        {
-                            childNode = childNode.Children[0];
-                        }
-                        catch (IndexOutOfRangeException) // No terminal node found.
-                        {
-                            break;
-                        }
-                    }
-                    TreeNodeContent childContent = childNode.Content;
-                    string itemByExpressionPosition = singleTable[childContent.FirstSearchParameter, childContent.SecondSearchParameter];
-                    Regex regexObject = Utilities.CreateRegexpObject(childContent.RegExPattern);
-                    if (regexObject.IsMatch(itemByExpressionPosition))
-                    {
-                        int slashCharIndex = childContent.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase) + 1;
-                        string nestedValueType = slashCharIndex == 0
-                            ? "String"
-                            : childContent.ValueType.Substring(slashCharIndex);
-
-                        var matchProcessor = new MatchProcessor(itemByExpressionPosition, regexObject, nestedValueType);
-                        if (!string.IsNullOrEmpty(matchProcessor.Result))
-                        {
-                            childContent.FoundValue = matchProcessor.Result;
-                            childContent.Status = true;
-                        }
-                        return;
-                    }
-
-                }
-            }
-        }
         private void GetDataFromUndefinedNode(TreeNode fieldNode)
         {
             Regex regexObject = Utilities.CreateRegexpObject(fieldNode.Content.RegExPattern);
@@ -231,7 +189,8 @@ namespace SmartOCR
                 }
                 else
                 {
-                    GetDataFromTableNode(fieldNode);
+                    TableNodeProcessor processor = new TableNodeProcessor(tables, fieldNode);
+                    processor.Process();
                 }
             }
         }
@@ -473,33 +432,6 @@ namespace SmartOCR
                 tempNode = tempNode.Parent;
                 tempNode.Content.Status = status;
             }
-        }
-        private static bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
-        {
-            for (int i = 0; i < table.RowCount; i++)
-            {
-                for (int j = 0; j < table.ColumnCount; j++)
-                {
-                    if (table[i, j] != null && regexObject.IsMatch(table[i, j]))
-                    {
-                        Match singleMatch = regexObject.Match(table[i, j]);
-                        SimilarityDescription similarity;
-                        if (singleMatch.Groups.Count > 0)
-                        {
-                            similarity = new SimilarityDescription(singleMatch.Groups[1].Value, checkValue);
-                        }
-                        else
-                        {
-                            similarity = new SimilarityDescription(singleMatch.Value, checkValue);
-                        }
-                        if (similarity.CheckStringSimilarity())
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
         }
         #endregion
     }

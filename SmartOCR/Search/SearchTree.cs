@@ -146,13 +146,9 @@ namespace SmartOCR
         #region Public static methods
         public static void AddSearchValues(ConfigField fieldData, TreeNode node, int initialValueIndex = 0)
         {
-            if (fieldData == null)
+            if (fieldData == null || node == null)
             {
-                throw new ArgumentNullException(nameof(fieldData));
-            }
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
+                throw new ArgumentNullException($"{nameof(fieldData)}|{nameof(node)}");
             }
             var nodeContent = node.Content;
             if (nodeContent.NodeLabel == "Terminal")
