@@ -14,11 +14,13 @@
             this.nodeContent = new TreeNodeContent(content);
         }
 
+        /// <inheritdoc/>
         public TreeNodeContent Build()
         {
             return this.nodeContent;
         }
 
+        /// <inheritdoc/>
         public void Reset()
         {
             this.nodeContent = new TreeNodeContent();
