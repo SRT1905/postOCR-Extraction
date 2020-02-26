@@ -83,18 +83,35 @@ namespace SmartOCR
                 bool searchStatus = TryToFindMatchInTable(singleTable, Utilities.CreateRegexpObject(content.RegExPattern), content.CheckValue);
                 if (searchStatus)
                 {
-                    System.Diagnostics.Debugger.Break();
                     TreeNode childNode = fieldNode.Children[0];
                     while (childNode.Content.NodeLabel != "Terminal")
                     {
-                        childNode = childNode.Children[0];
+                        try
+                        {
+                            childNode = childNode.Children[0];
+                        }
+                        catch (IndexOutOfRangeException) // No terminal node found.
+                        {
+                            return;
+                        }
                     }
                     TreeNodeContent childContent = childNode.Content;
                     string itemByExpressionPosition = singleTable[childContent.FirstSearchParameter, childContent.SecondSearchParameter];
-                    if (Utilities.CreateRegexpObject(childContent.RegExPattern).IsMatch(itemByExpressionPosition))
+                    Regex regexObject = Utilities.CreateRegexpObject(childContent.RegExPattern);
+                    if (regexObject.IsMatch(itemByExpressionPosition))
                     {
-                        childContent.FoundValue = itemByExpressionPosition;
-                        childContent.Status = true;
+                        string nestedValueType = "String";
+                        int slashCharIndex = childContent.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase);
+                        if (slashCharIndex != -1)
+                        {
+                            nestedValueType = childContent.ValueType.Substring(slashCharIndex++);
+                        }
+                        var matchProcessor = new MatchProcessor(itemByExpressionPosition, regexObject, nestedValueType);
+                        if (!string.IsNullOrEmpty(matchProcessor.Result))
+                        {
+                            childContent.FoundValue = matchProcessor.Result;
+                            childContent.Status = true;
+                        }
                         return;
                     }
 
