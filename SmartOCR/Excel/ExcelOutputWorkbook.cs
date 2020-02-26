@@ -1,39 +1,39 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Microsoft.Office.Interop.Excel;
+
     /// <summary>
     /// Used to create and populate output Excel workbook that would contain data collected from search tree.
     /// </summary>
     public static class ExcelOutputWorkbook
     {
-        #region Static fields
         /// <summary>
         /// Output workbook instance.
         /// </summary>
         private static Workbook instance;
+
         /// <summary>
         /// Worksheet that would contain collected data.
         /// </summary>
         private static Worksheet outputWorksheet;
-        #endregion
 
-        #region Public static methods
         /// <summary>
         /// Gets output workbook.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="Workbook"/> object.</returns>
         public static Workbook GetOutputWorkbook()
         {
             if (instance == null)
             {
                 instance = CreateOutputWorkbook();
             }
+
             return instance;
         }
+
         /// <summary>
         /// Performs matching between worksheet field scheme and <paramref name="values"/> keys and returns values to sheet.
         /// </summary>
@@ -44,6 +44,7 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(values));
             }
+
             long rowToInput = GetLastRowInWorksheet();
             var keys = values.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
@@ -56,9 +57,7 @@ namespace SmartOCR
                 }
             }
         }
-        #endregion
 
-        #region Private static methods
         /// <summary>
         /// Creates new output workbook.
         /// </summary>
@@ -82,6 +81,7 @@ namespace SmartOCR
             {
                 return null;
             }
+
             if (sourceWS == null)
             {
                 return null;
@@ -97,6 +97,7 @@ namespace SmartOCR
                     break;
                 }
             }
+
             Range headerRange = sourceWS.Range[sourceWS.Cells[i, 2], sourceWS.Cells[i, sourceWS.Columns.Count].End[XlDirection.xlToLeft]];
             Range firstCell = (Range)outputWorksheet.Cells.Item[1, 1];
             headerRange.Copy(firstCell);
@@ -104,6 +105,7 @@ namespace SmartOCR
             newWB.Worksheets[1].Delete();
             return newWB;
         }
+
         /// <summary>
         /// Searches for match between <paramref name="fieldName"/> and first row values.
         /// </summary>
@@ -119,8 +121,10 @@ namespace SmartOCR
                     return i;
                 }
             }
+
             return 0;
         }
+
         /// <summary>
         /// Gets first empty row in <see cref="Worksheet"/> used range.
         /// </summary>
@@ -129,6 +133,5 @@ namespace SmartOCR
         {
             return outputWorksheet.UsedRange.Rows[outputWorksheet.UsedRange.Rows.Count].Row + 1;
         }
-        #endregion
     }
 }

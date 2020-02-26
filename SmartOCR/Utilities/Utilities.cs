@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+
     /// <summary>
     /// Provides static methods used accross namespace.
     /// </summary>
     public static class Utilities
     {
-        #region Public static methods
         /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
@@ -27,18 +26,22 @@ namespace SmartOCR
             {
                 options |= RegexOptions.Multiline;
             }
+
             if (ignoreCase)
             {
                 options |= RegexOptions.IgnoreCase;
             }
+
             return new Regex(textPattern, options);
         }
+
         public static void Debug(string format, int debugLevel = 0, params object[] args)
         {
             Console.Write(Properties.Resources.debugHashtag);
             Console.Write(new string('\t', debugLevel));
             Console.WriteLine(format, args);
         }
+
         /// <summary>
         /// Tries to process passed string as date.
         /// </summary>
@@ -73,6 +76,7 @@ namespace SmartOCR
 
             return "Дата документа не распознана";
         }
+
         /// <summary>
         /// Tries to represent passed string as number.
         /// </summary>
@@ -94,8 +98,10 @@ namespace SmartOCR
                              .Replace(".", regionalDecimalSeparator);
                 return double.TryParse(value, out _) ? value : string.Empty;
             }
+
             return value;
         }
+
         /// <summary>
         /// Used to print message to command prompt.
         /// </summary>
@@ -104,9 +110,7 @@ namespace SmartOCR
             Console.WriteLine(Properties.Resources.invalidInputMessage);
             Thread.Sleep(2000);
         }
-        #endregion
 
-        #region Private static methods
         /// <summary>
         /// Character that is set by regional settings to separate integer and fraction parts of number.
         /// </summary>
@@ -115,6 +119,7 @@ namespace SmartOCR
         {
             return Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator;
         }
+
         /// <summary>
         /// Removes non-numeric characters and replaces decimal separator.
         /// </summary>
@@ -133,6 +138,7 @@ namespace SmartOCR
                                    .Where(c => !char.IsWhiteSpace(c))
                                    .ToArray());
         }
+
         /// <summary>
         /// Searches for numerical representation of month in passed string.
         /// </summary>
@@ -142,18 +148,18 @@ namespace SmartOCR
         {
             Dictionary<string, string> monthMapping = new Dictionary<string, string>()
             {
-                {"январ", "01" }, {"jan", "01" },
-                {"февраля", "02" }, {"feb", "02" },
-                {"март", "03" }, {"mar", "03" },
-                {"апрел", "04" }, {"apr", "04" },
-                {"мая", "05" }, {"май", "05" }, {"may", "05" },
-                {"июн", "06" }, {"jun", "06" },
-                {"июл", "07" }, {"jul", "07" },
-                {"август", "08" }, {"aug", "08" },
-                {"сентябр", "09" }, {"sep", "09" },
-                {"октябр", "10" }, {"oct", "10" },
-                {"ноябр", "11" }, {"nov", "11" },
-                {"декабр", "12" }, {"dec", "12" }
+                { "январ", "01" }, { "jan", "01" },
+                { "февраля", "02" }, { "feb", "02" },
+                { "март", "03" }, { "mar", "03" },
+                { "апрел", "04" }, { "apr", "04" },
+                { "мая", "05" }, { "май", "05" }, { "may", "05" },
+                { "июн", "06" }, { "jun", "06" },
+                { "июл", "07" }, { "jul", "07" },
+                { "август", "08" }, { "aug", "08" },
+                { "сентябр", "09" }, { "sep", "09" },
+                { "октябр", "10" }, { "oct", "10" },
+                { "ноябр", "11" }, { "nov", "11" },
+                { "декабр", "12" }, { "dec", "12" },
             };
 
             List<string> keys = monthMapping.Keys.ToList();
@@ -165,8 +171,10 @@ namespace SmartOCR
                     return monthMapping[key];
                 }
             }
+
             return "00";
         }
+
         /// <summary>
         /// Trims string of characters that cannot be part of number.
         /// </summary>
@@ -178,11 +186,11 @@ namespace SmartOCR
             if (regex.IsMatch(value))
             {
                 MatchCollection matches = regex.Matches(value);
-                var result = string.Join("", matches.Cast<Match>().Select(match => match.Value));
+                var result = string.Join(string.Empty, matches.Cast<Match>().Select(match => match.Value));
                 return result.Trim().Replace('-', ',');
             }
+
             return value;
         }
-        #endregion
     }
 }

@@ -1,27 +1,23 @@
-﻿using Microsoft.Office.Interop.Excel;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.IO;
+    using System.Runtime.InteropServices;
+    using Microsoft.Office.Interop.Excel;
+
     /// <summary>
     /// Performs communication with MS Excel application.
     /// </summary>
     public static class ExcelApplication
     {
-        #region Static fields
         /// <summary>
         /// Gets existing Excel application or initializes a new one.
         /// </summary>
         /// <returns>Excel application.</returns>
         private static Application instance;
-        #endregion
 
-        #region Public static methods
         /// <summary>
-        /// Gets active workbook in Excel application, closes it 
-        /// and tries to delete the file, if its location is in Temp directory.
+        /// Gets active workbook in Excel application, closes it and tries to delete the file, if its location is in Temp directory.
         /// </summary>
         public static void CloseActiveExcelWorkbook()
         {
@@ -29,6 +25,7 @@ namespace SmartOCR
             app.ActiveWorkbook.Close(XlSaveAction.xlDoNotSaveChanges);
             TryDeleteTempFile(app.ActiveWorkbook.Path);
         }
+
         public static Application GetExcelApplication()
         {
             if (instance == null)
@@ -37,11 +34,13 @@ namespace SmartOCR
                 {
                     Visible = false,
                     DisplayAlerts = false,
-                    ScreenUpdating = false
+                    ScreenUpdating = false,
                 };
             }
+
             return instance;
         }
+
         /// <summary>
         /// Closes Excel application without saving any changes.
         /// </summary>
@@ -53,8 +52,10 @@ namespace SmartOCR
             {
                 Marshal.ReleaseComObject(app);
             }
+
             GC.Collect();
         }
+
         /// <summary>
         /// Gets workbook in Excel application.
         /// </summary>
@@ -65,9 +66,7 @@ namespace SmartOCR
             Application app = GetExcelApplication();
             return TryGetWorkbook(app.Workbooks, path);
         }
-        #endregion
 
-        #region Private static methods
         /// <summary>
         /// Check if file by provided path is in Temp directory.
         /// </summary>
@@ -79,13 +78,13 @@ namespace SmartOCR
                 File.Delete(path);
             }
         }
+
         /// <summary>
         /// Tries to get <see cref="Workbook"/> by file path.
         /// If no <see cref="Workbook"/> is found,
         /// then application opens <see cref="Workbook"/> by path.
         /// </summary>
-        /// <param name="workbooks">Collection of <see cref="Workbook"/> 
-        /// objects in application.</param>
+        /// <param name="workbooks">Collection of <see cref="Workbook"/> objects in application.</param>
         /// <param name="path">File path to check.</param>
         /// <returns>Found or opened <see cref="Workbook"/> object.</returns>
         private static Workbook TryGetWorkbook(Workbooks workbooks, string path)
@@ -99,6 +98,5 @@ namespace SmartOCR
                 return workbooks.Open(path);
             }
         }
-        #endregion
     }
 }

@@ -1,51 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
     /// Describes single search field defined in Excel config file.
     /// </summary>
     public class ConfigField
     {
-        #region Properties
         /// <summary>
-        /// Collection of search expressions that define search process for current field.
-        /// </summary>
-        public List<ConfigExpression> Expressions { get; } = new List<ConfigExpression>();
-        /// <summary>
-        /// String value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
-        /// </summary>
-        public string ExpectedName { get; set; }
-        /// <summary>
-        /// Regular expression pattern.
-        /// </summary>
-        public string RegExPattern { get; set; }
-        /// <summary>
-        /// Field name.
-        /// </summary>
-        public string Name { get; }
-        /// <summary>
-        /// Data type of searched value.
-        /// </summary>
-        public string ValueType { get; }
-        #endregion
-
-        #region Constructors
-        /// <summary>
-        /// Initializes a new <see cref="ConfigField"/> instance with name and value type.
+        /// Initializes a new instance of the <see cref="ConfigField"/> class.
+        /// Instance is initialized with name and value type.
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <param name="valueType">Data type of searched value.</param>
         public ConfigField(string name, string valueType)
         {
-            Name = name;
-            ValueType = valueType;
+            this.Name = name;
+            this.ValueType = valueType;
         }
-        #endregion
 
-        #region Public methods
+        /// <summary>
+        /// Gets collection of search expressions that define search process for current field.
+        /// </summary>
+        public List<ConfigExpression> Expressions { get; } = new List<ConfigExpression>();
+
+        /// <summary>
+        /// Gets or sets string value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
+        /// </summary>
+        public string ExpectedName { get; set; }
+
+        /// <summary>
+        /// Gets or sets regular expression pattern.
+        /// </summary>
+        public string RegExPattern { get; set; }
+
+        /// <summary>
+        /// Gets field name.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets data type of searched value.
+        /// </summary>
+        public string ValueType { get; }
+
         /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
         /// </summary>
@@ -54,10 +54,11 @@ namespace SmartOCR
         {
             if (input == null)
             {
-                RegExPattern = Name;
-                ExpectedName = Name;
+                this.RegExPattern = this.Name;
+                this.ExpectedName = this.Name;
                 return;
             }
+
             var splittedValue = input.Split(';').ToList();
 
             while (splittedValue.Count != 2)
@@ -67,36 +68,38 @@ namespace SmartOCR
                 {
                     splittedValue[i - 1] = splittedValue[i];
                 }
+
                 splittedValue.RemoveAt(splittedValue.Count - 1);
             }
 
-            RegExPattern = string.IsNullOrEmpty(splittedValue[0])
-                ? Name
+            this.RegExPattern = string.IsNullOrEmpty(splittedValue[0])
+                ? this.Name
                 : splittedValue[0];
-            ExpectedName = string.IsNullOrEmpty(splittedValue[1])
-                ? Name
+            this.ExpectedName = string.IsNullOrEmpty(splittedValue[1])
+                ? this.Name
                 : splittedValue[1];
         }
+
         /// <summary>
         /// Inserts <see cref="ConfigExpression"/> instance to expression collection.
         /// </summary>
         /// <param name="expression"><see cref="ConfigExpression"/> instance that describes single search expression.</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Empty config expression.</exception>
         public void AddSearchExpression(ConfigExpression expression)
         {
             if (expression != null)
             {
-                Expressions.Add(expression);
+                this.Expressions.Add(expression);
             }
             else
             {
                 throw new ArgumentNullException($"Null config expression for field {this.Name} was provided.");
             }
         }
+
         public override string ToString()
         {
-            return $"Config field: {Name}; value type: {ValueType}";
+            return $"Config field: {this.Name}; value type: {this.ValueType}";
         }
-        #endregion
     }
 }

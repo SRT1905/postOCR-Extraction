@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+
     internal class Program
     {
         [STAThread]

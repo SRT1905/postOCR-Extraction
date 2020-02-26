@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text.RegularExpressions;
+
     public class TableNodeProcessor
     {
         private readonly List<WordTable> tables;
@@ -11,41 +11,19 @@ namespace SmartOCR
 
         public TableNodeProcessor(List<WordTable> tableCollection, TreeNode fieldNode)
         {
-            tables = tableCollection;
-            tableNode = fieldNode;
+            this.tables = tableCollection;
+            this.tableNode = fieldNode;
         }
 
         public void Process()
         {
-            for (int i = 0; i < tables.Count; i++)
+            for (int i = 0; i < this.tables.Count; i++)
             {
-                if (TryGetDataFromTable(tables[i]))
+                if (this.TryGetDataFromTable(this.tables[i]))
                 {
                     return;
                 }
             }
-        }
-        private bool TryGetDataFromTable(WordTable table)
-        {
-            if (!TryToFindMatchInTable(table, Utilities.CreateRegexpObject(tableNode.Content.RegExPattern), tableNode.Content.CheckValue))
-            {
-                return false;
-            }
-
-            return ProcessNodeData(table);
-        }
-
-        private bool ProcessNodeData(WordTable table)
-        {
-            TreeNode childNode = GetTerminalNode();
-
-            string itemByExpressionPosition = table[childNode.Content.FirstSearchParameter, childNode.Content.SecondSearchParameter];
-            Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.RegExPattern);
-            if (regexObject.IsMatch(itemByExpressionPosition))
-            {
-                return ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject);
-            }
-            return false;
         }
 
         private static bool ExtractValueFromMatch(TreeNode childNode, string itemByExpressionPosition, Regex regexObject)
@@ -61,18 +39,8 @@ namespace SmartOCR
                 childNode.Content.Status = true;
                 PropagateStatusInTree(true, childNode);
             }
+
             return true;
-        }
-
-        private TreeNode GetTerminalNode()
-        {
-            TreeNode childNode = tableNode.Children[0];
-            while (childNode.Content.NodeLabel != "Terminal" && childNode.Children.Count != 0)
-            {
-                childNode = childNode.Children[0];
-            }
-
-            return childNode;
         }
 
         private static bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
@@ -94,8 +62,10 @@ namespace SmartOCR
                     }
                 }
             }
+
             return false;
         }
+
         private static void PropagateStatusInTree(bool status, TreeNode node)
         {
             TreeNode tempNode = node;
@@ -104,6 +74,44 @@ namespace SmartOCR
                 tempNode = tempNode.Parent;
                 tempNode.Content.Status = status;
             }
+        }
+
+        private bool TryGetDataFromTable(WordTable table)
+        {
+            if (!TryToFindMatchInTable(
+                table,
+                Utilities.CreateRegexpObject(this.tableNode.Content.RegExPattern),
+                this.tableNode.Content.CheckValue))
+            {
+                return false;
+            }
+
+            return this.ProcessNodeData(table);
+        }
+
+        private bool ProcessNodeData(WordTable table)
+        {
+            TreeNode childNode = this.GetTerminalNode();
+
+            string itemByExpressionPosition = table[childNode.Content.FirstSearchParameter, childNode.Content.SecondSearchParameter];
+            Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.RegExPattern);
+            if (regexObject.IsMatch(itemByExpressionPosition))
+            {
+                return ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject);
+            }
+
+            return false;
+        }
+
+        private TreeNode GetTerminalNode()
+        {
+            TreeNode childNode = this.tableNode.Children[0];
+            while (childNode.Content.NodeLabel != "Terminal" && childNode.Children.Count != 0)
+            {
+                childNode = childNode.Children[0];
+            }
+
+            return childNode;
         }
     }
 }

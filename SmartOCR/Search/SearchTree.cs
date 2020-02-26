@@ -1,155 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+
     public class SearchTree // TODO: add summary.
     {
-        #region Fields
-        private readonly ConfigData ConfigData;
+        private readonly ConfigData configData;
         private TreeNode treeStructure;
-        #endregion
 
-        #region Properties
+        public SearchTree(ConfigData configData)
+        {
+            this.configData = configData;
+        }
+
         public List<TreeNode> Children
         {
             get
             {
-                return treeStructure.Children;
+                return this.treeStructure.Children;
             }
         }
-        #endregion
 
-        #region Constructors
-        public SearchTree(ConfigData configData)
-        {
-            this.ConfigData = configData;
-        }
-        #endregion
-
-        #region Public methods
-        public Dictionary<string, string> GetValuesFromTree()
-        {
-            var finalValues = new Dictionary<string, string>();
-            foreach (ConfigField field in ConfigData.Fields)
-            {
-                List<string> childrenCollection = GetChildrenByFieldName(field.Name);
-                var result = new HashSet<string>();
-                if (childrenCollection.Count != 0)
-                {
-                    result.UnionWith(childrenCollection);
-                }
-                else
-                {
-                    var preTerminalCollection = GetDataFromPreTerminalNodes(field.Name);
-                    result.UnionWith(preTerminalCollection);
-                }
-                finalValues.Add(field.Name, string.Join("|", result));
-            }
-            return finalValues;
-        }
-        public void PopulateTree()
-        {
-            TreeNode root = TreeNode.CreateRoot();
-            foreach (ConfigField field in ConfigData.Fields)
-            {
-                TreeNode fieldNode = AddFieldNode(root, field);
-                AddSearchValues(field, fieldNode);
-            }
-            treeStructure = root;
-        }
-        #endregion
-
-        #region Private methods
-
-        private List<string> GetChildrenByFieldName(string fieldName)
-        {
-            var childrenCollection = new List<string>();
-            foreach (TreeNode fieldNode in treeStructure.Children)
-            {
-                if (fieldNode.Content.Name == fieldName)
-                {
-                    GetNodeChildren(fieldNode, childrenCollection);
-                    break;
-                }
-            }
-
-            return childrenCollection;
-        }
-        private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
-        {
-            if (node.Children.Count == 0)
-            {
-                return;
-            }
-
-            foreach (TreeNode child in node.Children)
-            {
-                GetDataFromNode(child, foundData);
-            }
-            if (!string.IsNullOrEmpty(node.Content.FoundValue))
-            {
-                if (node.Content.Status)
-                {
-                    foundData[true].Add(node.Content.FoundValue);
-                }
-                else
-                {
-                    if (node.Parent.Content.NodeLabel != "Field")
-                    {
-                        foundData[false].Add(node.Content.FoundValue);
-                    }
-                }
-
-            }
-        }
-        private HashSet<string> GetDataFromPreTerminalNodes(string fieldName)
-        {
-            var foundData = new Dictionary<bool, HashSet<string>>()
-            {
-                { true, new HashSet<string>() },
-                { false, new HashSet<string>() }
-            };
-            foreach (TreeNode node in treeStructure.Children)
-            {
-                if (node.Content.Name == fieldName)
-                {
-                    GetDataFromNode(node, foundData);
-                    if (foundData[true].Count != 0)
-                    {
-                        return foundData[true];
-                    }
-                    return foundData[false];
-
-                }
-            }
-            return new HashSet<string>();
-        }
-        private void GetNodeChildren(TreeNode node, List<string> childrenCollection)
-        {
-            if (node.Children.Count == 0)
-            {
-                if (node.Content.Status)
-                {
-                    childrenCollection.Add(node.Content.FoundValue);
-                }
-                return;
-            }
-
-            foreach (TreeNode child in node.Children)
-            {
-                GetNodeChildren(child, childrenCollection);
-            }
-        }
-        #endregion
-
-        #region Public static methods
         public static void AddSearchValues(ConfigField fieldData, TreeNode node, int initialValueIndex = 0)
         {
             if (fieldData == null || node == null)
             {
                 throw new ArgumentNullException($"{nameof(fieldData)}|{nameof(node)}");
             }
+
             var nodeContent = node.Content;
             if (nodeContent.NodeLabel == "Terminal")
             {
@@ -181,9 +59,42 @@ namespace SmartOCR
                 AddSearchValuesToSingleNode(fieldName, node, valuesCollection, initialValueIndex);
             }
         }
-        #endregion
 
-        #region Private static methods
+        public Dictionary<string, string> GetValuesFromTree()
+        {
+            var finalValues = new Dictionary<string, string>();
+            foreach (ConfigField field in this.configData.Fields)
+            {
+                List<string> childrenCollection = this.GetChildrenByFieldName(field.Name);
+                var result = new HashSet<string>();
+                if (childrenCollection.Count != 0)
+                {
+                    result.UnionWith(childrenCollection);
+                }
+                else
+                {
+                    var preTerminalCollection = this.GetDataFromPreTerminalNodes(field.Name);
+                    result.UnionWith(preTerminalCollection);
+                }
+
+                finalValues.Add(field.Name, string.Join("|", result));
+            }
+
+            return finalValues;
+        }
+
+        public void PopulateTree()
+        {
+            TreeNode root = TreeNode.CreateRoot();
+            foreach (ConfigField field in this.configData.Fields)
+            {
+                TreeNode fieldNode = AddFieldNode(root, field);
+                AddSearchValues(field, fieldNode);
+            }
+
+            this.treeStructure = root;
+        }
+
         private static TreeNode AddFieldNode(TreeNode rootNode, ConfigField fieldData)
         {
             var paragraphCollection = new List<long>() { 0 };
@@ -204,15 +115,17 @@ namespace SmartOCR
             {
                 TreeNodeContent childContent = new TreeNodeContent(content)
                 {
-                    NodeLabel = "Line"
+                    NodeLabel = "Line",
                 };
                 childContent.Lines.Add(paragraphCollection[i]);
                 var childNode = new TreeNode(childContent);
                 node.AddChild(childNode);
             }
+
             rootNode.AddChild(node);
             return node;
         }
+
         private static void AddSearchValuesToChildlessNode(TreeNode node, int initialValueIndex, List<ConfigExpression> valuesCollection)
         {
             ConfigExpression singleValueDefinition = valuesCollection[initialValueIndex];
@@ -222,7 +135,7 @@ namespace SmartOCR
                 NodeLabel = $"Search {initialValueIndex}",
                 RegExPattern = singleValueDefinition.RegExPattern,
                 HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
-                ValueType = node.Content.ValueType
+                ValueType = node.Content.ValueType,
             };
             if (content.ValueType.Contains("Table"))
             {
@@ -239,10 +152,12 @@ namespace SmartOCR
             {
                 content.NodeLabel = "Terminal";
             }
+
             content.Lines.Add(node.Content.Lines[0]);
             TreeNode newNode = new TreeNode(content);
             node.AddChild(newNode);
         }
+
         private static void AddSearchValuesToSingleNode(string fieldName, TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
         {
             TreeNode singleParagraphNode = node;
@@ -274,12 +189,97 @@ namespace SmartOCR
                 {
                     content.NodeLabel = "Terminal";
                 }
+
                 content.Lines.Add(offsetLine);
 
                 var newNode = new TreeNode(content);
                 singleParagraphNode = singleParagraphNode.AddChild(newNode);
             }
         }
-        #endregion
+
+        private List<string> GetChildrenByFieldName(string fieldName)
+        {
+            var childrenCollection = new List<string>();
+            foreach (TreeNode fieldNode in this.treeStructure.Children)
+            {
+                if (fieldNode.Content.Name == fieldName)
+                {
+                    this.GetNodeChildren(fieldNode, childrenCollection);
+                    break;
+                }
+            }
+
+            return childrenCollection;
+        }
+
+        private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
+        {
+            if (node.Children.Count == 0)
+            {
+                return;
+            }
+
+            foreach (TreeNode child in node.Children)
+            {
+                this.GetDataFromNode(child, foundData);
+            }
+
+            if (!string.IsNullOrEmpty(node.Content.FoundValue))
+            {
+                if (node.Content.Status)
+                {
+                    foundData[true].Add(node.Content.FoundValue);
+                }
+                else
+                {
+                    if (node.Parent.Content.NodeLabel != "Field")
+                    {
+                        foundData[false].Add(node.Content.FoundValue);
+                    }
+                }
+            }
+        }
+
+        private HashSet<string> GetDataFromPreTerminalNodes(string fieldName)
+        {
+            var foundData = new Dictionary<bool, HashSet<string>>()
+            {
+                { true, new HashSet<string>() },
+                { false, new HashSet<string>() },
+            };
+            foreach (TreeNode node in this.treeStructure.Children)
+            {
+                if (node.Content.Name == fieldName)
+                {
+                    this.GetDataFromNode(node, foundData);
+                    if (foundData[true].Count != 0)
+                    {
+                        return foundData[true];
+                    }
+
+                    return foundData[false];
+                }
+            }
+
+            return new HashSet<string>();
+        }
+
+        private void GetNodeChildren(TreeNode node, List<string> childrenCollection)
+        {
+            if (node.Children.Count == 0)
+            {
+                if (node.Content.Status)
+                {
+                    childrenCollection.Add(node.Content.FoundValue);
+                }
+
+                return;
+            }
+
+            foreach (TreeNode child in node.Children)
+            {
+                this.GetNodeChildren(child, childrenCollection);
+            }
+        }
     }
 }

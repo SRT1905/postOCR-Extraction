@@ -1,52 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
+    /// <summary>
+    /// Specifies the type of entered command propmt arguments.
+    /// </summary>
+    internal enum PathType : int
+    {
+        /// <summary>
+        /// Represents invalid path type.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Represents path as a directory.
+        /// </summary>
+        Directory,
+
+        /// <summary>
+        /// Represents path as a file.
+        /// </summary>
+        File,
+    }
+
     /// <summary>
     /// CMDProcess is used to process data from command prompt: define document type and files to parse.
     /// </summary>
     public class CMDProcess
     {
-        #region Enumerations
-        /// <summary>
-        /// Specifies the type of entered command propmt arguments
-        /// </summary>
-        private enum PathType : int
-        {
-            None,
-            Directory,
-            File
-        }
-        #endregion
-        
-        #region Fields
         /// <summary>
         /// Collection of entered command prompt arguments.
         /// </summary>
         private readonly List<string> enteredArguments;
+
         /// <summary>
         /// Specification of entered arguments.
         /// </summary>
         private readonly PathType enteredPathType;
+
         /// <summary>
         /// Path to external config file.
         /// </summary>
         private readonly string configFile;
-        #endregion
 
-        #region Properties
         /// <summary>
-        /// Indicates whether command prompt arguments were successfully defined.
-        /// </summary>
-        public bool ReadyToProcess { get; }
-        #endregion
-
-        #region Constructors
-        /// <summary>
-        /// Initializes CMD processing object: identifies document type, type of entered paths and files by those paths.
+        /// Initializes a new instance of the <see cref="CMDProcess"/> class.
+        /// Instance identifies document type, type of entered paths and files by those paths.
         /// </summary>
         /// <param name="args">Array of command prompt arguments.</param>
         public CMDProcess(string[] args)
@@ -56,15 +58,16 @@ namespace SmartOCR
                 if (args == null)
                 {
                     Utilities.PrintInvalidInputMessage();
-                    ReadyToProcess = false;
+                    this.ReadyToProcess = false;
                     return;
                 }
+
                 if (Directory.Exists(args[0]))
                 {
                     string[] files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly);
                     if (files.Length != 0)
                     {
-                        configFile = files[0];
+                        this.configFile = files[0];
                     }
                     else
                     {
@@ -74,65 +77,67 @@ namespace SmartOCR
                 }
                 else if (File.Exists(args[0]))
                 {
-                    configFile = args[0];
+                    this.configFile = args[0];
                 }
-                enteredPathType = ValidatePath(args[1]);
-                enteredArguments = args.Skip(1).ToList();
-                ReadyToProcess = true;
+
+                this.enteredPathType = this.ValidatePath(args[1]);
+                this.enteredArguments = args.Skip(1).ToList();
+                this.ReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
             {
                 Utilities.PrintInvalidInputMessage();
-                ReadyToProcess = false;
+                this.ReadyToProcess = false;
             }
         }
-        #endregion
-        
-        #region Public methods
+
+        /// <summary>
+        /// Gets a value indicating whether command prompt arguments were successfully defined.
+        /// </summary>
+        public bool ReadyToProcess { get; }
+
+        /// <summary>
+        /// Sets output file and reads data from provided files.
+        /// </summary>
         public void ExecuteProcessing()
         {
-            if (enteredPathType == PathType.None || configFile == null)
+            if (this.enteredPathType == PathType.None || this.configFile == null)
             {
                 Utilities.PrintInvalidInputMessage();
                 return;
             }
 
-            string outputFile;
-            if (enteredPathType == PathType.Directory)
-            {
-                outputFile = Path.Combine(enteredArguments[0], "output.xlsx");
-            }
-            else
-            {
-                outputFile = Path.Combine(Path.GetDirectoryName(enteredArguments[0]), "output.xlsx");
-            }
+            string outputFile = this.enteredPathType == PathType.Directory
+                ? Path.Combine(this.enteredArguments[0], "output.xlsx")
+                : Path.Combine(Path.GetDirectoryName(this.enteredArguments[0]), "output.xlsx");
 
             while (File.Exists(outputFile))
             {
                 continue;
             }
-            using (var entryPoint = new ParseEntryPoint(GetFilesFromArgs(), configFile, outputFile))
+
+            using (var entryPoint = new ParseEntryPoint(this.GetFilesFromArgs(), this.configFile, outputFile))
             {
                 entryPoint.TryGetData();
             }
         }
-        #endregion
 
-        #region Private methods
         /// <summary>
         /// Processes entered path type and path argument(s).
         /// </summary>
         /// <returns>List of files, specified by arguments.</returns>
         private List<string> GetFilesFromArgs()
         {
-            if (enteredPathType == PathType.Directory)
+            if (this.enteredPathType == PathType.Directory)
             {
-                return GetFilesFromDirectories();
+                return this.GetFilesFromDirectories();
             }
-            return new List<string>(enteredArguments)
+
+            return new List<string>(this.enteredArguments)
                 .Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
         }
+
         /// <summary>
         /// Gets files from directories, provided in Args field.
         /// Files with .docx extension are taken.
@@ -142,13 +147,15 @@ namespace SmartOCR
         private List<string> GetFilesFromDirectories()
         {
             List<string> directories = new List<string>();
-            for (int i = 0; i < enteredArguments.Count; i++)
+            for (int i = 0; i < this.enteredArguments.Count; i++)
             {
-                string singleDirectory = enteredArguments[i];
+                string singleDirectory = this.enteredArguments[i];
                 directories.AddRange(Directory.GetFiles(singleDirectory).Where(item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) && item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)));
             }
+
             return directories;
         }
+
         /// <summary>
         /// Checks whether argument, provided after document type is path to directory or file.
         /// </summary>
@@ -160,12 +167,13 @@ namespace SmartOCR
             {
                 return PathType.Directory;
             }
+
             if (File.Exists(path))
             {
                 return PathType.File;
             }
+
             return PathType.None;
         }
-        #endregion
     }
 }

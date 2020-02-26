@@ -1,81 +1,76 @@
-﻿using Microsoft.Office.Interop.Word;
-using System;
-
-namespace SmartOCR
+﻿namespace SmartOCR
 {
+    using System;
+    using Microsoft.Office.Interop.Word;
+
     public class WordTable
     {
-        #region Fields
         private readonly string[][] cells;
-        #endregion
 
-        #region Properties
-        public int RowCount
-        {
-            get
-            {
-                return cells.Length;
-            }
-        }
-        public int ColumnCount
-        {
-            get
-            {
-                return cells[0].Length;
-            }
-        }
-        #endregion
-
-        #region Indexers
-        public string this[int Row, int Column]
-        {
-            get
-            {
-                Row = Row < 0
-                    ? RowCount + Row
-                    : Row;
-                Column = Column < 0
-                    ? ColumnCount + Column
-                    : Column;
-                if (!(0 <= Row && Row <= cells.Length ))
-                {
-                    return null;
-                }
-                if (!(0 <= Column && Column <= cells[Row].Length))
-                {
-                    return null;
-                }
-                return cells[Row][Column];
-            }
-        }
-        #endregion
-
-        #region Constructors
         public WordTable(Table wordTable)
         {
             if (wordTable == null)
             {
                 throw new ArgumentNullException(nameof(wordTable));
             }
-            cells = new string[wordTable.Rows.Count][];
+
+            this.cells = new string[wordTable.Rows.Count][];
             for (int i = 0; i < wordTable.Rows.Count; i++)
             {
-                cells[i] = new string[wordTable.Columns.Count];
+                this.cells[i] = new string[wordTable.Columns.Count];
             }
+
             foreach (Cell cell in wordTable.Range.Cells)
             {
-                cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
+                this.cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = this.RemoveInvalidChars(cell.Range.Text);
             }
         }
-        #endregion
 
-        #region Private methods
+        public int RowCount
+        {
+            get
+            {
+                return this.cells.Length;
+            }
+        }
+
+        public int ColumnCount
+        {
+            get
+            {
+                return this.cells[0].Length;
+            }
+        }
+
+        public string this[int row, int column]
+        {
+            get
+            {
+                row = row < 0
+                    ? this.RowCount + row
+                    : row;
+                column = column < 0
+                    ? this.ColumnCount + column
+                    : column;
+                if (!(row >= 0 && row <= this.cells.Length))
+                {
+                    return null;
+                }
+
+                if (!(column >= 0 && column <= this.cells[row].Length))
+                {
+                    return null;
+                }
+
+                return this.cells[row][column];
+            }
+        }
+
         private string RemoveInvalidChars(string checkString)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f" };
             string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            return string.Join("", temp).Replace("\v", " ");
+            return string.Join(string.Empty, temp).Replace("\v", " ");
         }
-        #endregion
     }
 }

@@ -1,8 +1,9 @@
 ﻿namespace SmartOCR
 {
-    interface IBuilder<T>
+    public interface IBuilder<T>
     {
         T Build();
+
         void Reset();
     }
 }
