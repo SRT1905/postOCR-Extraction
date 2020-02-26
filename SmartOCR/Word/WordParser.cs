@@ -92,7 +92,7 @@ namespace SmartOCR
                         }
                         catch (IndexOutOfRangeException) // No terminal node found.
                         {
-                            return;
+                            break;
                         }
                     }
                     TreeNodeContent childContent = childNode.Content;
@@ -100,12 +100,11 @@ namespace SmartOCR
                     Regex regexObject = Utilities.CreateRegexpObject(childContent.RegExPattern);
                     if (regexObject.IsMatch(itemByExpressionPosition))
                     {
-                        string nestedValueType = "String";
-                        int slashCharIndex = childContent.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase);
-                        if (slashCharIndex != -1)
-                        {
-                            nestedValueType = childContent.ValueType.Substring(slashCharIndex++);
-                        }
+                        int slashCharIndex = childContent.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase) + 1;
+                        string nestedValueType = slashCharIndex == 0
+                            ? "String"
+                            : childContent.ValueType.Substring(slashCharIndex);
+
                         var matchProcessor = new MatchProcessor(itemByExpressionPosition, regexObject, nestedValueType);
                         if (!string.IsNullOrEmpty(matchProcessor.Result))
                         {
