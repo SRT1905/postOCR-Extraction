@@ -39,27 +39,27 @@ namespace SmartOCR
         }
         private Workbook GetInternalConfigWorkbook()
         {
-            string temp_path = Path.GetTempFileName();
-            File.WriteAllBytes(temp_path, ConfigContainer.config);
-            return ExcelApplication.OpenExcelWorkbook(temp_path);
+            string tempPath = Path.GetTempFileName();
+            File.WriteAllBytes(tempPath, ConfigContainer.config);
+            return ExcelApplication.OpenExcelWorkbook(tempPath);
         }
-        private ConfigData GetConfigData(Worksheet source_ws)
+        private ConfigData GetConfigData(Worksheet sourceWS)
         {
             var data = new ConfigData();
-            long header_row;
-            for (header_row = 1; header_row <= source_ws.Cells.Item[source_ws.Rows.Count, 1].End[XlDirection.xlUp].Row; header_row++)
+            long headerRow;
+            for (headerRow = 1; headerRow <= sourceWS.Cells.Item[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; headerRow++)
             {
-                string cell_value = source_ws.Cells.Item[header_row, 1].Value2;
-                if (cell_value.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
+                string cellValue = sourceWS.Cells.Item[headerRow, 1].Value2;
+                if (cellValue.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
                 {
                     break;
                 }
             }
 
-            long last_column = source_ws.Cells.Item[header_row, source_ws.Columns.Count].End[XlDirection.xlToLeft].Column;
-            for (int i = 2; i <= last_column; i++)
+            long lastColumn = sourceWS.Cells.Item[headerRow, sourceWS.Columns.Count].End[XlDirection.xlToLeft].Column;
+            for (int i = 2; i <= lastColumn; i++)
             {
-                ConfigField field = GetFieldDefinition(source_ws, header_row, i);
+                ConfigField field = GetFieldDefinition(sourceWS, headerRow, i);
                 data.AddField(field);
             }
             return data;
@@ -67,16 +67,16 @@ namespace SmartOCR
         #endregion
 
         #region Private static methods        
-        private static ConfigField GetFieldDefinition(Worksheet source_ws, long header_row, long field_column)
+        private static ConfigField GetFieldDefinition(Worksheet sourceWS, long headerRow, long fieldColumn)
         {
-            string field_name = source_ws.Cells.Item[header_row, field_column].Value2;
-            string value_type = source_ws.Cells.Item[header_row + 1, field_column].Value2;
-            var field = new ConfigField(field_name, value_type);
-            field.ParseFieldExpression(source_ws.Cells.Item[header_row + 2, field_column].Value2);
-            long last_row = source_ws.Cells.Item[source_ws.Rows.Count, field_column].End[XlDirection.xlUp].Row;
-            for (long i = header_row + 3; i <= last_row; i++)
+            string fieldName = sourceWS.Cells.Item[headerRow, fieldColumn].Value2;
+            string valueType = sourceWS.Cells.Item[headerRow + 1, fieldColumn].Value2;
+            var field = new ConfigField(fieldName, valueType);
+            field.ParseFieldExpression(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2);
+            long lastRow = sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row;
+            for (long i = headerRow + 3; i <= lastRow; i++)
             {
-                field.AddSearchExpression(new ConfigExpression(value_type, source_ws.Cells.Item[i, field_column].Value2));
+                field.AddSearchExpression(new ConfigExpression(valueType, sourceWS.Cells.Item[i, fieldColumn].Value2));
             }
             return field;
         }

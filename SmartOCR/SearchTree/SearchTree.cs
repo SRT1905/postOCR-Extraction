@@ -7,7 +7,7 @@ namespace SmartOCR
     {
         #region Fields
         private readonly ConfigData ConfigData;
-        private TreeNode tree_structure;
+        private TreeNode treeStructure;
         #endregion
 
         #region Properties
@@ -15,7 +15,7 @@ namespace SmartOCR
         {
             get
             {
-                return tree_structure.Children;
+                return treeStructure.Children;
             }
         }
         #endregion
@@ -30,53 +30,53 @@ namespace SmartOCR
         #region Public methods
         public Dictionary<string, string> GetValuesFromTree()
         {
-            var final_values = new Dictionary<string, string>();
+            var finalValues = new Dictionary<string, string>();
             foreach (ConfigField field in ConfigData.Fields)
             {
-                List<string> children_collection = GetChildrenByFieldName(field.Name);
+                List<string> childrenCollection = GetChildrenByFieldName(field.Name);
                 var result = new HashSet<string>();
-                if (children_collection.Count != 0)
+                if (childrenCollection.Count != 0)
                 {
-                    result.UnionWith(children_collection);
+                    result.UnionWith(childrenCollection);
                 }
                 else
                 {
-                    var pre_terminal_collection = GetDataFromPreTerminalNodes(field.Name);
-                    result.UnionWith(pre_terminal_collection);
+                    var preTerminalCollection = GetDataFromPreTerminalNodes(field.Name);
+                    result.UnionWith(preTerminalCollection);
                 }
-                final_values.Add(field.Name, string.Join("|", result));
+                finalValues.Add(field.Name, string.Join("|", result));
             }
-            return final_values;
+            return finalValues;
         }
         public void PopulateTree()
         {
             TreeNode root = TreeNode.CreateRoot();
             foreach (ConfigField field in ConfigData.Fields)
             {
-                TreeNode field_node = AddFieldNode(root, field);
-                AddSearchValues(field, field_node);
+                TreeNode fieldNode = AddFieldNode(root, field);
+                AddSearchValues(field, fieldNode);
             }
-            tree_structure = root;
+            treeStructure = root;
         }
         #endregion
 
         #region Private methods
 
-        private List<string> GetChildrenByFieldName(string field_name)
+        private List<string> GetChildrenByFieldName(string fieldName)
         {
-            var children_collection = new List<string>();
-            foreach (TreeNode field_node in tree_structure.Children)
+            var childrenCollection = new List<string>();
+            foreach (TreeNode fieldNode in treeStructure.Children)
             {
-                if (field_node.Content.Name == field_name)
+                if (fieldNode.Content.Name == fieldName)
                 {
-                    GetNodeChildren(field_node, children_collection);
+                    GetNodeChildren(fieldNode, childrenCollection);
                     break;
                 }
             }
 
-            return children_collection;
+            return childrenCollection;
         }
-        private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> found_data)
+        private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
         {
             if (node.Children.Count == 0)
             {
@@ -85,61 +85,60 @@ namespace SmartOCR
 
             foreach (TreeNode child in node.Children)
             {
-                GetDataFromNode(child, found_data);
+                GetDataFromNode(child, foundData);
             }
             if (!string.IsNullOrEmpty(node.Content.FoundValue))
             {
                 if (node.Content.Status)
                 {
-                    found_data[true].Add(node.Content.FoundValue);
+                    foundData[true].Add(node.Content.FoundValue);
                 }
                 else
                 {
                     if (node.Parent.Content.NodeLabel != "Field")
                     {
-                        found_data[false].Add(node.Content.FoundValue);
+                        foundData[false].Add(node.Content.FoundValue);
                     }
                 }
 
             }
-
         }
-        private HashSet<string> GetDataFromPreTerminalNodes(string field_name)
+        private HashSet<string> GetDataFromPreTerminalNodes(string fieldName)
         {
-            var found_data = new Dictionary<bool, HashSet<string>>()
+            var foundData = new Dictionary<bool, HashSet<string>>()
             {
                 { true, new HashSet<string>() },
                 { false, new HashSet<string>() }
             };
-            foreach (TreeNode node in tree_structure.Children)
+            foreach (TreeNode node in treeStructure.Children)
             {
-                if (node.Content.Name == field_name)
+                if (node.Content.Name == fieldName)
                 {
-                    GetDataFromNode(node, found_data);
-                    if (found_data[true].Count != 0)
+                    GetDataFromNode(node, foundData);
+                    if (foundData[true].Count != 0)
                     {
-                        return found_data[true];
+                        return foundData[true];
                     }
-                    return found_data[false];
+                    return foundData[false];
 
                 }
             }
             return new HashSet<string>();
         }
-        private void GetNodeChildren(TreeNode node, List<string> children_collection)
+        private void GetNodeChildren(TreeNode node, List<string> childrenCollection)
         {
             if (node.Children.Count == 0)
             {
                 if (node.Content.Status)
                 {
-                    children_collection.Add(node.Content.FoundValue);
+                    childrenCollection.Add(node.Content.FoundValue);
                 }
                 return;
             }
 
             foreach (TreeNode child in node.Children)
             {
-                GetNodeChildren(child, children_collection);
+                GetNodeChildren(child, childrenCollection);
             }
         }
         #endregion
@@ -155,134 +154,134 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(node));
             }
-            var node_content = node.Content;
-            if (node_content.NodeLabel == "Terminal")
+            var nodeContent = node.Content;
+            if (nodeContent.NodeLabel == "Terminal")
             {
                 return;
             }
 
-            List<ConfigExpression> values_collection = fieldData.Expressions;
-            if (node.Children.Count == 0 && values_collection.Count < initialValueIndex + 1)
+            List<ConfigExpression> valuesCollection = fieldData.Expressions;
+            if (node.Children.Count == 0 && valuesCollection.Count < initialValueIndex + 1)
             {
-                AddSearchValuesToChildlessNode(node, initialValueIndex - 1, values_collection);
+                AddSearchValuesToChildlessNode(node, initialValueIndex - 1, valuesCollection);
             }
 
-            if (values_collection.Count < initialValueIndex + 1)
+            if (valuesCollection.Count < initialValueIndex + 1)
             {
                 return;
             }
 
-            string field_name = node_content.Name;
-            if (node_content.NodeLabel == "Line" || node_content.NodeLabel == "Field")
+            string fieldName = nodeContent.Name;
+            if (nodeContent.NodeLabel == "Line" || nodeContent.NodeLabel == "Field")
             {
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     TreeNode child = node.Children[i];
-                    AddSearchValuesToSingleNode(field_name, child, values_collection, initialValueIndex);
+                    AddSearchValuesToSingleNode(fieldName, child, valuesCollection, initialValueIndex);
                 }
             }
             else
             {
-                AddSearchValuesToSingleNode(field_name, node, values_collection, initialValueIndex);
+                AddSearchValuesToSingleNode(fieldName, node, valuesCollection, initialValueIndex);
             }
         }
         #endregion
 
         #region Private static methods
-        private static TreeNode AddFieldNode(TreeNode root_node, ConfigField field_data)
+        private static TreeNode AddFieldNode(TreeNode rootNode, ConfigField fieldData)
         {
-            var paragraph_collection = new List<long>() { 0 };
+            var paragraphCollection = new List<long>() { 0 };
 
             TreeNodeContent content = new TreeNodeContent()
             {
-                Name = field_data.Name,
-                RegExPattern = field_data.RegExPattern,
+                Name = fieldData.Name,
+                RegExPattern = fieldData.RegExPattern,
                 NodeLabel = "Field",
-                ValueType = field_data.ValueType,
-                CheckValue = field_data.ExpectedName,
+                ValueType = fieldData.ValueType,
+                CheckValue = fieldData.ExpectedName,
             };
-            content.Lines.Add(paragraph_collection[0]);
+            content.Lines.Add(paragraphCollection[0]);
 
             TreeNode node = new TreeNode(content);
 
-            for (int i = 0; i < paragraph_collection.Count; i++)
+            for (int i = 0; i < paragraphCollection.Count; i++)
             {
-                TreeNodeContent child_content = new TreeNodeContent(content)
+                TreeNodeContent childContent = new TreeNodeContent(content)
                 {
                     NodeLabel = "Line"
                 };
-                child_content.Lines.Add(paragraph_collection[i]);
-                var child_node = new TreeNode(child_content);
-                node.AddChild(child_node);
+                childContent.Lines.Add(paragraphCollection[i]);
+                var childNode = new TreeNode(childContent);
+                node.AddChild(childNode);
             }
-            root_node.AddChild(node);
+            rootNode.AddChild(node);
             return node;
         }
-        private static void AddSearchValuesToChildlessNode(TreeNode node, int initial_value_index, List<ConfigExpression> values_collection)
+        private static void AddSearchValuesToChildlessNode(TreeNode node, int initialValueIndex, List<ConfigExpression> valuesCollection)
         {
-            ConfigExpression single_value_definition = values_collection[initial_value_index];
+            ConfigExpression singleValueDefinition = valuesCollection[initialValueIndex];
             TreeNodeContent content = new TreeNodeContent()
             {
                 Name = node.Content.Name,
-                NodeLabel = $"Search {initial_value_index}",
-                RegExPattern = single_value_definition.RegExPattern,
+                NodeLabel = $"Search {initialValueIndex}",
+                RegExPattern = singleValueDefinition.RegExPattern,
                 HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
                 ValueType = node.Content.ValueType
             };
             if (content.ValueType.Contains("Table"))
             {
-                content.FirstSearchParameter = single_value_definition.SearchParameters["row"];
-                content.SecondSearchParameter = single_value_definition.SearchParameters["column"];
+                content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
+                content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
             }
             else
             {
-                content.FirstSearchParameter = single_value_definition.SearchParameters["line_offset"];
-                content.SecondSearchParameter = single_value_definition.SearchParameters["horizontal_status"];
+                content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
+                content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
             }
 
-            if (initial_value_index + 1 == values_collection.Count)
+            if (initialValueIndex + 1 == valuesCollection.Count)
             {
                 content.NodeLabel = "Terminal";
             }
             content.Lines.Add(node.Content.Lines[0]);
-            TreeNode new_node = new TreeNode(content);
-            node.AddChild(new_node);
+            TreeNode newNode = new TreeNode(content);
+            node.AddChild(newNode);
         }
-        private static void AddSearchValuesToSingleNode(string field_name, TreeNode node, List<ConfigExpression> values_collection, int initial_value_index)
+        private static void AddSearchValuesToSingleNode(string fieldName, TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
         {
-            TreeNode single_paragraph_node = node;
-            for (int value_index = initial_value_index; value_index < values_collection.Count; value_index++)
+            TreeNode singleParagraphNode = node;
+            for (int valueIndex = initialValueIndex; valueIndex < valuesCollection.Count; valueIndex++)
             {
-                ConfigExpression single_value_definition = values_collection[value_index];
+                ConfigExpression singleValueDefinition = valuesCollection[valueIndex];
                 TreeNodeContent content = new TreeNodeContent()
                 {
-                    Name = field_name,
-                    NodeLabel = $"Search {value_index}",
-                    RegExPattern = single_value_definition.RegExPattern,
-                    HorizontalParagraph = ((TreeNodeContent)single_paragraph_node.Content).HorizontalParagraph,
-                    ValueType = single_paragraph_node.Content.ValueType,
+                    Name = fieldName,
+                    NodeLabel = $"Search {valueIndex}",
+                    RegExPattern = singleValueDefinition.RegExPattern,
+                    HorizontalParagraph = ((TreeNodeContent)singleParagraphNode.Content).HorizontalParagraph,
+                    ValueType = singleParagraphNode.Content.ValueType,
                 };
-                long offset_line = single_paragraph_node.Content.Lines[0];
+                long offsetLine = singleParagraphNode.Content.Lines[0];
 
                 if (content.ValueType.Contains("Table"))
                 {
-                    content.FirstSearchParameter = single_value_definition.SearchParameters["row"];
-                    content.SecondSearchParameter = single_value_definition.SearchParameters["column"];
+                    content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
+                    content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
                 }
                 else
                 {
-                    content.FirstSearchParameter = single_value_definition.SearchParameters["line_offset"];
-                    content.SecondSearchParameter = single_value_definition.SearchParameters["horizontal_status"];
+                    content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
+                    content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
                 }
 
-                if (value_index + 1 == values_collection.Count)
+                if (valueIndex + 1 == valuesCollection.Count)
                 {
                     content.NodeLabel = "Terminal";
                 }
-                content.Lines.Add(offset_line);
+                content.Lines.Add(offsetLine);
 
-                var new_node = new TreeNode(content);
-                single_paragraph_node = single_paragraph_node.AddChild(new_node);
+                var newNode = new TreeNode(content);
+                singleParagraphNode = singleParagraphNode.AddChild(newNode);
             }
         }
         #endregion

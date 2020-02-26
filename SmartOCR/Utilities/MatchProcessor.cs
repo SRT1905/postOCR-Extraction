@@ -37,23 +37,23 @@ namespace SmartOCR
         /// <summary>
         /// Calls for specific type processing for possible match between text and regular expression.
         /// </summary>
-        /// <param name="regex_obj"><see cref="Regex"/> object that is used to test paragraphs.</param>
-        /// <param name="value_type">Data type of found matches.</param>
+        /// <param name="regexObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
+        /// <param name="valueType">Data type of found matches.</param>
         /// <returns>String representation of casted match.</returns>
-        private string ProcessValue(string text_to_check, Regex regex_obj, string value_type)
+        private string ProcessValue(string textToCheck, Regex regexObject, string valueType)
         {
-            if (regex_obj.IsMatch(text_to_check))
+            if (regexObject.IsMatch(textToCheck))
             {
-                switch (value_type)
+                switch (valueType)
                 {
                     case "String":
-                        return ProcessString(regex_obj.Matches(text_to_check));
+                        return ProcessString(regexObject.Matches(textToCheck));
 
                     case "Number":
-                        return ProcessNumber(regex_obj.Matches(text_to_check));
+                        return ProcessNumber(regexObject.Matches(textToCheck));
 
                     case "Date":
-                        return ProcessDate(regex_obj.Matches(text_to_check));
+                        return ProcessDate(regexObject.Matches(textToCheck));
 
                     default:
                         break;
@@ -86,8 +86,8 @@ namespace SmartOCR
         /// <returns>String representation of numeric match.</returns>
         private static string ProcessNumber(MatchCollection matches)
         {
-            var processed_number = Utilities.NumberProcessing(matches[0].Value);
-            return double.TryParse(processed_number, out double result)
+            var processedNumber = Utilities.NumberProcessing(matches[0].Value);
+            return double.TryParse(processedNumber, out double result)
                 ? result.ToString(CultureInfo.CurrentCulture)
                 : string.Empty;
         }

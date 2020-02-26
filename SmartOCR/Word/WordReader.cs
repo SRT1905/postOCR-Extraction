@@ -15,11 +15,11 @@ namespace SmartOCR
         /// Defines limits of single document line.
         /// 72 points = 1 inch.
         /// </summary>
-        private const byte vertical_position_offset = 6;
+        private const byte verticalPositionOffset = 6;
         /// <summary>
         /// Defines lower bound of document text element length.
         /// </summary>
-        private const byte minimal_text_length = 2;
+        private const byte minimalTextLength = 2;
         #endregion
 
         #region Fields
@@ -60,12 +60,12 @@ namespace SmartOCR
         /// </summary>
         public void ReadDocument()
         {
-            long number_of_pages = document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
+            long numberOfPages = document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
 
-            for (int i = 1; i <= number_of_pages; i++)
+            for (int i = 1; i <= numberOfPages; i++)
             {
-                var page_content = ReadSinglePage(i);
-                UpdateLineMapping(page_content);
+                var pageContent = ReadSinglePage(i);
+                UpdateLineMapping(pageContent);
             }
             TableCollection = GetTables();
         }
@@ -96,24 +96,24 @@ namespace SmartOCR
         /// <summary>
         /// Gets data from Paragraph objects on specific page.
         /// </summary>
-        /// <param name="page_index">Index of page to read.</param>
+        /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Mapping of paragraphs, sorted by their vertical location on page.</returns>
-        private SortedDictionary<decimal, List<ParagraphContainer>> GetDataFromParagraphs(long page_index)
+        private SortedDictionary<decimal, List<ParagraphContainer>> GetDataFromParagraphs(long pageIndex)
         {
-            var document_content = new SortedDictionary<decimal, List<ParagraphContainer>>();
-            List<ParagraphContainer> valid_paragraphs = GetValidParagraphs(page_index);
+            var documentContent = new SortedDictionary<decimal, List<ParagraphContainer>>();
+            List<ParagraphContainer> validParagraphs = GetValidParagraphs(pageIndex);
 
-            for (int i = 0; i < valid_paragraphs.Count; i++)
+            for (int i = 0; i < validParagraphs.Count; i++)
             {
-                ParagraphContainer single_paragraph = valid_paragraphs[i];
-                decimal location = single_paragraph.VerticalLocation;
-                if (!document_content.ContainsKey(location))
+                ParagraphContainer singleParagraph = validParagraphs[i];
+                decimal location = singleParagraph.VerticalLocation;
+                if (!documentContent.ContainsKey(location))
                 {
-                    document_content.Add(location, new List<ParagraphContainer>());
+                    documentContent.Add(location, new List<ParagraphContainer>());
                 }
-                document_content[location].Add(single_paragraph);
+                documentContent[location].Add(singleParagraph);
             }
-            return document_content;
+            return documentContent;
         }
         private List<WordTable> GetTables()
         {
@@ -137,63 +137,63 @@ namespace SmartOCR
         /// <summary>
         /// Gets valid paragraphs, wrapped in <see cref="ParagraphContainer"/> instances, from specific page.
         /// </summary>
-        /// <param name="page_index">Specific page index.</param>
+        /// <param name="pageIndex">Specific page index.</param>
         /// <returns>Collection of valid paragraphs.</returns>
-        private List<ParagraphContainer> GetValidParagraphs(long page_index)
+        private List<ParagraphContainer> GetValidParagraphs(long pageIndex)
         {
             var paragraphs = document.Paragraphs;
-            int paragraphs_count = paragraphs.Count;
-            var paragraph_collection = new List<ParagraphContainer>();
+            int paragraphsCount = paragraphs.Count;
+            var paragraphCollection = new List<ParagraphContainer>();
 
-            for (int i = ParagraphCounter; i <= paragraphs_count; i++)
+            for (int i = ParagraphCounter; i <= paragraphsCount; i++)
             {
-                var single_range = paragraphs[i].Range;
-                long range_page = single_range.Information[WdInformation.wdActiveEndPageNumber];
-                if (range_page < page_index)
+                var singleRange = paragraphs[i].Range;
+                long rangePage = singleRange.Information[WdInformation.wdActiveEndPageNumber];
+                if (rangePage < pageIndex)
                 {
                     continue;
                 }
-                if (range_page > page_index)
+                if (rangePage > pageIndex)
                 {
                     ParagraphCounter = i;
                     break;
                 }
-                if (range_page == page_index && single_range.Text.Length > minimal_text_length)
+                if (rangePage == pageIndex && singleRange.Text.Length > minimalTextLength)
                 {
-                    paragraph_collection.Add(new ParagraphContainer(single_range));
+                    paragraphCollection.Add(new ParagraphContainer(singleRange));
                 }
             }
-            return paragraph_collection;
+            return paragraphCollection;
         }
         /// <summary>
         /// Gets TextFrame objects, which contain text, on specific document page.
         /// </summary>
-        /// <param name="page_index">Index of page to read.</param>
+        /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Collection of valid TextFrame objects.</returns>
-        private List<TextFrame> GetValidTextFrames(long page_index)
+        private List<TextFrame> GetValidTextFrames(long pageIndex)
         {
             var frames = new List<TextFrame>();
 
             var shapes = document.Shapes;
-            int shapes_count = shapes.Count;
-            for (int i = 1; i <= shapes_count; i++)
+            int shapesCount = shapes.Count;
+            for (int i = 1; i <= shapesCount; i++)
             {
                 var shape = shapes[i];
-                long shape_page = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
-                if (shape_page < page_index)
+                long shapePage = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
+                if (shapePage < pageIndex)
                 {
                     continue;
                 }
-                if (shape_page > page_index)
+                if (shapePage > pageIndex)
                 {
                     break;
                 }
-                if (shape_page == page_index)
+                if (shapePage == pageIndex)
                 {
                     var frame = shape.TextFrame;
                     if (frame != null && frame.HasText != 0)
                     {
-                        if (frame.TextRange.Text.Length > minimal_text_length)
+                        if (frame.TextRange.Text.Length > minimalTextLength)
                         {
                             frames.Add(frame);
                         }
@@ -205,15 +205,15 @@ namespace SmartOCR
         /// <summary>
         /// Gets grouped document content from specified page.
         /// </summary>
-        /// <param name="page_index">Index of page to read.</param>
+        /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Document contents, grouped by lines.</returns>
-        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long page_index)
+        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long pageIndex)
         {
-            SortedDictionary<decimal, List<ParagraphContainer>> document_content = GetDataFromParagraphs(page_index);
-            List<TextFrame> frame_collection = GetValidTextFrames(page_index);
-            TryAddTablesFromFrames(frame_collection);
-            document_content = AddDataFromFrames(document_content, frame_collection);
-            return GroupParagraphsByLine(document_content);
+            SortedDictionary<decimal, List<ParagraphContainer>> documentContent = GetDataFromParagraphs(pageIndex);
+            List<TextFrame> frameCollection = GetValidTextFrames(pageIndex);
+            TryAddTablesFromFrames(frameCollection);
+            documentContent = AddDataFromFrames(documentContent, frameCollection);
+            return GroupParagraphsByLine(documentContent);
         }
         private void TryAddTablesFromFrames(List<TextFrame> frames)
         {
@@ -228,34 +228,34 @@ namespace SmartOCR
         /// <summary>
         /// Merges LineMapping dictionary with provided page content.
         /// </summary>
-        /// <param name="page_content">Grouped content from single page.</param>
-        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> page_content)
+        /// <param name="pageContent">Grouped content from single page.</param>
+        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> pageContent)
         {
-            if (page_content.Count == 0)
+            if (pageContent.Count == 0)
             {
                 return;
             }
-            List<long> keys = page_content.Keys.ToList();
-            if (page_content.ContainsKey(0))
+            List<long> keys = pageContent.Keys.ToList();
+            if (pageContent.ContainsKey(0))
             {
-                var shifted_mapping = new SortedDictionary<long, List<ParagraphContainer>>();
+                var shiftedMapping = new SortedDictionary<long, List<ParagraphContainer>>();
                 for (int i = 0; i < keys.Count; i++)
                 {
                     long key = keys[i];
-                    shifted_mapping.Add(key + 1, page_content[key]);
+                    shiftedMapping.Add(key + 1, pageContent[key]);
                 }
-                page_content = shifted_mapping;
+                pageContent = shiftedMapping;
             }
             if (LineMapping.Count == 0)
             {
-                LineMapping = page_content;
+                LineMapping = pageContent;
                 return;
             }
-            long end_line = LineMapping.Keys.Last();
+            long endLine = LineMapping.Keys.Last();
             for (int i = 0; i < keys.Count; i++)
             {
                 long key = keys[i];
-                LineMapping.Add(key + end_line, page_content[key]);
+                LineMapping.Add(key + endLine, pageContent[key]);
             }
         }
         #endregion
@@ -264,109 +264,109 @@ namespace SmartOCR
         /// <summary>
         /// Gets data from TextFrame objects and adds it to document contents container.
         /// </summary>
-        /// <param name="document_content">Representation of read document contents.</param>
-        /// <param name="frame_collection">Collection of TextFrame objects.</param>
+        /// <param name="documentContent">Representation of read document contents.</param>
+        /// <param name="frameCollection">Collection of TextFrame objects.</param>
         /// <returns>Representation of document contents that is extended by TextFrame objects.</returns>
-        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<decimal, List<ParagraphContainer>> document_content, List<TextFrame> frame_collection)
+        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, List<TextFrame> frameCollection)
         {
-            for (int i = 0; i < frame_collection.Count; i++)
+            for (int i = 0; i < frameCollection.Count; i++)
             {
-                document_content = AddDataFromSingleFrame(document_content, frame_collection[i]);
+                documentContent = AddDataFromSingleFrame(documentContent, frameCollection[i]);
             }
-            return document_content;
+            return documentContent;
         }
         /// <summary>
         /// Gets data from TextFrame object and adds it to document contents representation.
         /// </summary>
-        /// <param name="document_content">Representation of read document contents.</param>
-        /// <param name="text_frame">TextFrame object containing text.</param>
+        /// <param name="documentContent">Representation of read document contents.</param>
+        /// <param name="textFrame">TextFrame object containing text.</param>
         /// <returns>Representation of read document contents, extended by TextFrame contents.</returns>
-        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> document_content, TextFrame text_frame)
+        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, TextFrame textFrame)
         {
-            List<ParagraphContainer> paragraph_containers = GetParagraphsFromTextFrame(text_frame);
-            for (int i = 0; i < paragraph_containers.Count; i++)
+            List<ParagraphContainer> paragraphContainers = GetParagraphsFromTextFrame(textFrame);
+            for (int i = 0; i < paragraphContainers.Count; i++)
             {
-                ParagraphContainer container = paragraph_containers[i];
+                ParagraphContainer container = paragraphContainers[i];
                 decimal location = container.VerticalLocation;
-                if (container.Text.Length >= minimal_text_length)
+                if (container.Text.Length >= minimalTextLength)
                 {
-                    if (!document_content.ContainsKey(location))
+                    if (!documentContent.ContainsKey(location))
                     {
-                        document_content.Add(location, new List<ParagraphContainer>());
+                        documentContent.Add(location, new List<ParagraphContainer>());
                     }
-                    document_content[location] = InsertRangeInCollection(document_content[location], container);
+                    documentContent[location] = InsertRangeInCollection(documentContent[location], container);
                 }
             }
-            return document_content;
+            return documentContent;
         }
         /// <summary>
         /// Extracts paragraphs from <see cref="TextFrame"/> object.
         /// </summary>
-        /// <param name="text_frame">A <see cref="TextFrame"/> instance that contains text.</param>
+        /// <param name="textFrame">A <see cref="TextFrame"/> instance that contains text.</param>
         /// <returns>A collection of <see cref="ParagraphContainer"/> objects.</returns>
-        private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame text_frame)
+        private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame textFrame)
         {
-            Paragraphs paragraphs = text_frame.TextRange.Paragraphs;
-            int paragraphs_count = paragraphs.Count;
+            Paragraphs paragraphs = textFrame.TextRange.Paragraphs;
+            int paragraphsCount = paragraphs.Count;
 
-            var paragraph_containers = new List<ParagraphContainer>();
-            for (int i = 1; i <= paragraphs_count; i++)
+            var paragraphContainers = new List<ParagraphContainer>();
+            for (int i = 1; i <= paragraphsCount; i++)
             {
-                paragraph_containers.Add(new ParagraphContainer(paragraphs[i].Range));
+                paragraphContainers.Add(new ParagraphContainer(paragraphs[i].Range));
             }
 
-            return paragraph_containers;
+            return paragraphContainers;
         }
         /// <summary>
         /// Groups document contents, arranged by vertical location on page, in separate lines.
         /// </summary>
-        /// <param name="document_content">Representation of read document contents.</param>
+        /// <param name="documentContent">Representation of read document contents.</param>
         /// <returns></returns>
-        private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> document_content)
+        private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> documentContent)
         {
-            var new_document_content = new SortedDictionary<long, List<ParagraphContainer>>();
+            var newDocumentContent = new SortedDictionary<long, List<ParagraphContainer>>();
 
             try
             {
-                new_document_content.Add(1, document_content.Values.First());
+                newDocumentContent.Add(1, documentContent.Values.First());
             }
             catch (InvalidOperationException)
             {
-                return new_document_content;
+                return newDocumentContent;
             }
 
-            for (int i = 1; i < document_content.Count; i++)
+            for (int i = 1; i < documentContent.Count; i++)
             {
-                decimal current_location = document_content.Keys.ElementAt(i);
-                decimal previous_location = new_document_content[new_document_content.Count][0].VerticalLocation;
-                if (previous_location - vertical_position_offset <= current_location && current_location <= previous_location + vertical_position_offset)
+                decimal currentLocation = documentContent.Keys.ElementAt(i);
+                decimal previousLocation = newDocumentContent[newDocumentContent.Count][0].VerticalLocation;
+                if (previousLocation - verticalPositionOffset <= currentLocation && currentLocation <= previousLocation + verticalPositionOffset)
                 {
-                    new_document_content[new_document_content.Count].AddRange(document_content[current_location]);
+                    newDocumentContent[newDocumentContent.Count].AddRange(documentContent[currentLocation]);
                 }
                 else
                 {
-                    new_document_content.Add(new_document_content.Count + 1, document_content[current_location]);
+                    newDocumentContent.Add(newDocumentContent.Count + 1, documentContent[currentLocation]);
                 }
             }
 
-            foreach (KeyValuePair<long, List<ParagraphContainer>> item in new_document_content)
+            foreach (KeyValuePair<long, List<ParagraphContainer>> item in newDocumentContent)
             {
                 item.Value.Sort();
             }
 
-            return new_document_content;
+            return newDocumentContent;
         }
         /// <summary>
         /// Adds ParagraphContainer instance to collection with maintaining sort order.
         /// </summary>
-        /// <param name="paragraph_collection">Collection of ParagraphContainer objects.</param>
-        /// <param name="text_range_container">ParagraphContainer instance to add.</param>
+        /// <param name="paragraphCollection">Collection of ParagraphContainer objects.</param>
+        /// <param name="textRangeContainer">ParagraphContainer instance to add.</param>
         /// <returns>Updated collection of ParagraphContainer objects.</returns>
-        private static List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraph_collection, ParagraphContainer text_range_container)
+        private static List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraphCollection, ParagraphContainer textRangeContainer)
         {
-            paragraph_collection.Add(text_range_container);
-            paragraph_collection.Sort();
-            return paragraph_collection;
+            paragraphCollection.Add(textRangeContainer);
+            paragraphCollection.Sort();
+            return paragraphCollection;
         }
         #endregion
     }

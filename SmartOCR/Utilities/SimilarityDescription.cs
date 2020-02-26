@@ -12,11 +12,11 @@ namespace SmartOCR
         /// <summary>
         /// Lower bound of valid similarity ratio.
         /// </summary>
-        private const double similarity_ratio_threshold = 0.66;
+        private const double similarityRatioThreshold = 0.66;
         /// <summary>
         /// Margin, by which found string length may vary in comparison with check string.
         /// </summary>
-        private const byte string_length_offset = 1;
+        private const byte stringLengthOffset = 1;
         #endregion
 
         #region Properties
@@ -46,8 +46,8 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(checkString));
             }
-            if (foundString.Length - string_length_offset <= checkString.Length &&
-                foundString.Length + string_length_offset >= checkString.Length)
+            if (foundString.Length - stringLengthOffset <= checkString.Length &&
+                foundString.Length + stringLengthOffset >= checkString.Length)
             {
                 Ratio = GetStringSimilarity(foundString, checkString);
                 Value = foundString;
@@ -62,7 +62,7 @@ namespace SmartOCR
         /// <returns>true/false</returns>
         public bool CheckStringSimilarity()
         {
-            return Ratio >= similarity_ratio_threshold;
+            return Ratio >= similarityRatioThreshold;
         }
         #endregion
 
@@ -70,26 +70,26 @@ namespace SmartOCR
         /// <summary>
         /// Prepares strings for similarity testing and calculates ratio.
         /// </summary>
-        /// <param name="left_string"></param>
-        /// <param name="right_string"></param>
+        /// <param name="leftString"></param>
+        /// <param name="rightString"></param>
         /// <returns>Similarity ratio.</returns>
-        private double GetStringSimilarity(string left_string, string right_string)
+        private double GetStringSimilarity(string leftString, string rightString)
         {
-            string short_string;
-            string long_string;
-            if (left_string.Length < right_string.Length)
+            string shortString;
+            string longString;
+            if (leftString.Length < rightString.Length)
             {
-                short_string = left_string;
-                long_string = right_string;
+                shortString = leftString;
+                longString = rightString;
             }
             else
             {
-                short_string = right_string;
-                long_string = left_string;
+                shortString = rightString;
+                longString = leftString;
             }
-            return long_string.ToLower(CultureInfo.CurrentCulture) == short_string.ToLower(CultureInfo.CurrentCulture)
+            return longString.ToLower(CultureInfo.CurrentCulture) == shortString.ToLower(CultureInfo.CurrentCulture)
                 ? 1
-                : (long_string.Length - ComputeLevensteinDistance(long_string, short_string)) / long_string.Length;
+                : (longString.Length - ComputeLevensteinDistance(longString, shortString)) / longString.Length;
         }
         #endregion
 
@@ -97,36 +97,36 @@ namespace SmartOCR
         /// <summary>
         /// Calculates number of string operations, which would take to transform one string to another.
         /// </summary>
-        /// <param name="long_string"></param>
-        /// <param name="short_string"></param>
+        /// <param name="longString"></param>
+        /// <param name="shortString"></param>
         /// <returns>Number of required operations.</returns>
-        private static double ComputeLevensteinDistance(string long_string, string short_string)
+        private static double ComputeLevensteinDistance(string longString, string shortString)
         {
-            int long_length = long_string.Length;
-            int short_length = short_string.Length;
+            int longLength = longString.Length;
+            int shortLength = shortString.Length;
 
-            int[][] costs = new int[long_length + 1][];
+            int[][] costs = new int[longLength + 1][];
             for (int i = 0; i < costs.Length; i++)
             {
-                costs[i] = new int[short_length + 1];
+                costs[i] = new int[shortLength + 1];
             }
-            if (long_length == 0)
+            if (longLength == 0)
             {
-                return short_length;
-            }
-
-            if (short_length == 0)
-            {
-                return long_length;
+                return shortLength;
             }
 
-            for (int i = 0; i <= long_length; costs[i][0] = i++) ;
-            for (int j = 0; j <= short_length; costs[0][j] = j++) ;
-            for (int i = 1; i <= long_length; i++)
+            if (shortLength == 0)
             {
-                for (int j = 1; j <= short_length; j++)
+                return longLength;
+            }
+
+            for (int i = 0; i <= longLength; costs[i][0] = i++) ;
+            for (int j = 0; j <= shortLength; costs[0][j] = j++) ;
+            for (int i = 1; i <= longLength; i++)
+            {
+                for (int j = 1; j <= shortLength; j++)
                 {
-                    int cost = (short_string[j - 1] == long_string[i - 1]) ? 0 : 1;
+                    int cost = (shortString[j - 1] == longString[i - 1]) ? 0 : 1;
                     costs[i][j] = Math.Min(
                         Math.Min(
                             costs[i - 1][j] + 1,
@@ -134,7 +134,7 @@ namespace SmartOCR
                         costs[i - 1][j - 1] + cost);
                 }
             }
-            return costs[long_length][short_length];
+            return costs[longLength][shortLength];
         }
         #endregion
     }

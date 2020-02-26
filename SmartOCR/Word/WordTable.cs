@@ -6,7 +6,7 @@ namespace SmartOCR
     public class WordTable
     {
         #region Fields
-        private readonly string[][] _cells;
+        private readonly string[][] cells;
         #endregion
 
         #region Properties
@@ -14,14 +14,14 @@ namespace SmartOCR
         {
             get
             {
-                return _cells.Length;
+                return cells.Length;
             }
         }
         public int ColumnCount
         {
             get
             {
-                return _cells[0].Length;
+                return cells[0].Length;
             }
         }
         #endregion
@@ -37,15 +37,15 @@ namespace SmartOCR
                 Column = Column < 0
                     ? ColumnCount + Column
                     : Column;
-                if (!(0 <= Row && Row <= _cells.Length ))
+                if (!(0 <= Row && Row <= cells.Length ))
                 {
                     return null;
                 }
-                if (!(0 <= Column && Column <= _cells[Row].Length))
+                if (!(0 <= Column && Column <= cells[Row].Length))
                 {
                     return null;
                 }
-                return _cells[Row][Column];
+                return cells[Row][Column];
             }
         }
         #endregion
@@ -57,23 +57,23 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(wordTable));
             }
-            _cells = new string[wordTable.Rows.Count][];
+            cells = new string[wordTable.Rows.Count][];
             for (int i = 0; i < wordTable.Rows.Count; i++)
             {
-                _cells[i] = new string[wordTable.Columns.Count];
+                cells[i] = new string[wordTable.Columns.Count];
             }
             foreach (Cell cell in wordTable.Range.Cells)
             {
-                _cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
+                cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
             }
         }
         #endregion
 
         #region Private methods
-        private string RemoveInvalidChars(string check_string)
+        private string RemoveInvalidChars(string checkString)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f" };
-            string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("", temp).Replace("\v", " ");
         }
         #endregion

@@ -14,15 +14,15 @@ namespace SmartOCR
         /// <summary>
         /// Indicates index of last paragraph to test.
         /// </summary>
-        private int finish_index;
+        private int finishIndex;
         /// <summary>
         /// Indicates whether all paragraphs or some selection should be tested.
         /// </summary>
-        private readonly int search_status;
+        private readonly int searchStatus;
         /// <summary>
         /// Indicates index of first paragraph to test.
         /// </summary>
-        private int start_index;
+        private int startIndex;
         /// <summary>
         /// Collection of paragraphs to check.
         /// </summary>
@@ -48,8 +48,8 @@ namespace SmartOCR
         public LineContentChecker(List<ParagraphContainer> paragraphs)
         {
             this.paragraphs = paragraphs ?? throw new ArgumentNullException(nameof(paragraphs));
-            start_index = 0;
-            finish_index = paragraphs.Count - 1;
+            startIndex = 0;
+            finishIndex = paragraphs.Count - 1;
         }
         /// <summary>
         /// Initializes instance of <see cref="LineContentChecker"/> that has collection of paragraphs to test.
@@ -67,7 +67,7 @@ namespace SmartOCR
                 throw new ArgumentOutOfRangeException(nameof(searchStatus),
                                                       Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
             }
-            this.search_status = searchStatus;
+            this.searchStatus = searchStatus;
             SetSearchIndexes();
         }
         #endregion
@@ -85,24 +85,24 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(regExObject));
             }
-            for (int location = start_index; location <= finish_index; location++)
+            for (int location = startIndex; location <= finishIndex; location++)
             {
-                string paragraph_text = paragraphs[location].Text;
-                if (regExObject.IsMatch(paragraph_text))
+                string paragraphText = paragraphs[location].Text;
+                if (regExObject.IsMatch(paragraphText))
                 {
                     if (string.IsNullOrEmpty(checkValue))
                     {
-                        var found_matches = GetMatchesFromParagraph(regExObject, paragraph_text);
-                        this.JoinedMatches = string.Join("|", found_matches);
+                        var foundMatches = GetMatchesFromParagraph(regExObject, paragraphText);
+                        JoinedMatches = string.Join("|", foundMatches);
                         ParagraphHorizontalLocation = paragraphs[location].HorizontalLocation;
                         return true;
                     }
                     else
                     {
-                        var found_matches = GetMatchesFromParagraph(regExObject, paragraph_text, checkValue);
-                        if (found_matches.Count != 0)
+                        var foundMatches = GetMatchesFromParagraph(regExObject, paragraphText, checkValue);
+                        if (foundMatches.Count != 0)
                         {
-                            this.JoinedMatches = string.Join("|", found_matches.Select(item => item.Value));
+                            JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
                             ParagraphHorizontalLocation = paragraphs[location].HorizontalLocation;
                             return true;
                         }
@@ -119,10 +119,10 @@ namespace SmartOCR
         /// <summary>
         /// Looks up index of paragraph, which horizontal location matches passed location.
         /// </summary>
-        /// <param name="return_next_largest">Indicates that, if location is not matched, 
+        /// <param name="returnNextLargest">Indicates that, if location is not matched, 
         /// index of paragraph with next biggest (or next smallest) location is returned.</param>
         /// <returns>Index of paragraph with matching location.</returns>
-        private int GetParagraphByLocation(bool return_next_largest)
+        private int GetParagraphByLocation(bool returnNextLargest)
         {
             List<int> locations = paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
             int location = locations.BinarySearch((int)ParagraphHorizontalLocation);
@@ -130,7 +130,7 @@ namespace SmartOCR
             {
                 location = ~location;
             }
-            if (return_next_largest)
+            if (returnNextLargest)
             {
                 if (location == paragraphs.Count)
                 {
@@ -145,15 +145,15 @@ namespace SmartOCR
         /// </summary>
         private void SetSearchIndexes()
         {
-            switch (search_status)
+            switch (searchStatus)
             {
                 case 1:
-                    start_index = GetParagraphByLocation(true);
-                    finish_index = paragraphs.Count - 1;
+                    startIndex = GetParagraphByLocation(true);
+                    finishIndex = paragraphs.Count - 1;
                     break;
                 case -1:
-                    start_index = 0;
-                    finish_index = GetParagraphByLocation(false);
+                    startIndex = 0;
+                    finishIndex = GetParagraphByLocation(false);
                     break;
                 default:
                     break;
@@ -165,68 +165,68 @@ namespace SmartOCR
         /// <summary>
         /// Gets matches between regular expression and text.
         /// </summary>
-        /// <param name="re_object"><see cref="Regex"/> object that is used to test text.</param>
-        /// <param name="text_to_check"></param>
+        /// <param name="regexObject"><see cref="Regex"/> object that is used to test text.</param>
+        /// <param name="textToCheck"></param>
         /// <returns>Collection of found matches.</returns>
-        private static List<string> GetMatchesFromParagraph(Regex re_object, string text_to_check)
+        private static List<string> GetMatchesFromParagraph(Regex regexObject, string textToCheck)
         {
-            MatchCollection matches = re_object.Matches(text_to_check);
-            var found_values = new List<string>();
+            MatchCollection matches = regexObject.Matches(textToCheck);
+            var foundValues = new List<string>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match single_match = matches[i];
-                if (single_match.Groups.Count > 1)
+                Match singleMatch = matches[i];
+                if (singleMatch.Groups.Count > 1)
                 {
-                    for (int group_i = 1; group_i < single_match.Groups.Count; group_i++)
+                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
                     {
-                        Group group_item = single_match.Groups[group_i];
-                        found_values.Add(group_item.Value);
+                        Group groupItem = singleMatch.Groups[groupIndex];
+                        foundValues.Add(groupItem.Value);
 
                     }
                 }
                 else
                 {
-                    found_values.Add(single_match.Value);
+                    foundValues.Add(singleMatch.Value);
                 }
             }
-            return found_values;
+            return foundValues;
         }
         /// <summary>
         /// Gets collection of <see cref="SimilarityDescription"/> objects which indicate ratio of similarity between matched text and check value.
         /// </summary>
-        /// <param name="re_object"><see cref="Regex"/> object that is used to test text.</param>
-        /// <param name="text_to_check"></param>
-        /// <param name="check_value">Value used for similarity check with found match.</param>
+        /// <param name="regexObject"><see cref="Regex"/> object that is used to test text.</param>
+        /// <param name="textToCheck"></param>
+        /// <param name="checkValue">Value used for similarity check with found match.</param>
         /// <returns>Collection of <see cref="SimilarityDescription"/> objects, containing matches and similarity ratios.</returns>
-        private static List<SimilarityDescription> GetMatchesFromParagraph(Regex re_object, string text_to_check, string check_value)
+        private static List<SimilarityDescription> GetMatchesFromParagraph(Regex regexObject, string textToCheck, string checkValue)
         {
-            MatchCollection matches = re_object.Matches(text_to_check);
-            List<SimilarityDescription> found_values = new List<SimilarityDescription>();
+            MatchCollection matches = regexObject.Matches(textToCheck);
+            List<SimilarityDescription> foundValues = new List<SimilarityDescription>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match single_match = matches[i];
-                if (single_match.Groups.Count > 1)
+                Match singleMatch = matches[i];
+                if (singleMatch.Groups.Count > 1)
                 {
-                    for (int group_i = 1; group_i < single_match.Groups.Count; group_i++)
+                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
                     {
-                        Group group_item = single_match.Groups[group_i];
-                        SimilarityDescription description = new SimilarityDescription(group_item.Value, check_value);
+                        Group groupItem = singleMatch.Groups[groupIndex];
+                        SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
                         if (description.CheckStringSimilarity())
                         {
-                            found_values.Add(description);
+                            foundValues.Add(description);
                         }
                     }
                 }
                 else
                 {
-                    SimilarityDescription description = new SimilarityDescription(single_match.Value, check_value);
+                    SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
                     if (description.CheckStringSimilarity())
                     {
-                        found_values.Add(description);
+                        foundValues.Add(description);
                     }
                 }
             }
-            return found_values;
+            return foundValues;
         }
         #endregion
     }

@@ -58,24 +58,24 @@ namespace SmartOCR
                 ExpectedName = Name;
                 return;
             }
-            var splitted_value = input.Split(';').ToList();
+            var splittedValue = input.Split(';').ToList();
 
-            while (splitted_value.Count != 2)
+            while (splittedValue.Count != 2)
             {
-                splitted_value[0] = $"{splitted_value[0]};{splitted_value[1]}";
-                for (int i = 2; i < splitted_value.Count; i++)
+                splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
+                for (int i = 2; i < splittedValue.Count; i++)
                 {
-                    splitted_value[i - 1] = splitted_value[i];
+                    splittedValue[i - 1] = splittedValue[i];
                 }
-                splitted_value.RemoveAt(splitted_value.Count - 1);
+                splittedValue.RemoveAt(splittedValue.Count - 1);
             }
 
-            RegExPattern = string.IsNullOrEmpty(splitted_value[0])
+            RegExPattern = string.IsNullOrEmpty(splittedValue[0])
                 ? Name
-                : splitted_value[0];
-            ExpectedName = string.IsNullOrEmpty(splitted_value[1])
+                : splittedValue[0];
+            ExpectedName = string.IsNullOrEmpty(splittedValue[1])
                 ? Name
-                : splitted_value[1];
+                : splittedValue[1];
         }
         /// <summary>
         /// Inserts <see cref="ConfigExpression"/> instance to expression collection.

@@ -38,7 +38,7 @@ namespace SmartOCR
         {
             get
             {
-                return Fields.Where(single_field => single_field.Name == name).First();
+                return Fields.Where(singleField => singleField.Name == name).First();
             }
         }
         #endregion

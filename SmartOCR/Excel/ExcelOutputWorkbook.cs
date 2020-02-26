@@ -18,7 +18,7 @@ namespace SmartOCR
         /// <summary>
         /// Worksheet that would contain collected data.
         /// </summary>
-        private static Worksheet output_worksheet;
+        private static Worksheet outputWorksheet;
         #endregion
 
         #region Public static methods
@@ -44,15 +44,15 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(values));
             }
-            long row_to_input = GetLastRowInWorksheet();
+            long rowToInput = GetLastRowInWorksheet();
             var keys = values.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];
-                long column_index = FindColumnIndex(key);
-                if (column_index != 0)
+                long columnIndex = FindColumnIndex(key);
+                if (columnIndex != 0)
                 {
-                    output_worksheet.Cells[row_to_input, column_index] = values[key];
+                    outputWorksheet.Cells[rowToInput, columnIndex] = values[key];
                 }
             }
         }
@@ -70,51 +70,51 @@ namespace SmartOCR
                 _ = new ConfigParser();
             }
 
-            Workbook source_wb = ConfigParser.ConfigWorkbook;
-            Workbook new_wb = ExcelApplication.GetExcelApplication().Workbooks.Add();
+            Workbook sourceWB = ConfigParser.ConfigWorkbook;
+            Workbook newWB = ExcelApplication.GetExcelApplication().Workbooks.Add();
 
-            Worksheet source_ws;
+            Worksheet sourceWS;
             try
             {
-                source_ws = source_wb.Worksheets[1];
+                sourceWS = sourceWB.Worksheets[1];
             }
             catch (System.Runtime.InteropServices.COMException)
             {
                 return null;
             }
-            if (source_ws == null)
+            if (sourceWS == null)
             {
                 return null;
             }
 
-            output_worksheet = new_wb.Worksheets.Add(After: new_wb.Worksheets[new_wb.Worksheets.Count]);
-            output_worksheet.Name = source_ws.Name;
+            outputWorksheet = newWB.Worksheets.Add(After: newWB.Worksheets[newWB.Worksheets.Count]);
+            outputWorksheet.Name = sourceWS.Name;
             int i;
-            for (i = 1; i <= source_ws.Cells[source_ws.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
+            for (i = 1; i <= sourceWS.Cells[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
             {
-                if (source_ws.Cells[i, 1].Value2.ToString().ToLower().Contains("field name"))
+                if (sourceWS.Cells[i, 1].Value2.ToString().ToLower().Contains("field name"))
                 {
                     break;
                 }
             }
-            Range header_range = source_ws.Range[source_ws.Cells[i, 2], source_ws.Cells[i, source_ws.Columns.Count].End[XlDirection.xlToLeft]];
-            Range first_cell = (Range)output_worksheet.Cells.Item[1, 1];
-            header_range.Copy(first_cell);
+            Range headerRange = sourceWS.Range[sourceWS.Cells[i, 2], sourceWS.Cells[i, sourceWS.Columns.Count].End[XlDirection.xlToLeft]];
+            Range firstCell = (Range)outputWorksheet.Cells.Item[1, 1];
+            headerRange.Copy(firstCell);
 
-            new_wb.Worksheets[1].Delete();
-            return new_wb;
+            newWB.Worksheets[1].Delete();
+            return newWB;
         }
         /// <summary>
-        /// Searches for match between <paramref name="field_name"/> and first row values.
+        /// Searches for match between <paramref name="fieldName"/> and first row values.
         /// </summary>
-        /// <param name="field_name">Field name to search.</param>
+        /// <param name="fieldName">Field name to search.</param>
         /// <returns>Index of matched column.</returns>
-        private static long FindColumnIndex(string field_name)
+        private static long FindColumnIndex(string fieldName)
         {
-            long last_column = output_worksheet.Cells[1, output_worksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
-            for (long i = 1; i <= last_column; i++)
+            long lastColumn = outputWorksheet.Cells[1, outputWorksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
+            for (long i = 1; i <= lastColumn; i++)
             {
-                if (output_worksheet.Cells[1, i].Value2 == field_name)
+                if (outputWorksheet.Cells[1, i].Value2 == fieldName)
                 {
                     return i;
                 }
@@ -127,7 +127,7 @@ namespace SmartOCR
         /// <returns>Index of row.</returns>
         private static long GetLastRowInWorksheet()
         {
-            return output_worksheet.UsedRange.Rows[output_worksheet.UsedRange.Rows.Count].Row + 1;
+            return outputWorksheet.UsedRange.Rows[outputWorksheet.UsedRange.Rows.Count].Row + 1;
         }
         #endregion
     }

@@ -60,12 +60,12 @@ namespace SmartOCR
         /// <summary>
         /// Removes characters that interfere with meaningful text content.
         /// </summary>
-        /// <param name="check_string">Text to process.</param>
+        /// <param name="checkString">Text to process.</param>
         /// <returns>Paragraph text, cleansed of invalid characters.</returns>
-        private string RemoveInvalidChars(string check_string)
+        private string RemoveInvalidChars(string checkString)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f" };
-            string[] temp = check_string.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("", temp).Replace("\v", " ");
         }
         /// <summary>

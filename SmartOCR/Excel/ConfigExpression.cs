@@ -10,19 +10,9 @@ namespace SmartOCR
     /// </summary>
     public class ConfigExpression
     {
-        #region Fields
-        private readonly Dictionary<string, int> search_parameters;
-        #endregion
-
         #region Properties
         public string RegExPattern { get; private set; }
-        public Dictionary<string, int> SearchParameters
-        {
-            get
-            {
-                return search_parameters;
-            }
-        }
+        public Dictionary<string, int> SearchParameters { get; }
         #endregion
 
         #region Constructors
@@ -36,21 +26,21 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(valueType));
             }
-            List<string> parsed_input = ParseInput(input);
+            List<string> parsedInput = ParseInput(input);
             if (valueType.Contains("Table"))
             {
-                search_parameters = new Dictionary<string, int>()
+                SearchParameters = new Dictionary<string, int>()
                 {
-                    {"row", int.Parse(parsed_input[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
-                    {"column", int.Parse(parsed_input[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"row", int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"column", int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
                 };
             }
             else
             {
-                search_parameters = new Dictionary<string, int>()
+                SearchParameters = new Dictionary<string, int>()
                 {
-                    {"line_offset", int.Parse(parsed_input[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
-                    {"horizontal_status", int.Parse(parsed_input[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"line_offset", int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"horizontal_status", int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
                 };
             }
         }
@@ -60,30 +50,30 @@ namespace SmartOCR
             {
                 return new List<string>() { null, "0", "0" };
             }
-            List<string> splitted_input = input.Split(';').ToList();
-            while (!(int.TryParse(splitted_input[1], out _) || string.IsNullOrEmpty(splitted_input[1])))
+            List<string> splittedInput = input.Split(';').ToList();
+            while (!(int.TryParse(splittedInput[1], out _) || string.IsNullOrEmpty(splittedInput[1])))
             {
-                splitted_input[0] = $"{splitted_input[0]};{splitted_input[1]}";
-                for (int i = 2; i < splitted_input.Count; i++)
+                splittedInput[0] = $"{splittedInput[0]};{splittedInput[1]}";
+                for (int i = 2; i < splittedInput.Count; i++)
                 {
-                    splitted_input[i - 1] = splitted_input[i];
+                    splittedInput[i - 1] = splittedInput[i];
                 }
-                splitted_input.RemoveAt(splitted_input.Count - 1);
+                splittedInput.RemoveAt(splittedInput.Count - 1);
             }
-            while (splitted_input.Count < 3)
+            while (splittedInput.Count < 3)
             {
-                splitted_input.Add("0");
+                splittedInput.Add("0");
             }
 
-            RegExPattern = splitted_input[0];
-            for (int i = 1; i < splitted_input.Count; i++)
+            RegExPattern = splittedInput[0];
+            for (int i = 1; i < splittedInput.Count; i++)
             {
-                if (string.IsNullOrEmpty(splitted_input[i]))
+                if (string.IsNullOrEmpty(splittedInput[i]))
                 {
-                    splitted_input[i] = "0";
+                    splittedInput[i] = "0";
                 }
             }
-            return splitted_input;
+            return splittedInput;
         }
         #endregion
     }

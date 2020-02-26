@@ -9,14 +9,14 @@ namespace SmartOCR
     public class WordParser // TODO: add summary.
     {
         #region Private constants        
-        private const long similarity_search_threshold = 5;
+        private const long similaritySearchThreshold = 5;
         #endregion
         
         #region Fields
-        private readonly ConfigData config_data;
-        private readonly SortedDictionary<long, List<ParagraphContainer>> line_mapping;
+        private readonly ConfigData configData;
+        private readonly SortedDictionary<long, List<ParagraphContainer>> lineMapping;
         private readonly List<WordTable> tables;
-        private readonly SearchTree tree_structure;
+        private readonly SearchTree treeStructure;
         #endregion
 
         #region Constructors
@@ -26,76 +26,74 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(reader));
             }
-            line_mapping = reader.LineMapping;
+            lineMapping = reader.LineMapping;
             tables = reader.TableCollection;
-            tree_structure = new SearchTree(configData);
-            this.config_data = configData;
+            treeStructure = new SearchTree(configData);
+            this.configData = configData;
         }
         #endregion
 
         #region Public methods
         public Dictionary<string, string> ParseDocument()
         {
-            tree_structure.PopulateTree();
+            treeStructure.PopulateTree();
             ProcessDocument();
-            return tree_structure.GetValuesFromTree();
+            return treeStructure.GetValuesFromTree();
         }
         #endregion
 
         #region Private methods
-        private void AddOffsetNode(TreeNode node, long search_level,
-                           long offset_index, string found_value,
-                           decimal position, bool add_to_parent)
+        private void AddOffsetNode(TreeNode node, long searchLevel, long offsetIndex,
+                                   string foundValue, decimal position, bool addToParent)
         {
-            var node_content = node.Content;
-            if (node_content.Lines.Count(item => item == offset_index) >= 2)
+            TreeNodeContent nodeContent = node.Content;
+            if (nodeContent.Lines.Count(item => item == offsetIndex) >= 2)
             {
                 return;
             }
-            node_content.Lines.Add(offset_index);
-            string node_label;
+            nodeContent.Lines.Add(offsetIndex);
+            string nodeLabel;
             string pattern;
-            decimal horizontal_position;
-            if (add_to_parent)
+            decimal horizontalPosition;
+            if (addToParent)
             {
-                var first_child_content = node.Children.First().Content;
-                node_label = first_child_content.NodeLabel;
-                pattern = first_child_content.RegExPattern;
-                horizontal_position = position;
+                var firstChildContent = node.Children.First().Content;
+                nodeLabel = firstChildContent.NodeLabel;
+                pattern = firstChildContent.RegExPattern;
+                horizontalPosition = position;
             }
             else
             {
-                node_label = node.Content.NodeLabel;
+                nodeLabel = node.Content.NodeLabel;
                 pattern = node.Content.RegExPattern;
-                horizontal_position = position;
+                horizontalPosition = position;
             }
-            TreeNode child_node = node.AddChild(foundLine: offset_index,
-                                                pattern: pattern,
-                                                nodeLabel: node_label,
-                                                horizontalParagraph: horizontal_position);
-            child_node.Content.FoundValue = found_value;
-            SearchTree.AddSearchValues(config_data[node_content.Name], child_node, (int)search_level);
+            TreeNode childNode = node.AddChild(foundLine: offsetIndex,
+                                               pattern: pattern,
+                                               nodeLabel: nodeLabel,
+                                               horizontalParagraph: horizontalPosition);
+            childNode.Content.FoundValue = foundValue;
+            SearchTree.AddSearchValues(configData[nodeContent.Name], childNode, (int)searchLevel);
         }
-        private void GetDataFromTableNode(TreeNode field_node)
+        private void GetDataFromTableNode(TreeNode fieldNode)
         {
-            TreeNodeContent content = field_node.Content;
-            foreach (WordTable item in tables)
+            TreeNodeContent content = fieldNode.Content;
+            foreach (WordTable singleTable in tables)
             {
-                bool search_status = TryToFindMatchInTable(item, Utilities.CreateRegexpObject(content.RegExPattern),
-                                                           content.CheckValue);
-                if (search_status)
+                bool searchStatus = TryToFindMatchInTable(singleTable, Utilities.CreateRegexpObject(content.RegExPattern), content.CheckValue);
+                if (searchStatus)
                 {
                     System.Diagnostics.Debugger.Break();
-                    TreeNode childNode = field_node.Children[0];
+                    TreeNode childNode = fieldNode.Children[0];
                     while (childNode.Content.NodeLabel != "Terminal")
                     {
                         childNode = childNode.Children[0];
                     }
                     TreeNodeContent childContent = childNode.Content;
-                    string item_by_expression_position = item[childContent.FirstSearchParameter, childContent.SecondSearchParameter];
-                    if (Utilities.CreateRegexpObject(childContent.RegExPattern).IsMatch(item_by_expression_position))
+                    string itemByExpressionPosition = singleTable[childContent.FirstSearchParameter, childContent.SecondSearchParameter];
+                    if (Utilities.CreateRegexpObject(childContent.RegExPattern).IsMatch(itemByExpressionPosition))
                     {
-                        childContent.FoundValue = item_by_expression_position;
+                        childContent.FoundValue = itemByExpressionPosition;
                         childContent.Status = true;
                         return;
                     }
@@ -103,349 +101,347 @@ namespace SmartOCR
                 }
             }
         }
-        private void GetDataFromUndefinedNode(TreeNode field_node)
+        private void GetDataFromUndefinedNode(TreeNode fieldNode)
         {
-            Regex regex_object = Utilities.CreateRegexpObject(field_node.Content.RegExPattern);
-            Dictionary<string, SimilarityDescription> collected_data = new Dictionary<string, SimilarityDescription>();
+            Regex regexObject = Utilities.CreateRegexpObject(fieldNode.Content.RegExPattern);
+            Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
 
-            var keys = line_mapping.Keys.ToList();
-            for (int key_index = 0; key_index < keys.Count; key_index++)
+            var keys = lineMapping.Keys.ToList();
+            for (int keyIndex = 0; keyIndex < keys.Count; keyIndex++)
             {
-                long line = keys[key_index];
-                for (int container_index = 0; container_index < line_mapping[line].Count; container_index++)
+                long line = keys[keyIndex];
+                for (int containerIndex = 0; containerIndex < lineMapping[line].Count; containerIndex++)
                 {
-                    ParagraphContainer container = line_mapping[line][container_index];
-                    if (regex_object.IsMatch(container.Text))
+                    ParagraphContainer container = lineMapping[line][containerIndex];
+                    if (regexObject.IsMatch(container.Text))
                     {
-                        var matched_data_collection = GetMatchesFromParagraph(container.Text,
-                                                                              regex_object,
-                                                                              field_node.Content.CheckValue);
+                        var matchedDataCollection = GetMatchesFromParagraph(container.Text,
+                                                                              regexObject,
+                                                                              fieldNode.Content.CheckValue);
 
-                        for (int i = 0; i < matched_data_collection.Count; i++)
+                        for (int i = 0; i < matchedDataCollection.Count; i++)
                         {
-                            collected_data.Add($"{line}|{container_index}|{container.HorizontalLocation}|{i}", matched_data_collection[i]);
+                            collectedData.Add($"{line}|{containerIndex}|{container.HorizontalLocation}|{i}", matchedDataCollection[i]);
                         }
                     }
                 }
             }
 
-            if (collected_data.Count != 0)
+            if (collectedData.Count != 0)
             {
-                UpdateFieldNode(collected_data, field_node);
+                UpdateFieldNode(collectedData, fieldNode);
             }
         }
-        private Dictionary<string, string> GetOffsetLines(long line_number, TreeNodeContent content)
+        private Dictionary<string, string> GetOffsetLines(long lineNumber, TreeNodeContent content)
         {
-            Regex regex_obj = Utilities.CreateRegexpObject(content.RegExPattern);
-            var found_values_collection = new Dictionary<string, string>();
-            List<long> keys = line_mapping.Keys.ToList();
-            int line_index = keys.IndexOf(line_number);
-            for (int search_offset = 1; search_offset <= similarity_search_threshold; search_offset++)
+            Regex regexObject = Utilities.CreateRegexpObject(content.RegExPattern);
+            var foundValuesCollection = new Dictionary<string, string>();
+            List<long> keys = lineMapping.Keys.ToList();
+            int lineIndex = keys.IndexOf(lineNumber);
+            for (int searchOffset = 1; searchOffset <= similaritySearchThreshold; searchOffset++)
             {
-                List<int> offset_indexes = new List<int>() { line_index + search_offset, line_index - search_offset };
-                foreach (int offset_index in offset_indexes)
+                List<int> offsetIndexes = new List<int>() { lineIndex + searchOffset, lineIndex - searchOffset };
+                foreach (int offsetIndex in offsetIndexes)
                 {
-                    if (offset_index >= 0 && offset_index < line_mapping.Count)
+                    if (offsetIndex >= 0 && offsetIndex < lineMapping.Count)
                     {
-                        long line = keys[offset_index];
-                        var line_checker = new LineContentChecker(line_mapping[line]);
-                        if (line_checker.CheckLineContents(regex_obj, content.CheckValue))
+                        long line = keys[offsetIndex];
+                        var lineChecker = new LineContentChecker(lineMapping[line]);
+                        if (lineChecker.CheckLineContents(regexObject, content.CheckValue))
                         {
-                            found_values_collection.Add(
+                            foundValuesCollection.Add(
                                 string.Join("|",
                                             line,
-                                            line_checker.ParagraphHorizontalLocation),
-                                line_checker.JoinedMatches);
+                                            lineChecker.ParagraphHorizontalLocation),
+                                lineChecker.JoinedMatches);
                         }
                     }
                 }
             }
-            return found_values_collection;
+            return foundValuesCollection;
         }
-        private void OffsetSearch(long line_number, TreeNode line_node,
-                                  long search_level, bool add_to_parent = false)
+        private void OffsetSearch(long lineNumber, TreeNode lineNode,
+                                  long searchLevel, bool addToParent = false)
         {
-            TreeNodeContent line_node_content = (TreeNodeContent)line_node.Content;
-            var line_numbers = GetOffsetLines(line_number, line_node_content);
+            TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
+            var lineNumbers = GetOffsetLines(lineNumber, lineNodeContent);
 
-            var keys = line_numbers.Keys.ToList();
+            var keys = lineNumbers.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];
-                string[] splitted_key = key.Split('|');
-                long offset_index = long.Parse(splitted_key[0],
-                                               NumberStyles.Any,
-                                               NumberFormatInfo.CurrentInfo);
-                decimal horizontal_position = decimal.Parse(splitted_key[1],
-                                                            NumberStyles.Any,
-                                                            NumberFormatInfo.CurrentInfo);
-                if (add_to_parent)
+                string[] splittedKey = key.Split('|');
+                long offsetIndex = long.Parse(splittedKey[0],
+                                              NumberStyles.Any,
+                                              NumberFormatInfo.CurrentInfo);
+                decimal horizontalPosition = decimal.Parse(splittedKey[1],
+                                                           NumberStyles.Any,
+                                                           NumberFormatInfo.CurrentInfo);
+                if (addToParent)
                 {
-                    var parent = line_node.Parent;
-                    AddOffsetNode(parent, search_level,
-                                  offset_index, line_numbers[key],
-                                  horizontal_position, add_to_parent);
+                    var parent = lineNode.Parent;
+                    AddOffsetNode(parent, searchLevel,
+                                  offsetIndex, lineNumbers[key],
+                                  horizontalPosition, addToParent);
                 }
                 else
                 {
-                    AddOffsetNode(line_node, search_level,
-                                  offset_index, line_numbers[key],
-                                  horizontal_position, add_to_parent);
+                    AddOffsetNode(lineNode, searchLevel,
+                                  offsetIndex, lineNumbers[key],
+                                  horizontalPosition, addToParent);
                 }
             }
         }
         private void ProcessDocument()
         {
-            for (int field_index = 0; field_index < tree_structure.Children.Count; field_index++)
+            for (int fieldIndex = 0; fieldIndex < treeStructure.Children.Count; fieldIndex++)
             {
-                TreeNode field_node = tree_structure.Children[field_index];
-                TreeNodeContent node_content = field_node.Content;
-
-                if (!node_content.ValueType.Contains("Table"))
+                TreeNode fieldNode = treeStructure.Children[fieldIndex];
+                TreeNodeContent nodeContent = fieldNode.Content;
+                if (!nodeContent.ValueType.Contains("Table"))
                 {
-                    if (node_content.Lines[0] == 0)
+                    if (nodeContent.Lines[0] == 0)
                     {
-                        GetDataFromUndefinedNode(field_node);
+                        GetDataFromUndefinedNode(fieldNode);
                     }
-                    if (node_content.Lines[0] != 0)
+                    if (nodeContent.Lines[0] != 0)
                     {
-                        for (int i = 0; i < field_node.Children.Count; i++)
+                        for (int i = 0; i < fieldNode.Children.Count; i++)
                         {
-                            TreeNode line_node = field_node.Children[i];
-                            ProcessLineNode(line_node);
+                            TreeNode lineNode = fieldNode.Children[i];
+                            ProcessLineNode(lineNode);
                         }
                     }
                 }
                 else
                 {
-                    GetDataFromTableNode(field_node);
+                    GetDataFromTableNode(fieldNode);
                 }
             }
         }
-        private void ProcessLineNode(TreeNode line_node, long search_level = 0)
+        private void ProcessLineNode(TreeNode lineNode, long searchLevel = 0)
         {
-            TreeNodeContent line_node_content = (TreeNodeContent)line_node.Content;
-            if (line_node_content.NodeLabel == "Terminal")
+            TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
+            if (lineNodeContent.NodeLabel == "Terminal")
             {
-                ProcessValue(line_node, search_level);
+                ProcessValue(lineNode, searchLevel);
                 return;
             }
 
-            int line_index = 0;
-            while (line_index < line_node_content.Lines.Count)
+            int lineIndex = 0;
+            while (lineIndex < lineNodeContent.Lines.Count)
             {
-                long line_number = line_node_content.Lines[line_index];
+                long lineNumber = lineNodeContent.Lines[lineIndex];
 
-                bool check_status = line_mapping.ContainsKey(line_number)
-                    ? TryMatchLineData(line_node_content, line_number)
+                bool checkStatus = lineMapping.ContainsKey(lineNumber)
+                    ? TryMatchLineData(lineNodeContent, lineNumber)
                     : false;
-                if (check_status)
+                if (checkStatus)
                 {
-                    SetOffsetChildrenLines(line_node, line_number);
-                    ProcessLineNodeChildren(line_node, search_level);
+                    SetOffsetChildrenLines(lineNode, lineNumber);
+                    ProcessLineNodeChildren(lineNode, searchLevel);
                 }
                 else
                 {
-                    OffsetSearch(line_number, line_node, search_level, true);
+                    OffsetSearch(lineNumber, lineNode, searchLevel, true);
                 }
-                line_index++;
+                lineIndex++;
             }
         }
-        private void ProcessLineNodeChildren(TreeNode line_node, long search_level)
+        private void ProcessLineNodeChildren(TreeNode lineNode, long searchLevel)
         {
-            int child_index = 0;
-            while (child_index < line_node.Children.Count)
+            int childIndex = 0;
+            while (childIndex < lineNode.Children.Count)
             {
-                TreeNode child_node = line_node.Children[child_index];
-                ProcessLineNode(child_node, search_level + 1);
-                child_index++;
+                TreeNode childNode = lineNode.Children[childIndex];
+                ProcessLineNode(childNode, searchLevel + 1);
+                childIndex++;
             }
         }
-        private void ProcessValue(TreeNode node, long search_level)
+        private void ProcessValue(TreeNode node, long searchLevel)
         {
-            TreeNodeContent node_content = (TreeNodeContent)node.Content;
-            for (int i = 0; i < node_content.Lines.Count; i++)
+            TreeNodeContent nodeContent = node.Content;
+            for (int i = 0; i < nodeContent.Lines.Count; i++)
             {
-                long line_number = node_content.Lines[i];
-                if (!line_mapping.ContainsKey(line_number))
+                long lineNumber = nodeContent.Lines[i];
+                if (!lineMapping.ContainsKey(lineNumber))
                 {
-                    OffsetSearch(line_number, node, search_level, true);
+                    OffsetSearch(lineNumber, node, searchLevel, true);
                 }
                 else
                 {
-                    List<ParagraphContainer> paragraph_collection = line_mapping[line_number];
-                    int start_index = 0;
-                    int finish_index = paragraph_collection.Count - 1;
-                    switch (node_content.SecondSearchParameter)
+                    List<ParagraphContainer> paragraphCollection = lineMapping[lineNumber];
+                    int startIndex = 0;
+                    int finishIndex = paragraphCollection.Count - 1;
+                    switch (nodeContent.SecondSearchParameter)
                     {
                         case 1:
-                            start_index = GetParagraphByLocation(paragraph_collection,
-                                                                 node_content.HorizontalParagraph,
-                                                                 return_next_largest: true);
-                            finish_index = paragraph_collection.Count - 1;
+                            startIndex = GetParagraphByLocation(paragraphCollection,
+                                                                 nodeContent.HorizontalParagraph,
+                                                                 returnNextLargest: true);
+                            finishIndex = paragraphCollection.Count - 1;
                             break;
                         case -1:
-                            start_index = 0;
-                            finish_index = GetParagraphByLocation(paragraph_collection,
-                                                                  node_content.HorizontalParagraph,
-                                                                  return_next_largest: false);
+                            startIndex = 0;
+                            finishIndex = GetParagraphByLocation(paragraphCollection,
+                                                                  nodeContent.HorizontalParagraph,
+                                                                  returnNextLargest: false);
                             break;
                         default:
                             break;
                     }
 
-                    for (int paragraph_index = start_index; paragraph_index <= finish_index; paragraph_index++)
+                    for (int paragraphIndex = startIndex; paragraphIndex <= finishIndex; paragraphIndex++)
                     {
-                        string paragraph_text = paragraph_collection[paragraph_index].Text;
-                        Regex regex_obj = Utilities.CreateRegexpObject(node_content.RegExPattern);
+                        string paragraphText = paragraphCollection[paragraphIndex].Text;
+                        Regex regexObject = Utilities.CreateRegexpObject(nodeContent.RegExPattern);
 
-                        MatchProcessor match_processor = new MatchProcessor(paragraph_text,
-                                                                            regex_obj,
-                                                                            node_content.ValueType);
-                        if (!string.IsNullOrEmpty(match_processor.Result))
+                        MatchProcessor matchProcessor = new MatchProcessor(paragraphText,
+                                                                            regexObject,
+                                                                            nodeContent.ValueType);
+                        if (!string.IsNullOrEmpty(matchProcessor.Result))
                         {
-                            node_content.FoundValue = match_processor.Result;
-                            node_content.Status = true;
+                            nodeContent.FoundValue = matchProcessor.Result;
+                            nodeContent.Status = true;
                             PropagateStatusInTree(true, node);
                             return;
                         }
                     }
 
-                    OffsetSearch(line_number, node, search_level, true);
+                    OffsetSearch(lineNumber, node, searchLevel, true);
                 }
             }
         }
-        private bool TryMatchLineData(TreeNodeContent line_node_content, long line_number)
+        private bool TryMatchLineData(TreeNodeContent lineNodeContent, long lineNumber)
         {
-            bool check_status;
-            decimal paragraph_horizontal_location = line_node_content.HorizontalParagraph;
-            Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RegExPattern);
-            var line_checker = new LineContentChecker(line_mapping[line_number],
-                                                      paragraph_horizontal_location,
-                                                      line_node_content.SecondSearchParameter);
-            check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
-            if (check_status)
+            decimal paragraphHorizontalLocation = lineNodeContent.HorizontalParagraph;
+            Regex regexObject = Utilities.CreateRegexpObject(lineNodeContent.RegExPattern);
+            var lineChecker = new LineContentChecker(lineMapping[lineNumber],
+                                                     paragraphHorizontalLocation,
+                                                     lineNodeContent.SecondSearchParameter);
+            bool checkStatus = lineChecker.CheckLineContents(regexObject, lineNodeContent.CheckValue);
+            if (checkStatus)
             {
-                line_node_content.HorizontalParagraph = line_checker.ParagraphHorizontalLocation;
+                lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
             }
             else
             {
-                line_node_content.HorizontalParagraph = paragraph_horizontal_location;
+                lineNodeContent.HorizontalParagraph = paragraphHorizontalLocation;
             }
-            line_node_content.FoundValue = line_checker.JoinedMatches;
-            return check_status;
+            lineNodeContent.FoundValue = lineChecker.JoinedMatches;
+            return checkStatus;
         }
         private void SetOffsetChildrenLines(TreeNode node, long line)
         {
-            TreeNodeContent node_content = (TreeNodeContent)node.Content;
+            TreeNodeContent nodeContent = (TreeNodeContent)node.Content;
 
             for (int i = 0; i < node.Children.Count; i++)
             {
                 TreeNode child = node.Children[i];
-                TreeNodeContent child_content = (TreeNodeContent)child.Content;
-                child_content.HorizontalParagraph = node_content.HorizontalParagraph;
-                List<long> keys = line_mapping.Keys.ToList();
-                int line_index = keys.IndexOf(line) + child_content.FirstSearchParameter;
-                if (line_index >= 0 && line_index < keys.Count)
+                TreeNodeContent childContent = (TreeNodeContent)child.Content;
+                childContent.HorizontalParagraph = nodeContent.HorizontalParagraph;
+                List<long> keys = lineMapping.Keys.ToList();
+                int lineIndex = keys.IndexOf(line) + childContent.FirstSearchParameter;
+                if (lineIndex >= 0 && lineIndex < keys.Count)
                 {
-                    long offset_line = keys[line_index];
-                    child_content.Lines.Clear();
-                    child_content.Lines.Add(offset_line);
+                    long offsetLine = keys[lineIndex];
+                    childContent.Lines.Clear();
+                    childContent.Lines.Add(offsetLine);
                 }
 
             }
         }
-        private void UpdateFieldNode(Dictionary<string, SimilarityDescription> collected_data, TreeNode field_node)
+        private void UpdateFieldNode(Dictionary<string, SimilarityDescription> collectedData, TreeNode fieldNode)
         {
-            field_node.Children.Clear();
-            if (field_node.Content.Lines.Count != 0)
+            fieldNode.Children.Clear();
+            if (fieldNode.Content.Lines.Count != 0)
             {
-                field_node.Content.Lines.RemoveAt(0);
+                fieldNode.Content.Lines.RemoveAt(0);
             }
-            double max_similarity = collected_data.Values.ToList().Max(item => item.Ratio);
-            AddChildrenToFieldNode(field_node, collected_data, max_similarity);
-            SearchTree.AddSearchValues(config_data[field_node.Content.Name], field_node);
+            double maxSimilarity = collectedData.Values.ToList().Max(item => item.Ratio);
+            AddChildrenToFieldNode(fieldNode, collectedData, maxSimilarity);
+            SearchTree.AddSearchValues(configData[fieldNode.Content.Name], fieldNode);
         }
         #endregion
 
         #region Private static methods
-        private static void AddChildrenToFieldNode(TreeNode field_node,
-                                                   Dictionary<string, SimilarityDescription> collected_data,
-                                                   double max_similarity)
+        private static void AddChildrenToFieldNode(TreeNode fieldNode,
+                                                   Dictionary<string, SimilarityDescription> collectedData,
+                                                   double maxSimilarity)
         {
-            var keys = collected_data.Keys.ToList();
+            var keys = collectedData.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];
-                if (max_similarity == collected_data[key].Ratio)
+                if (maxSimilarity == collectedData[key].Ratio)
                 {
-                    AddSingleChildToFieldNode(field_node, key);
+                    AddSingleChildToFieldNode(fieldNode, key);
                 }
             }
         }
-        private static void AddSingleChildToFieldNode(TreeNode field_node, string key)
+        private static void AddSingleChildToFieldNode(TreeNode fieldNode, string key)
         {
-            var content = field_node.Content;
+            var content = fieldNode.Content;
             long line = long.Parse(key.Split('|')[0],
                                    NumberStyles.Any,
                                    NumberFormatInfo.CurrentInfo);
-            decimal horizontal_location = decimal.Parse(key.Split('|')[2],
+            decimal horizontalLocation = decimal.Parse(key.Split('|')[2],
                                                         NumberStyles.Any,
                                                         NumberFormatInfo.CurrentInfo);
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
-                field_node.AddChild(foundLine: line, pattern: content.RegExPattern,
+                fieldNode.AddChild(foundLine: line, pattern: content.RegExPattern,
                                     newValue: content.CheckValue, nodeLabel: "Line",
-                                    horizontalParagraph: horizontal_location);
+                                    horizontalParagraph: horizontalLocation);
             }
         }
-        private static List<SimilarityDescription> GetMatchesFromParagraph(string text_to_check,
-                                                                           Regex re_object,
-                                                                           string check_value)
+        private static List<SimilarityDescription> GetMatchesFromParagraph(string textToCheck,
+                                                                           Regex regexObject,
+                                                                           string checkValue)
         {
-            MatchCollection matches = re_object.Matches(text_to_check);
-            List<SimilarityDescription> found_values = new List<SimilarityDescription>();
+            MatchCollection matches = regexObject.Matches(textToCheck);
+            var foundValues = new List<SimilarityDescription>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match single_match = matches[i];
-                if (single_match.Groups.Count > 1)
+                Match singleMatch = matches[i];
+                if (singleMatch.Groups.Count > 1)
                 {
-                    for (int group_i = 1; group_i < single_match.Groups.Count; group_i++)
+                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
                     {
-                        Group group_item = single_match.Groups[group_i];
-                        SimilarityDescription description = new SimilarityDescription(group_item.Value,
-                                                                                      check_value);
+                        Group groupItem = singleMatch.Groups[groupIndex];
+                        SimilarityDescription description = new SimilarityDescription(groupItem.Value,
+                                                                                      checkValue);
                         if (description.CheckStringSimilarity())
                         {
-                            found_values.Add(description);
+                            foundValues.Add(description);
                         }
                     }
                 }
                 else
                 {
-                    SimilarityDescription description = new SimilarityDescription(single_match.Value, check_value);
+                    SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
                     if (description.CheckStringSimilarity())
                     {
-                        found_values.Add(description);
+                        foundValues.Add(description);
                     }
                 }
             }
-            return found_values;
+            return foundValues;
         }
-        private static int GetParagraphByLocation(List<ParagraphContainer> paragraph_collection,
+        private static int GetParagraphByLocation(List<ParagraphContainer> paragraphCollection,
                                                   decimal position,
-                                                  bool return_next_largest)
+                                                  bool returnNextLargest)
         {
-            List<decimal> locations = paragraph_collection.Select(item => item.HorizontalLocation).ToList();
+            List<decimal> locations = paragraphCollection.Select(item => item.HorizontalLocation).ToList();
             int location = locations.BinarySearch(position);
             if (location < 0)
             {
                 location = ~location;
             }
-            if (return_next_largest)
+            if (returnNextLargest)
             {
-                if (location == paragraph_collection.Count)
+                if (location == paragraphCollection.Count)
                 {
                     return location--;
                 }
@@ -455,30 +451,30 @@ namespace SmartOCR
         }
         private static void PropagateStatusInTree(bool status, TreeNode node)
         {
-            TreeNode temp_node = node;
-            while (temp_node.Parent.Content.Name != "root")
+            TreeNode tempNode = node;
+            while (tempNode.Parent.Content.Name != "root")
             {
-                temp_node = temp_node.Parent;
-                temp_node.Content.Status = status;
+                tempNode = tempNode.Parent;
+                tempNode.Content.Status = status;
             }
         }
-        private static bool TryToFindMatchInTable(WordTable table, Regex regex_obj, string check_value)
+        private static bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
         {
             for (int i = 0; i < table.RowCount; i++)
             {
                 for (int j = 0; j < table.ColumnCount; j++)
                 {
-                    if (table[i, j] != null && regex_obj.IsMatch(table[i, j]))
+                    if (table[i, j] != null && regexObject.IsMatch(table[i, j]))
                     {
-                        Match single_match = regex_obj.Match(table[i, j]);
+                        Match singleMatch = regexObject.Match(table[i, j]);
                         SimilarityDescription similarity;
-                        if (single_match.Groups.Count > 0)
+                        if (singleMatch.Groups.Count > 0)
                         {
-                            similarity = new SimilarityDescription(single_match.Groups[1].Value, check_value);
+                            similarity = new SimilarityDescription(singleMatch.Groups[1].Value, checkValue);
                         }
                         else
                         {
-                            similarity = new SimilarityDescription(single_match.Value, check_value);
+                            similarity = new SimilarityDescription(singleMatch.Value, checkValue);
                         }
                         if (similarity.CheckStringSimilarity())
                         {

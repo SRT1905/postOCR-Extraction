@@ -46,29 +46,29 @@ namespace SmartOCR
         /// <returns>String representation of date value.</returns>
         public static string DateProcessing(string value)
         {
-            Regex regex_num_date = CreateRegexpObject(@"(\d{2,4})");
-            Regex regex_alpha_month = CreateRegexpObject(@"\W?(\d{2})\W?\s*([а-яёa-z]{3,8})\s*(\d{4})");
+            Regex regexNumDate = CreateRegexpObject(@"(\d{2,4})");
+            Regex regexAlphaMonth = CreateRegexpObject(@"\W?(\d{2})\W?\s*([а-яёa-z]{3,8})\s*(\d{4})");
 
-            if (regex_num_date.IsMatch(value))
+            if (regexNumDate.IsMatch(value))
             {
-                MatchCollection matches = regex_num_date.Matches(value);
+                MatchCollection matches = regexNumDate.Matches(value);
                 if (matches.Count >= 3)
                 {
-                    string date_value = $"{matches[1].Value}/{matches[0].Value}/{matches[2].Value}";
-                    return DateTime.TryParse(date_value, out DateTime _)
-                        ? date_value
-                        : $"Дата распознана как {date_value}";
+                    string dateValue = $"{matches[1].Value}/{matches[0].Value}/{matches[2].Value}";
+                    return DateTime.TryParse(dateValue, out DateTime _)
+                        ? dateValue
+                        : $"Дата распознана как {dateValue}";
                 }
             }
 
-            if (regex_alpha_month.IsMatch(value))
+            if (regexAlphaMonth.IsMatch(value))
             {
-                GroupCollection groups = regex_alpha_month.Matches(value)[0].Groups;
+                GroupCollection groups = regexAlphaMonth.Matches(value)[0].Groups;
                 string month = ReturnNumericMonth(groups[2].Value.ToLower(CultureInfo.CurrentCulture));
-                string date_value = $"{month}/{groups[1].Value}/{groups[3].Value}";
-                return DateTime.TryParse(date_value, out DateTime _)
-                    ? date_value
-                    : $"Дата распознана как {date_value}";
+                string dateValue = $"{month}/{groups[1].Value}/{groups[3].Value}";
+                return DateTime.TryParse(dateValue, out DateTime _)
+                    ? dateValue
+                    : $"Дата распознана как {dateValue}";
             }
 
             return "Дата документа не распознана";
@@ -80,18 +80,18 @@ namespace SmartOCR
         /// <returns>String representation of parsed number.</returns>
         public static string NumberProcessing(string value)
         {
-            string regional_decimal_separator = GetDecimalSeparator();
-            value = PrepareValueForNumberProcessing(value, regional_decimal_separator);
+            string regionalDecimalSeparator = GetDecimalSeparator();
+            value = PrepareValueForNumberProcessing(value, regionalDecimalSeparator);
 
             if (double.TryParse(value, out double _))
             {
                 return value;
             }
 
-            if (value.Count(single_char => single_char == '.' || single_char == ',') == 1)
+            if (value.Count(singleChar => singleChar == '.' || singleChar == ',') == 1)
             {
-                value = value.Replace(",", regional_decimal_separator)
-                             .Replace(".", regional_decimal_separator);
+                value = value.Replace(",", regionalDecimalSeparator)
+                             .Replace(".", regionalDecimalSeparator);
                 return double.TryParse(value, out _) ? value : string.Empty;
             }
             return value;
@@ -119,16 +119,16 @@ namespace SmartOCR
         /// Removes non-numeric characters and replaces decimal separator.
         /// </summary>
         /// <param name="value">String, containing number.</param>
-        /// <param name="regional_decimal_separator">Character that is set by regional settings to separate integer and fraction parts of number.</param>
+        /// <param name="regionalDecimalSeparator">Character that is set by regional settings to separate integer and fraction parts of number.</param>
         /// <returns>String, prepared for parsing.</returns>
-        private static string PrepareValueForNumberProcessing(string value, string regional_decimal_separator)
+        private static string PrepareValueForNumberProcessing(string value, string regionalDecimalSeparator)
         {
             value = TrimNonNumericChars(value);
             value = value.Contains(",") && value.Contains(".")
                 ? value.Replace(",", string.Empty)
-                : value.Replace(",", regional_decimal_separator);
+                : value.Replace(",", regionalDecimalSeparator);
 
-            value = value.Replace(".", regional_decimal_separator);
+            value = value.Replace(".", regionalDecimalSeparator);
             return new string(value.ToCharArray()
                                    .Where(c => !char.IsWhiteSpace(c))
                                    .ToArray());
@@ -140,7 +140,7 @@ namespace SmartOCR
         /// <returns>String representation of numerical month.</returns>
         private static string ReturnNumericMonth(string value)
         {
-            Dictionary<string, string> month_mapping = new Dictionary<string, string>()
+            Dictionary<string, string> monthMapping = new Dictionary<string, string>()
             {
                 {"январ", "01" }, {"jan", "01" },
                 {"февраля", "02" }, {"feb", "02" },
@@ -156,13 +156,13 @@ namespace SmartOCR
                 {"декабр", "12" }, {"dec", "12" }
             };
 
-            List<string> keys = month_mapping.Keys.ToList();
+            List<string> keys = monthMapping.Keys.ToList();
             for (int i = 0; i < keys.Count; i++)
             {
                 string key = keys[i];
                 if (value.Contains(key))
                 {
-                    return month_mapping[key];
+                    return monthMapping[key];
                 }
             }
             return "00";

@@ -16,26 +16,26 @@ namespace SmartOCR
         /// <summary>
         /// Name of output file with extension.
         /// </summary>
-        private const string output_file_name = "output.xlsx";
+        private const string outputFileName = "output.xlsx";
         #endregion
 
         #region Fields
         /// <summary>
         /// Object that describes config fields and their search expressions.
         /// </summary>
-        private ConfigData config_data = new ConfigData();
+        private ConfigData configData = new ConfigData();
         /// <summary>
         /// Path to output file (default location equals assembly location).
         /// </summary>
-        private string output_location = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), output_file_name);
+        private string outputLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), outputFileName);
         /// <summary>
         /// Instance of output Excel workbook.
         /// </summary>
-        private Workbook output_wb;
+        private Workbook outputWB;
         /// <summary>
         /// Collection of files to process.
         /// </summary>
-        private List<string> valid_files = new List<string>();
+        private List<string> validFiles = new List<string>();
         #endregion
 
         #region Constructors
@@ -49,9 +49,9 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(files));
             }
-            valid_files = GetValidFiles(files);
-            config_data = new ConfigParser().ParseConfig();
-            output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
+            validFiles = GetValidFiles(files);
+            configData = new ConfigParser().ParseConfig();
+            outputWB = ExcelOutputWorkbook.GetOutputWorkbook();
         }
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
@@ -64,9 +64,9 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(files));
             }
-            valid_files = GetValidFiles(files);
-            config_data = new ConfigParser(configFile).ParseConfig();
-            output_wb = ExcelOutputWorkbook.GetOutputWorkbook();
+            validFiles = GetValidFiles(files);
+            configData = new ConfigParser(configFile).ParseConfig();
+            outputWB = ExcelOutputWorkbook.GetOutputWorkbook();
         }
         /// <summary>
         /// Initializes a new instance of ParseEntryPoint that uses external config data and default output location.
@@ -76,7 +76,7 @@ namespace SmartOCR
         /// <param name="outputFile">Path to existing output Excel workbook.</param>
         public ParseEntryPoint(List<string> files, string configFile, string outputFile) : this(files, configFile)
         {
-            output_location = outputFile;
+            outputLocation = outputFile;
         }
         #endregion
 
@@ -96,7 +96,7 @@ namespace SmartOCR
         /// <returns>Indicator that processing was successful.</returns>
         public bool TryGetData()
         {
-            if (valid_files.Count == 0)
+            if (validFiles.Count == 0)
             {
                 return false;
             }
@@ -111,22 +111,22 @@ namespace SmartOCR
         /// </summary>
         private void DisposeFields()
         {
-            config_data = null;
-            output_location = null;
-            output_wb = null;
-            valid_files = null;
+            configData = null;
+            outputLocation = null;
+            outputWB = null;
+            validFiles = null;
         }
         /// <summary>
         /// Gets data from each provided file and returns result to output Excel workbook.
         /// </summary>
         private void GetDataFromFiles()
         {
-            for (int i = 0; i < valid_files.Count; i++)
+            for (int i = 0; i < validFiles.Count; i++)
             {
-                Dictionary<string, string> result = GetResultFromFile(valid_files[i]);
+                Dictionary<string, string> result = GetResultFromFile(validFiles[i]);
                 ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
             }
-            output_wb.SaveAs(output_location);
+            outputWB.SaveAs(outputLocation);
         }
         /// <summary>
         /// Performs processing of single document.
@@ -138,24 +138,24 @@ namespace SmartOCR
             Document document = WordApplication.OpenWordDocument(item);
             var reader = new WordReader(document);
             reader.ReadDocument();
-            var wordParser = new WordParser(reader, config_data);
+            var wordParser = new WordParser(reader, configData);
             reader.Dispose();
             return wordParser.ParseDocument();
         }
         /// <summary>
         /// Checks whether provided file paths are valid - they exists and do not start with '~' symbol.
         /// </summary>
-        /// <param name="file_paths">Collection of provided file paths.</param>
+        /// <param name="filePaths">Collection of provided file paths.</param>
         /// <returns>Collection of valid files.</returns>
-        private List<string> GetValidFiles(List<string> file_paths)
+        private List<string> GetValidFiles(List<string> filePaths)
         {
             var files = new List<string>();
-            for (int i = 0; i < file_paths.Count; i++)
+            for (int i = 0; i < filePaths.Count; i++)
             {
-                string single_file = file_paths[i];
-                if (File.Exists(single_file) && !single_file.Contains("~"))
+                string singleFile = filePaths[i];
+                if (File.Exists(singleFile) && !singleFile.Contains("~"))
                 {
-                    files.Add(single_file);
+                    files.Add(singleFile);
                 }
             }
             return files;
