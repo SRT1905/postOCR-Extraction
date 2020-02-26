@@ -86,8 +86,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Search\IBuilder.cs" />
     <Compile Include="Search\TableNodeProcessor.cs" />
     <Compile Include="Search\TreeNodeContent.cs" />
+    <Compile Include="Search\TreeNodeContentBuilder.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />
     <Compile Include="Search\SearchTree.cs" />
     <Compile Include="Utilities\SimilarityDescription.cs" />
