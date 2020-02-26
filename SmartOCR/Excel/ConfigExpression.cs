@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace SmartOCR
 {
     /// <summary>
     /// Describes single search expression defined in Excel config file.
     /// </summary>
-    public class ConfigExpression : ConfigExpressionBase
+    public class ConfigExpression
     {
+        #region Fields
+        private readonly Dictionary<string, int> search_parameters;
+        #endregion
+
         #region Properties
-        /// <summary>
-        /// Shows how offset should be search line, comparing to one, where previous search pattern was matched.
-        /// </summary>
-        public int LineOffset { get; set; }
-        /// <summary>
-        /// Indicates how single line contents should be searched. 
-        /// <para>0 - search whole line.</para>
-        /// <para>1 - search only paragraphs to the right of previously found match.</para>
-        /// <para>-1 - search only paragrapgs to the left of previously found match.</para>
-        /// </summary>
-        public int HorizontalStatus { get; set; }
+        public string RegExPattern { get; private set; }
+        public Dictionary<string, int> SearchParameters
+        {
+            get
+            {
+                return search_parameters;
+            }
+        }
         #endregion
 
         #region Constructors
@@ -28,30 +30,58 @@ namespace SmartOCR
         /// Initializes a new <see cref="ConfigExpression"/> instance with Excel cell contents.
         /// </summary>
         /// <param name="input">Excel cell contents, containing regular expression pattern, line offset and horizontal search status.</param>
-        public ConfigExpression(string input)
+        public ConfigExpression(string valueType, string input)
         {
-            ParseInput(input);
-        }
-        #endregion
-
-        #region Protected methods
-        /// <summary>
-        /// Extracts data from Excel cell contents.
-        /// </summary>
-        /// <param name="input">Excel cell contents, containing regular expression pattern, line offset and horizontal search status.</param>
-        protected override List<string> ParseInput(string input)
-        {
-            List<string> splitted_input = base.ParseInput(input);
-            LineOffset = string.IsNullOrEmpty(splitted_input[1])
-                ? 0
-                : int.Parse(splitted_input[1], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
-            HorizontalStatus = string.IsNullOrEmpty(splitted_input[2])
-                ? 0
-                : int.Parse(splitted_input[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
-
-            if (Math.Abs(HorizontalStatus) > 1)
+            if (string.IsNullOrEmpty(valueType))
             {
-                throw new ArgumentOutOfRangeException(nameof(input), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
+                throw new ArgumentNullException(nameof(valueType));
+            }
+            List<string> parsed_input = ParseInput(input);
+            if (valueType.Contains("Table"))
+            {
+                search_parameters = new Dictionary<string, int>()
+                {
+                    {"row", int.Parse(parsed_input[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"column", int.Parse(parsed_input[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                };
+            }
+            else
+            {
+                search_parameters = new Dictionary<string, int>()
+                {
+                    {"line_offset", int.Parse(parsed_input[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                    {"horizontal_status", int.Parse(parsed_input[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo)},
+                };
+            }
+        }
+        private List<string> ParseInput(string input)
+        {
+            if (input == null)
+            {
+                return new List<string>() { null, "0", "0" };
+            }
+            List<string> splitted_input = input.Split(';').ToList();
+            while (!(int.TryParse(splitted_input[1], out _) || string.IsNullOrEmpty(splitted_input[1])))
+            {
+                splitted_input[0] = $"{splitted_input[0]};{splitted_input[1]}";
+                for (int i = 2; i < splitted_input.Count; i++)
+                {
+                    splitted_input[i - 1] = splitted_input[i];
+                }
+                splitted_input.RemoveAt(splitted_input.Count - 1);
+            }
+            while (splitted_input.Count < 3)
+            {
+                splitted_input.Add("0");
+            }
+
+            RegExPattern = splitted_input[0];
+            for (int i = 1; i < splitted_input.Count; i++)
+            {
+                if (string.IsNullOrEmpty(splitted_input[i]))
+                {
+                    splitted_input[i] = "0";
+                }
             }
             return splitted_input;
         }

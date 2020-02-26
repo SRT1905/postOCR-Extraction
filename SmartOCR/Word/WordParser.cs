@@ -78,7 +78,7 @@ namespace SmartOCR
         }
         private void GetDataFromTableNode(TreeNode field_node)
         {
-            TableTreeNodeContent content = (TableTreeNodeContent)field_node.Content;
+            TreeNodeContent content = field_node.Content;
             foreach (WordTable item in tables)
             {
                 bool search_status = TryToFindMatchInTable(item, Utilities.CreateRegexpObject(content.RegExPattern),
@@ -91,8 +91,8 @@ namespace SmartOCR
                     {
                         childNode = childNode.Children[0];
                     }
-                    TableTreeNodeContent childContent = (TableTreeNodeContent)childNode.Content;
-                    string item_by_expression_position = item[childContent.Row, childContent.Column];
+                    TreeNodeContent childContent = childNode.Content;
+                    string item_by_expression_position = item[childContent.FirstSearchParameter, childContent.SecondSearchParameter];
                     if (Utilities.CreateRegexpObject(childContent.RegExPattern).IsMatch(item_by_expression_position))
                     {
                         childContent.FoundValue = item_by_expression_position;
@@ -199,9 +199,9 @@ namespace SmartOCR
             for (int field_index = 0; field_index < tree_structure.Children.Count; field_index++)
             {
                 TreeNode field_node = tree_structure.Children[field_index];
-                ITreeNodeContent node_content = field_node.Content;
+                TreeNodeContent node_content = field_node.Content;
 
-                if (node_content is TreeNodeContent)
+                if (!node_content.ValueType.Contains("Table"))
                 {
                     if (node_content.Lines[0] == 0)
                     {
@@ -276,7 +276,7 @@ namespace SmartOCR
                     List<ParagraphContainer> paragraph_collection = line_mapping[line_number];
                     int start_index = 0;
                     int finish_index = paragraph_collection.Count - 1;
-                    switch (node_content.HorizontalStatus)
+                    switch (node_content.SecondSearchParameter)
                     {
                         case 1:
                             start_index = GetParagraphByLocation(paragraph_collection,
@@ -322,7 +322,7 @@ namespace SmartOCR
             Regex regex_obj = Utilities.CreateRegexpObject(line_node_content.RegExPattern);
             var line_checker = new LineContentChecker(line_mapping[line_number],
                                                       paragraph_horizontal_location,
-                                                      line_node_content.HorizontalStatus);
+                                                      line_node_content.SecondSearchParameter);
             check_status = line_checker.CheckLineContents(regex_obj, line_node_content.CheckValue);
             if (check_status)
             {
@@ -345,7 +345,7 @@ namespace SmartOCR
                 TreeNodeContent child_content = (TreeNodeContent)child.Content;
                 child_content.HorizontalParagraph = node_content.HorizontalParagraph;
                 List<long> keys = line_mapping.Keys.ToList();
-                int line_index = keys.IndexOf(line) + child_content.LineOffset;
+                int line_index = keys.IndexOf(line) + child_content.FirstSearchParameter;
                 if (line_index >= 0 && line_index < keys.Count)
                 {
                     long offset_line = keys[line_index];

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace SmartOCR
 {
-    public class TreeNodeContent : ITreeNodeContent
+    public class TreeNodeContent
     // TODO: add summary.
     {
         #region Properties
         public string CheckValue { get; set; }
         public string FoundValue { get; set; }
         public decimal HorizontalParagraph { get; set; }
-        public int HorizontalStatus { get; set; }
-        public int LineOffset { get; set; }
+        public int SecondSearchParameter { get; set; }
+        public int FirstSearchParameter { get; set; }
         public List<long> Lines { get;}
         public string Name { get; set; }
         public string NodeLabel { get; set; }
@@ -40,8 +40,8 @@ namespace SmartOCR
             CheckValue = content.CheckValue;
             FoundValue = content.FoundValue;
             ValueType = content.ValueType;
-            HorizontalStatus = content.HorizontalStatus;
-            LineOffset = content.LineOffset;
+            SecondSearchParameter = content.SecondSearchParameter;
+            FirstSearchParameter = content.FirstSearchParameter;
         }
         #endregion
     }

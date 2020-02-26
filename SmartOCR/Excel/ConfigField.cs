@@ -13,7 +13,7 @@ namespace SmartOCR
         /// <summary>
         /// Collection of search expressions that define search process for current field.
         /// </summary>
-        public List<ConfigExpressionBase> Expressions { get; } = new List<ConfigExpressionBase>();
+        public List<ConfigExpression> Expressions { get; } = new List<ConfigExpression>();
         /// <summary>
         /// String value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
         /// </summary>
@@ -82,7 +82,7 @@ namespace SmartOCR
         /// </summary>
         /// <param name="expression"><see cref="ConfigExpression"/> instance that describes single search expression.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddSearchExpression(ConfigExpressionBase expression)
+        public void AddSearchExpression(ConfigExpression expression)
         {
             if (expression != null)
             {

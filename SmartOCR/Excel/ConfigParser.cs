@@ -76,17 +76,7 @@ namespace SmartOCR
             long last_row = source_ws.Cells.Item[source_ws.Rows.Count, field_column].End[XlDirection.xlUp].Row;
             for (long i = header_row + 3; i <= last_row; i++)
             {
-                ConfigExpressionBase expression;
-                if (value_type == "Table")
-                {
-                    expression = new TableConfigExpression(source_ws.Cells.Item[i, field_column].Value2);
-                }
-                else
-                {
-                    expression = new ConfigExpression(source_ws.Cells.Item[i, field_column].Value2);
-                }
-                
-                field.AddSearchExpression(expression);
+                field.AddSearchExpression(new ConfigExpression(value_type, source_ws.Cells.Item[i, field_column].Value2));
             }
             return field;
         }

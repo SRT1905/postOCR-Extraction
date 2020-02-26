@@ -6,7 +6,7 @@ namespace SmartOCR
     public class TreeNode // TODO: add summary.
     {
         #region Properties
-        public ITreeNodeContent Content { get; set; }
+        public TreeNodeContent Content { get; set; }
         public List<TreeNode> Children { get; }
         public TreeNode Parent { get; set; }
         #endregion
@@ -21,7 +21,7 @@ namespace SmartOCR
         {
             Parent = parentNode;
         }
-        public TreeNode(ITreeNodeContent content) : this()
+        public TreeNode(TreeNodeContent content) : this()
         {
             this.Content = content;
         }
@@ -47,21 +47,10 @@ namespace SmartOCR
             {
                 throw new ArgumentNullException(nameof(node));
             }
-            if (node.Content is TreeNodeContent)
-            {
-                TreeNodeContent node_content = (TreeNodeContent)node.Content;
-                return AddChild(
-                    node_content.Name, node_content.RegExPattern, newLine,
-                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
-                    node_content.HorizontalParagraph);
-            }
-            else
-            {
-                TableTreeNodeContent node_content = (TableTreeNodeContent)node.Content;
-                return AddChild(
-                    node_content.Name, node_content.RegExPattern, newLine,
-                    node_content.ValueType, node_content.CheckValue, node_content.NodeLabel);
-            }
+            TreeNodeContent node_content = node.Content;
+            return AddChild(node_content.Name, node_content.RegExPattern, newLine,
+                            node_content.ValueType, node_content.CheckValue, node_content.NodeLabel,
+                            node_content.HorizontalParagraph);
         }
         public TreeNode AddChild(string newName = "", string pattern = "", long foundLine = 0, string valueType = "", string newValue = "", string nodeLabel = "", decimal horizontalParagraph = 0)
         {

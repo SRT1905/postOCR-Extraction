@@ -78,10 +78,8 @@
     <Compile Include="CMDProcess.cs" />
     <Compile Include="Excel\ConfigData.cs" />
     <Compile Include="Excel\ConfigExpression.cs" />
-    <Compile Include="Excel\ConfigExpressionBase.cs" />
     <Compile Include="Excel\ConfigField.cs" />
     <Compile Include="Excel\ConfigParser.cs" />
-    <Compile Include="Excel\TableConfigExpression.cs" />
     <Compile Include="IProcess.cs" />
     <Compile Include="ParseEntryPoint.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -89,8 +87,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SearchTree\NodeContent\ITreeNodeContent.cs" />
-    <Compile Include="SearchTree\NodeContent\TableTreeNodeContent.cs" />
     <Compile Include="SearchTree\NodeContent\TreeNodeContent.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />
     <Compile Include="SearchTree\SearchTree.cs" />
