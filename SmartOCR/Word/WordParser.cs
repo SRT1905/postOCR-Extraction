@@ -43,37 +43,27 @@ namespace SmartOCR
         #endregion
 
         #region Private methods
-        private void AddOffsetNode(TreeNode node, long searchLevel, long offsetIndex,
+        private void AddOffsetNode(TreeNode node, int searchLevel, long offsetIndex,
                                    string foundValue, decimal position, bool addToParent)
         {
-            TreeNodeContent nodeContent = node.Content;
-            if (nodeContent.Lines.Count(item => item == offsetIndex) >= 2)
+            if (node.Content.Lines.Count(item => item == offsetIndex) >= 2)
             {
                 return;
             }
-            nodeContent.Lines.Add(offsetIndex);
-            string nodeLabel;
-            string pattern;
-            decimal horizontalPosition;
+            var contentBuilder = new TreeNodeContentBuilder(node.Content);
+            contentBuilder.TryAddLine(offsetIndex);
+            contentBuilder.SetHorizontalParagraph(position);
+            contentBuilder.SetNodeLabel(node.Content.NodeLabel);
+            contentBuilder.SetRegExPattern(node.Content.RegExPattern);
+
             if (addToParent)
             {
-                var firstChildContent = node.Children.First().Content;
-                nodeLabel = firstChildContent.NodeLabel;
-                pattern = firstChildContent.RegExPattern;
-                horizontalPosition = position;
+                contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel);
+                contentBuilder.SetRegExPattern(node.Children[0].Content.RegExPattern);
             }
-            else
-            {
-                nodeLabel = node.Content.NodeLabel;
-                pattern = node.Content.RegExPattern;
-                horizontalPosition = position;
-            }
-            TreeNode childNode = node.AddChild(foundLine: offsetIndex,
-                                               pattern: pattern,
-                                               nodeLabel: nodeLabel,
-                                               horizontalParagraph: horizontalPosition);
+            TreeNode childNode = node.AddChild(contentBuilder.Build());
             childNode.Content.FoundValue = foundValue;
-            SearchTree.AddSearchValues(configData[nodeContent.Name], childNode, (int)searchLevel);
+            SearchTree.AddSearchValues(configData[childNode.Content.Name], childNode, searchLevel);
         }
         private void GetDataFromUndefinedNode(TreeNode fieldNode)
         {
@@ -135,7 +125,7 @@ namespace SmartOCR
             return foundValuesCollection;
         }
         private void OffsetSearch(long lineNumber, TreeNode lineNode,
-                                  long searchLevel, bool addToParent = false)
+                                  int searchLevel, bool addToParent = false)
         {
             TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
             var lineNumbers = GetOffsetLines(lineNumber, lineNodeContent);
@@ -194,7 +184,7 @@ namespace SmartOCR
                 }
             }
         }
-        private void ProcessLineNode(TreeNode lineNode, long searchLevel = 0)
+        private void ProcessLineNode(TreeNode lineNode, int searchLevel = 0)
         {
             TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
             if (lineNodeContent.NodeLabel == "Terminal")
@@ -223,7 +213,7 @@ namespace SmartOCR
                 lineIndex++;
             }
         }
-        private void ProcessLineNodeChildren(TreeNode lineNode, long searchLevel)
+        private void ProcessLineNodeChildren(TreeNode lineNode, int searchLevel)
         {
             int childIndex = 0;
             while (childIndex < lineNode.Children.Count)
@@ -233,7 +223,7 @@ namespace SmartOCR
                 childIndex++;
             }
         }
-        private void ProcessValue(TreeNode node, long searchLevel)
+        private void ProcessValue(TreeNode node, int searchLevel)
         {
             TreeNodeContent nodeContent = node.Content;
             for (int i = 0; i < nodeContent.Lines.Count; i++)
@@ -272,8 +262,8 @@ namespace SmartOCR
                         Regex regexObject = Utilities.CreateRegexpObject(nodeContent.RegExPattern);
 
                         MatchProcessor matchProcessor = new MatchProcessor(paragraphText,
-                                                                            regexObject,
-                                                                            nodeContent.ValueType);
+                                                                           regexObject,
+                                                                           nodeContent.ValueType);
                         if (!string.IsNullOrEmpty(matchProcessor.Result))
                         {
                             nodeContent.FoundValue = matchProcessor.Result;
@@ -295,25 +285,20 @@ namespace SmartOCR
                                                      paragraphHorizontalLocation,
                                                      lineNodeContent.SecondSearchParameter);
             bool checkStatus = lineChecker.CheckLineContents(regexObject, lineNodeContent.CheckValue);
-            if (checkStatus)
-            {
-                lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
-            }
-            else
-            {
-                lineNodeContent.HorizontalParagraph = paragraphHorizontalLocation;
-            }
+            lineNodeContent.HorizontalParagraph = checkStatus
+                ? lineChecker.ParagraphHorizontalLocation
+                : lineNodeContent.HorizontalParagraph = paragraphHorizontalLocation;
             lineNodeContent.FoundValue = lineChecker.JoinedMatches;
             return checkStatus;
         }
         private void SetOffsetChildrenLines(TreeNode node, long line)
         {
-            TreeNodeContent nodeContent = (TreeNodeContent)node.Content;
+            TreeNodeContent nodeContent = node.Content;
 
             for (int i = 0; i < node.Children.Count; i++)
             {
                 TreeNode child = node.Children[i];
-                TreeNodeContent childContent = (TreeNodeContent)child.Content;
+                TreeNodeContent childContent = child.Content;
                 childContent.HorizontalParagraph = nodeContent.HorizontalParagraph;
                 List<long> keys = lineMapping.Keys.ToList();
                 int lineIndex = keys.IndexOf(line) + childContent.FirstSearchParameter;
@@ -366,9 +351,10 @@ namespace SmartOCR
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
-                fieldNode.AddChild(foundLine: line, pattern: content.RegExPattern,
-                                    newValue: content.CheckValue, nodeLabel: "Line",
-                                    horizontalParagraph: horizontalLocation);
+                var builder = new TreeNodeContentBuilder(content);
+                builder.SetNodeLabel("Line");
+                builder.SetHorizontalParagraph(horizontalLocation);
+                fieldNode.AddChild(builder.Build());
             }
         }
         private static List<SimilarityDescription> GetMatchesFromParagraph(string textToCheck,

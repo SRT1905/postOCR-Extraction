@@ -42,6 +42,8 @@ namespace SmartOCR
             ValueType = content.ValueType;
             SecondSearchParameter = content.SecondSearchParameter;
             FirstSearchParameter = content.FirstSearchParameter;
+            Lines.Clear();
+            Lines.AddRange(content.Lines);
         }
         #endregion
     }

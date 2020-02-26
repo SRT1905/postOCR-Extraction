@@ -13,7 +13,7 @@
         }
         public TreeNodeContentBuilder(TreeNodeContent content)
         {
-            nodeContent = content;
+            nodeContent = new TreeNodeContent(content);
         }
         #endregion
 

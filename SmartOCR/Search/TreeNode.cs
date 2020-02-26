@@ -17,10 +17,6 @@ namespace SmartOCR
             Children = new List<TreeNode>();
             Content = new TreeNodeContent();
         }
-        public TreeNode(TreeNode parentNode) : this()
-        {
-            Parent = parentNode;
-        }
         public TreeNode(TreeNodeContent content) : this()
         {
             this.Content = content;
@@ -41,63 +37,29 @@ namespace SmartOCR
             Children.Add(node);
             return node;
         }
-        public TreeNode AddChild(TreeNode node, long newLine)
+        public TreeNode AddChild(TreeNodeContent content)
         {
-            if (node == null)
+            if (string.IsNullOrEmpty(content.Name))
             {
-                throw new ArgumentNullException(nameof(node));
+                content.Name = Content.Name;
             }
-            TreeNodeContent nodeContent = node.Content;
-            return AddChild(nodeContent.Name, nodeContent.RegExPattern, newLine,
-                            nodeContent.ValueType, nodeContent.CheckValue, nodeContent.NodeLabel,
-                            nodeContent.HorizontalParagraph);
-        }
-        public TreeNode AddChild(string newName = "", string pattern = "", long foundLine = 0, string valueType = "", string newValue = "", string nodeLabel = "", decimal horizontalParagraph = 0)
-        {
-            TreeNodeContent content = new TreeNodeContent()
+
+            if (string.IsNullOrEmpty(content.ValueType))
             {
-                Name = newName,
-                RegExPattern = pattern,
-                ValueType = valueType,
-                CheckValue = newValue,
-                NodeLabel = nodeLabel,
-                HorizontalParagraph = horizontalParagraph
-            };
-            content.Lines.Add(foundLine);
-            TreeNode newNode = new TreeNode(content)
+                content.ValueType = Content.ValueType;
+            }
+            TreeNode node = new TreeNode(content)
             {
                 Parent = this
             };
-            if (string.IsNullOrEmpty(content.Name))
-            {
-                newNode.Content.Name = this.Content.Name;
-            }
-
-            if (string.IsNullOrEmpty(newNode.Content.ValueType))
-            {
-                newNode.Content.ValueType = this.Content.ValueType;
-            }
-            Children.Add(newNode);
-            return newNode;
-        }
-        public TreeNode AddSibling(long lineNumber = 0)
-        {
-            TreeNode newNode = new TreeNode(this.Content);
-            newNode.Content.Lines.Add(lineNumber);
-            newNode.Parent = this.Parent;
-            var parentLines = Parent.Content.Lines;
-            if (!parentLines.Contains(lineNumber))
-            {
-                parentLines.Add(lineNumber);
-            }
-
-            return newNode;
+            Children.Add(node);
+            return node;
         }
         public override string ToString()
         {
-            if (this.Content != null)
+            if (Content != null)
             {
-                return $"{this.Content.Name}: {this.Content.NodeLabel} node";
+                return $"{Content.Name}: {Content.NodeLabel} node";
             }
             return base.ToString();
         }
@@ -106,39 +68,11 @@ namespace SmartOCR
         #region Public static methods
         public static TreeNode CreateRoot()
         {
-            return CreateNode("root");
-        }
-        #endregion
-
-        #region Private static methods
-        private static TreeNode CreateNode(string newName = "", string pattern = "",
-                                           string valueType = "", long foundLine = 0,
-                                           string newValue = "", string nodeLabel = "",
-                                           long horizontalParagraph = 0)
-        {
-            var newNode = new TreeNode
-            {
-                Content = PopulateNodeContent(newName, pattern, valueType, foundLine, newValue, nodeLabel, horizontalParagraph)
-            };
-            return newNode;
-        }
-
-
-        private static TreeNodeContent PopulateNodeContent(string newName = "", string pattern = "", string valueType = "",
-                                                           long foundLine = 0, string newValue = "", string nodeLabel = "",
-                                                           long horizontalParagraph = 0)
-        {
-            var content = new TreeNodeContent()
-            {
-                Name = newName,
-                RegExPattern = pattern,
-                CheckValue = newValue,
-                ValueType = valueType,
-                HorizontalParagraph = horizontalParagraph,
-                NodeLabel = nodeLabel
-            };
-            content.Lines.Add(foundLine);
-            return content;
+            var builder = new TreeNodeContentBuilder();
+            builder.SetName("root");
+            builder.TryAddLine(0);
+            builder.SetHorizontalParagraph(0);
+            return new TreeNode(builder.Build());
         }
         #endregion
     }
