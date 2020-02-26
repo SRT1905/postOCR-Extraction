@@ -65,10 +65,10 @@ namespace SmartOCR
             {
                 Fields.Add(field);
             }
-            else
-            {
-                throw new ArgumentNullException(nameof(field), Properties.Resources.nullConfigField);
-            }
+            //else
+            //{
+            //    throw new ArgumentNullException(nameof(field), Properties.Resources.nullConfigField);
+            //}
         }
         #endregion
     }

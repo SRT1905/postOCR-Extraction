@@ -45,22 +45,17 @@ namespace SmartOCR
         }
         private ConfigData GetConfigData(Worksheet sourceWS)
         {
-            var data = new ConfigData();
-            long headerRow;
-            for (headerRow = 1; headerRow <= sourceWS.Cells.Item[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; headerRow++)
+            ConfigData data = new ConfigData();
+            for (long headerRow = 1; headerRow <= sourceWS.UsedRange.Columns[1].Rows.Count; headerRow++)
             {
-                string cellValue = sourceWS.Cells.Item[headerRow, 1].Value2;
-                if (cellValue.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
+                if (sourceWS.Cells.Item[headerRow, 1].Value2.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
                 {
-                    break;
+                    for (int fieldIndex = 2; fieldIndex <= sourceWS.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
+                    {
+                        data.AddField(GetFieldDefinition(sourceWS, headerRow, fieldIndex));
+                    }
+                    return data;
                 }
-            }
-
-            long lastColumn = sourceWS.Cells.Item[headerRow, sourceWS.Columns.Count].End[XlDirection.xlToLeft].Column;
-            for (int i = 2; i <= lastColumn; i++)
-            {
-                ConfigField field = GetFieldDefinition(sourceWS, headerRow, i);
-                data.AddField(field);
             }
             return data;
         }
@@ -70,6 +65,10 @@ namespace SmartOCR
         private static ConfigField GetFieldDefinition(Worksheet sourceWS, long headerRow, long fieldColumn)
         {
             string fieldName = sourceWS.Cells.Item[headerRow, fieldColumn].Value2;
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                return null;
+            }
             string valueType = sourceWS.Cells.Item[headerRow + 1, fieldColumn].Value2;
             var field = new ConfigField(fieldName, valueType);
             field.ParseFieldExpression(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2);
