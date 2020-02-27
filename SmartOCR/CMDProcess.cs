@@ -57,7 +57,7 @@
             {
                 if (args == null)
                 {
-                    Utilities.PrintInvalidInputMessage();
+                    Utilities.Debug(Properties.Resources.invalidInputMessage);
                     this.ReadyToProcess = false;
                     return;
                 }
@@ -86,7 +86,7 @@
             }
             catch (IndexOutOfRangeException)
             {
-                Utilities.PrintInvalidInputMessage();
+                Utilities.Debug(Properties.Resources.invalidInputMessage);
                 this.ReadyToProcess = false;
             }
         }
@@ -103,7 +103,7 @@
         {
             if (this.enteredPathType == PathType.None || this.configFile == null)
             {
-                Utilities.PrintInvalidInputMessage();
+                Utilities.Debug(Properties.Resources.invalidInputMessage);
                 return;
             }
 

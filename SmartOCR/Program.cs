@@ -12,7 +12,7 @@
         {
             if (args.Length < 2)
             {
-                Utilities.PrintInvalidInputMessage();
+                Utilities.Debug(Properties.Resources.invalidInputMessage);
             }
             else
             {
