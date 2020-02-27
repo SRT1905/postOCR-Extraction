@@ -60,16 +60,40 @@
                 return null;
             }
 
-            string valueType = sourceWS.Cells.Item[headerRow + 1, fieldColumn].Value2;
-            var field = new ConfigField(fieldName, valueType);
-            field.ParseFieldExpression(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2);
-            long lastRow = sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row;
-            for (long i = headerRow + 3; i <= lastRow; i++)
+            return InitializeAndPopulateConfigField(sourceWS, headerRow, fieldColumn, fieldName, sourceWS.Cells.Item[headerRow + 1, fieldColumn].Value2);
+        }
+
+        private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWS, long headerRow, long fieldColumn, string fieldName, string valueType)
+        {
+            ConfigField field = InitializeConfigField(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2, fieldName, valueType);
+            AddSearchExpressionsToField(sourceWS, headerRow, fieldColumn, valueType, field);
+
+            return field;
+        }
+
+        private static void AddSearchExpressionsToField(Worksheet sourceWS, long headerRow, long fieldColumn, string valueType, ConfigField field)
+        {
+            for (long i = headerRow + 3; i <= sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row; i++)
             {
                 field.AddSearchExpression(new ConfigExpression(valueType, sourceWS.Cells.Item[i, fieldColumn].Value2));
             }
+        }
 
+        private static ConfigField InitializeConfigField(string fieldDescription, string fieldName, string valueType)
+        {
+            var field = new ConfigField(fieldName, valueType);
+            field.ParseFieldExpression(fieldDescription);
             return field;
+        }
+
+        private static ConfigData AddConfigFields(Worksheet sourceWS, ConfigData data, long headerRow)
+        {
+            for (int fieldIndex = 2; fieldIndex <= sourceWS.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
+            {
+                data.AddField(GetFieldDefinition(sourceWS, headerRow, fieldIndex));
+            }
+
+            return data;
         }
 
         private Workbook GetExternalConfigWorkbook(string path)
@@ -91,12 +115,7 @@
             {
                 if (sourceWS.Cells.Item[headerRow, 1].Value2.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
                 {
-                    for (int fieldIndex = 2; fieldIndex <= sourceWS.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
-                    {
-                        data.AddField(GetFieldDefinition(sourceWS, headerRow, fieldIndex));
-                    }
-
-                    return data;
+                    return AddConfigFields(sourceWS, data, headerRow);
                 }
             }
 
