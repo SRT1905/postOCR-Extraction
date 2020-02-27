@@ -3,10 +3,17 @@
     using System;
     using Microsoft.Office.Interop.Word;
 
+    /// <summary>
+    /// Performs as a container of Word table data.
+    /// </summary>
     public class WordTable
     {
         private readonly string[][] cells;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WordTable"/> class.
+        /// </summary>
+        /// <param name="wordTable">A reference to Word table.</param>
         public WordTable(Table wordTable)
         {
             if (wordTable == null)
@@ -14,18 +21,12 @@
                 throw new ArgumentNullException(nameof(wordTable));
             }
 
-            this.cells = new string[wordTable.Rows.Count][];
-            for (int i = 0; i < wordTable.Rows.Count; i++)
-            {
-                this.cells[i] = new string[wordTable.Columns.Count];
-            }
-
-            foreach (Cell cell in wordTable.Range.Cells)
-            {
-                this.cells[cell.RowIndex - 1][cell.ColumnIndex - 1] = this.RemoveInvalidChars(cell.Range.Text);
-            }
+            this.cells = InitializeCells(wordTable);
         }
 
+        /// <summary>
+        /// Gets count of rows in table.
+        /// </summary>
         public int RowCount
         {
             get
@@ -34,6 +35,9 @@
             }
         }
 
+        /// <summary>
+        /// Gets count of columns in table.
+        /// </summary>
         public int ColumnCount
         {
             get
@@ -42,35 +46,68 @@
             }
         }
 
+        /// <summary>
+        /// Returns a string value that represents a cell in a table.
+        /// </summary>
+        /// <param name="row">The number of the row in the table to return. May be negative - then row is taken from table end.</param>
+        /// <param name="column">The number of the cell in the table to return. May be negative - then cell is taken from row end.</param>
+        /// <returns>A cell value.</returns>
         public string this[int row, int column]
         {
             get
             {
-                row = row < 0
-                    ? this.RowCount + row
-                    : row;
-                column = column < 0
-                    ? this.ColumnCount + column
-                    : column;
-                if (!(row >= 0 && row <= this.cells.Length))
-                {
-                    return null;
-                }
-
-                if (!(column >= 0 && column <= this.cells[row].Length))
-                {
-                    return null;
-                }
-
-                return this.cells[row][column];
+                return this.ValidateIndexers(row, column)
+                    ? this.cells[row][column]
+                    : null;
             }
         }
 
-        private string RemoveInvalidChars(string checkString)
+        private static string[][] InitializeCells(Table wordTable)
+        {
+            string[][] tableCells = InitializeRows(wordTable);
+            InitializeColumns(wordTable, tableCells);
+            return tableCells;
+        }
+
+        private static void InitializeColumns(Table wordTable, string[][] tableCells)
+        {
+            foreach (Cell cell in wordTable.Range.Cells)
+            {
+                tableCells[cell.RowIndex - 1][cell.ColumnIndex - 1] = RemoveInvalidChars(cell.Range.Text);
+            }
+        }
+
+        private static string[][] InitializeRows(Table wordTable)
+        {
+            string[][] tableCells = new string[wordTable.Rows.Count][];
+            for (int i = 0; i < wordTable.Rows.Count; i++)
+            {
+                tableCells[i] = new string[wordTable.Columns.Count];
+            }
+
+            return tableCells;
+        }
+
+        private static string RemoveInvalidChars(string checkString)
         {
             string[] separators = new string[] { "\r", "\a", "\t", "\f" };
             string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(string.Empty, temp).Replace("\v", " ");
+        }
+
+        private static int ValidateSingleIndexer(int indexer, int marginValue)
+        {
+            indexer = indexer < 0
+                ? marginValue + indexer
+                : indexer;
+            return indexer;
+        }
+
+        private bool ValidateIndexers(int row, int column)
+        {
+            row = ValidateSingleIndexer(row, this.RowCount);
+            column = ValidateSingleIndexer(column, this.ColumnCount);
+            return row >= 0 && row <= this.cells.Length && column >= 0 && column <= this.cells[row].Length;
         }
     }
 }
