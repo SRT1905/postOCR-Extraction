@@ -2,6 +2,9 @@
 {
     using System;
 
+    /// <summary>
+    /// Entry point.
+    /// </summary>
     internal class Program
     {
         [STAThread]

@@ -4,8 +4,15 @@
     using System.IO;
     using Microsoft.Office.Interop.Excel;
 
-    public class ConfigParser // TODO: add summary.
+    /// <summary>
+    /// Performs collection and parsing of config data from config Excel workbook.
+    /// </summary>
+    public class ConfigParser
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigParser"/> class.
+        /// Sets internally stored Excel workbook as source of config data.
+        /// </summary>
         public ConfigParser()
         {
             if (ConfigWorkbook == null)
@@ -14,18 +21,37 @@
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigParser"/> class.
+        /// Sets externally stored Excel workbook as source of config data.
+        /// </summary>
+        /// <param name="configFile">Path to config Excel workbook.</param>
         public ConfigParser(string configFile)
         {
             ConfigWorkbook = this.GetExternalConfigWorkbook(configFile);
         }
 
+        /// <summary>
+        /// Gets single reference to Excel workbook with config data.
+        /// </summary>
         public static Workbook ConfigWorkbook { get; private set; }
 
+        /// <summary>
+        /// Gets config data from first worksheet on <see cref="ConfigWorkbook"/>.
+        /// </summary>
+        /// <returns>An instance of <see cref="ConfigData"/>.</returns>
         public ConfigData ParseConfig()
         {
             return this.GetConfigData(ConfigWorkbook.Worksheets[1]);
         }
 
+        /// <summary>
+        /// Gets definition of single config field and its search expressions.
+        /// </summary>
+        /// <param name="sourceWS">An Excel worksheet with config data.</param>
+        /// <param name="headerRow">Index of row on worksheet with field names.</param>
+        /// <param name="fieldColumn">Index of column where field definition is contained.</param>
+        /// <returns>An instance of <see cref="ConfigField"/> that describes search field and its expressions.</returns>
         private static ConfigField GetFieldDefinition(Worksheet sourceWS, long headerRow, long fieldColumn)
         {
             string fieldName = sourceWS.Cells.Item[headerRow, fieldColumn].Value2;
