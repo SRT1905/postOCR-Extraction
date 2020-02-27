@@ -23,28 +23,61 @@
                 throw new ArgumentNullException(nameof(valueType));
             }
 
-            List<string> parsedInput = this.ParseInput(input);
-            if (valueType.Contains("Table"))
+            this.InitializeSearchParameters(valueType, this.ParseInput(input));
+        }
+
+        /// <summary>
+        /// Gets regular expression pattern.
+        /// </summary>
+        public string RegExPattern { get; private set; }
+
+        /// <summary>
+        /// Gets mapping between search parameter name and its value.
+        /// </summary>
+        public Dictionary<string, int> SearchParameters { get; private set; }
+
+        private static void TryToMergeSplittedPattern(List<string> splittedInput)
+        {
+            while (!(int.TryParse(splittedInput[1], out _) || string.IsNullOrEmpty(splittedInput[1])))
             {
-                this.SearchParameters = new Dictionary<string, int>()
-                {
-                    { "row", int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
-                    { "column", int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
-                };
-            }
-            else
-            {
-                this.SearchParameters = new Dictionary<string, int>()
-                {
-                    { "line_offset", int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
-                    { "horizontal_status", int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
-                };
+                MergeSplittedPattern(splittedInput);
             }
         }
 
-        public string RegExPattern { get; private set; }
+        private static void MergeSplittedPattern(List<string> splittedInput)
+        {
+            splittedInput[0] = $"{splittedInput[0]};{splittedInput[1]}";
+            for (int i = 2; i < splittedInput.Count; i++)
+            {
+                splittedInput[i - 1] = splittedInput[i];
+            }
 
-        public Dictionary<string, int> SearchParameters { get; }
+            splittedInput.RemoveAt(splittedInput.Count - 1);
+        }
+
+        private static string[] DefineNumericParameterTitles(string valueType)
+        {
+            string[] parameterTitles = new string[2] { "row", "column" };
+
+            if (!valueType.Contains("Table"))
+            {
+                parameterTitles[0] = "line_offset";
+                parameterTitles[1] = "horizontal_status";
+            }
+
+            return parameterTitles;
+        }
+
+        private void InitializeSearchParameters(string valueType, List<string> parsedInput)
+        {
+            string[] parameterTitles = DefineNumericParameterTitles(valueType);
+
+            this.SearchParameters = new Dictionary<string, int>();
+            for (int i = 0; i < 2; i++)
+            {
+                this.SearchParameters.Add(parameterTitles[i], int.Parse(parsedInput[i + 1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo));
+            }
+        }
 
         private List<string> ParseInput(string input)
         {
@@ -54,17 +87,13 @@
             }
 
             List<string> splittedInput = input.Split(';').ToList();
-            while (!(int.TryParse(splittedInput[1], out _) || string.IsNullOrEmpty(splittedInput[1])))
-            {
-                splittedInput[0] = $"{splittedInput[0]};{splittedInput[1]}";
-                for (int i = 2; i < splittedInput.Count; i++)
-                {
-                    splittedInput[i - 1] = splittedInput[i];
-                }
+            TryToMergeSplittedPattern(splittedInput);
+            this.ValidateNumericParameters(splittedInput);
+            return splittedInput;
+        }
 
-                splittedInput.RemoveAt(splittedInput.Count - 1);
-            }
-
+        private void ValidateNumericParameters(List<string> splittedInput)
+        {
             while (splittedInput.Count < 3)
             {
                 splittedInput.Add("0");
@@ -78,8 +107,6 @@
                     splittedInput[i] = "0";
                 }
             }
-
-            return splittedInput;
         }
     }
 }
