@@ -16,11 +16,16 @@
             }
             else
             {
-                var cmdProcessor = new CMDProcess(args);
-                if (cmdProcessor.ReadyToProcess)
-                {
-                    cmdProcessor.ExecuteProcessing();
-                }
+                ProcessArguments(args);
+            }
+        }
+
+        private static void ProcessArguments(string[] args)
+        {
+            var cmdProcessor = new CMDProcess(args);
+            if (cmdProcessor.ReadyToProcess)
+            {
+                cmdProcessor.ExecuteProcessing();
             }
         }
     }

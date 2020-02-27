@@ -1,7 +1,6 @@
 ﻿namespace SmartOCR
 {
     using System;
-    using System.Globalization;
 
     /// <summary>
     /// Used to contain similarity properties between two strings.
@@ -26,33 +25,19 @@
         /// <param name="checkString">String to compare with one, found within Word document.</param>
         public SimilarityDescription(string foundString, string checkString)
         {
-            if (foundString == null)
-            {
-                throw new ArgumentNullException(nameof(foundString));
-            }
-
-            if (checkString == null)
-            {
-                throw new ArgumentNullException(nameof(checkString));
-            }
-
-            if (foundString.Length - StringLengthOffset <= checkString.Length &&
-                foundString.Length + StringLengthOffset >= checkString.Length)
-            {
-                this.Ratio = this.GetStringSimilarity(foundString, checkString);
-                this.Value = foundString;
-            }
+            ValidateInput(foundString, checkString);
+            this.InitializeFields(foundString, checkString);
         }
 
         /// <summary>
         /// Gets percentage of closeness between two strings.
         /// </summary>
-        public double Ratio { get; }
+        public double Ratio { get; private set; }
 
         /// <summary>
         /// Gets saved value of found string.
         /// </summary>
-        public string Value { get; }
+        public string Value { get; private set; }
 
         /// <summary>
         /// Checks whether calculated similiarity ratio is sufficient enough to call two strings similar.
@@ -63,6 +48,19 @@
             return this.Ratio >= SimilarityRatioThreshold;
         }
 
+        private static void ValidateInput(string foundString, string checkString)
+        {
+            if (foundString == null)
+            {
+                throw new ArgumentNullException(nameof(foundString));
+            }
+
+            if (checkString == null)
+            {
+                throw new ArgumentNullException(nameof(checkString));
+            }
+        }
+
         /// <summary>
         /// Calculates number of string operations, which would take to transform one string to another.
         /// </summary>
@@ -71,47 +69,72 @@
         /// <returns>Number of required operations.</returns>
         private static double ComputeLevensteinDistance(string longString, string shortString)
         {
-            int longLength = longString.Length;
-            int shortLength = shortString.Length;
-
-            int[][] costs = new int[longLength + 1][];
-            for (int i = 0; i < costs.Length; i++)
+            if (longString.Length == 0 || shortString.Length == 0)
             {
-                costs[i] = new int[shortLength + 1];
+                return Math.Max(shortString.Length, longString.Length);
             }
 
-            if (longLength == 0)
-            {
-                return shortLength;
-            }
+            return InitializeCostsArray(longString, shortString)[longString.Length][shortString.Length];
+        }
 
-            if (shortLength == 0)
+        private static void RecalculateCosts(string longString, string shortString, int[][] costs)
+        {
+            for (int i = 1; i <= longString.Length; i++)
             {
-                return longLength;
-            }
-
-            for (int i = 0; i <= longLength; costs[i][0] = i++)
-            {
-            }
-
-            for (int j = 0; j <= shortLength; costs[0][j] = j++)
-            {
-            }
-
-            for (int i = 1; i <= longLength; i++)
-            {
-                for (int j = 1; j <= shortLength; j++)
+                for (int j = 1; j <= shortString.Length; j++)
                 {
-                    int cost = (shortString[j - 1] == longString[i - 1]) ? 0 : 1;
-                    costs[i][j] = Math.Min(
-                        Math.Min(
-                            costs[i - 1][j] + 1,
-                            costs[i][j - 1] + 1),
-                        costs[i - 1][j - 1] + cost);
+                    RecalculateSingleCost(longString, shortString, costs, i, j);
                 }
             }
+        }
 
-            return costs[longLength][shortLength];
+        private static void RecalculateSingleCost(string longString, string shortString, int[][] costs, int i, int j)
+        {
+            int cost = Convert.ToInt32(shortString[j - 1] != longString[i - 1]);
+            costs[i][j] = Math.Min(
+                Math.Min(costs[i - 1][j] + 1, costs[i][j - 1] + 1),
+                costs[i - 1][j - 1] + cost);
+        }
+
+        private static int[][] InitializeCostsArray(string longString, string shortString)
+        {
+            int[][] costs = new int[longString.Length + 1][];
+            for (int i = 0; i < costs.Length; i++)
+            {
+                costs[i] = new int[shortString.Length + 1];
+            }
+
+            FillArrayWithUnits(longString, shortString, costs);
+            RecalculateCosts(longString, shortString, costs);
+            return costs;
+        }
+
+        private static void FillArrayWithUnits(string longString, string shortString, int[][] costs)
+        {
+            for (int i = 0; i <= longString.Length; i++)
+            {
+                costs[i][0] = i + 1;
+            }
+
+            for (int j = 0; j <= shortString.Length; j++)
+            {
+                costs[0][j] = j + 1;
+            }
+        }
+
+        private static double CalculateSimilarityRatio(string shortString, string longString)
+        {
+            return (longString.Length - ComputeLevensteinDistance(longString, shortString)) / longString.Length;
+        }
+
+        private void InitializeFields(string foundString, string checkString)
+        {
+            if (foundString.Length - StringLengthOffset <= checkString.Length &&
+                foundString.Length + StringLengthOffset >= checkString.Length)
+            {
+                this.Ratio = this.GetStringSimilarity(foundString, checkString);
+                this.Value = foundString;
+            }
         }
 
         /// <summary>
@@ -122,22 +145,17 @@
         /// <returns>Similarity ratio.</returns>
         private double GetStringSimilarity(string leftString, string rightString)
         {
-            string shortString;
-            string longString;
-            if (leftString.Length < rightString.Length)
+            string shortString = leftString.ToLower();
+            string longString = rightString.ToLower();
+            if (leftString.Length > rightString.Length)
             {
-                shortString = leftString;
-                longString = rightString;
-            }
-            else
-            {
-                shortString = rightString;
-                longString = leftString;
+                shortString = rightString.ToLower();
+                longString = leftString.ToLower();
             }
 
-            return longString.ToLower(CultureInfo.CurrentCulture) == shortString.ToLower(CultureInfo.CurrentCulture)
+            return longString == shortString
                 ? 1
-                : (longString.Length - ComputeLevensteinDistance(longString, shortString)) / longString.Length;
+                : CalculateSimilarityRatio(shortString, longString);
         }
     }
 }
