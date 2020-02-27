@@ -10,25 +10,10 @@
     /// </summary>
     public class LineContentChecker
     {
-        /// <summary>
-        /// Collection of paragraphs to check.
-        /// </summary>
         private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
-
-        /// <summary>
-        /// Indicates whether all paragraphs or some selection should be tested.
-        /// </summary>
         private readonly int searchStatus;
-
-        /// <summary>
-        /// Indicates index of last paragraph to test.
-        /// </summary>
         private int finishIndex;
-
-        /// <summary>
-        /// Indicates index of first paragraph to test.
-        /// </summary>
-        private int startIndex;
+        private int startIndex = 0;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineContentChecker"/> class.
@@ -38,7 +23,6 @@
         public LineContentChecker(List<ParagraphContainer> paragraphs)
         {
             this.paragraphs = paragraphs ?? throw new ArgumentNullException(nameof(paragraphs));
-            this.startIndex = 0;
             this.finishIndex = paragraphs.Count - 1;
         }
 
@@ -54,13 +38,9 @@
         public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraphLocation, int searchStatus)
             : this(paragraphs)
         {
-            this.ParagraphHorizontalLocation = paragraphLocation;
-            if (Math.Abs(searchStatus) > 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(searchStatus), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
-            }
+            ValidateSearchStatus(searchStatus);
 
+            this.ParagraphHorizontalLocation = paragraphLocation;
             this.searchStatus = searchStatus;
             this.SetSearchIndexes();
         }
@@ -83,32 +63,18 @@
         /// <returns>Indicator whether there is match between regular expression and paragraph contents.</returns>
         public bool CheckLineContents(Regex regExObject, string checkValue)
         {
-            if (regExObject == null)
-            {
-                throw new ArgumentNullException(nameof(regExObject));
-            }
-
             for (int location = this.startIndex; location <= this.finishIndex; location++)
             {
-                string paragraphText = this.paragraphs[location].Text;
-                if (regExObject.IsMatch(paragraphText))
+                if (regExObject.IsMatch(this.paragraphs[location].Text))
                 {
                     if (string.IsNullOrEmpty(checkValue))
                     {
-                        var foundMatches = GetMatchesFromParagraph(regExObject, paragraphText);
-                        this.JoinedMatches = string.Join("|", foundMatches);
-                        this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
-                        return true;
+                        return this.ProcessMatchWithoutCheck(regExObject, location, this.paragraphs[location].Text);
                     }
-                    else
+
+                    if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
                     {
-                        var foundMatches = GetMatchesFromParagraph(regExObject, paragraphText, checkValue);
-                        if (foundMatches.Count != 0)
-                        {
-                            this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
-                            this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -129,22 +95,25 @@
             var foundValues = new List<string>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match singleMatch = matches[i];
-                if (singleMatch.Groups.Count > 1)
-                {
-                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
-                    {
-                        Group groupItem = singleMatch.Groups[groupIndex];
-                        foundValues.Add(groupItem.Value);
-                    }
-                }
-                else
-                {
-                    foundValues.Add(singleMatch.Value);
-                }
+                GetValuesFromParagraphSingleMatch(matches, foundValues, i);
             }
 
             return foundValues;
+        }
+
+        private static void GetValuesFromParagraphSingleMatch(MatchCollection matches, List<string> foundValues, int i)
+        {
+            if (matches[i].Groups.Count > 1)
+            {
+                for (int groupIndex = 1; groupIndex < matches[i].Groups.Count; groupIndex++)
+                {
+                    foundValues.Add(matches[i].Groups[groupIndex].Value);
+                }
+            }
+            else
+            {
+                foundValues.Add(matches[i].Value);
+            }
         }
 
         /// <summary>
@@ -160,30 +129,54 @@
             List<SimilarityDescription> foundValues = new List<SimilarityDescription>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match singleMatch = matches[i];
-                if (singleMatch.Groups.Count > 1)
-                {
-                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
-                    {
-                        Group groupItem = singleMatch.Groups[groupIndex];
-                        SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
-                        if (description.CheckStringSimilarity())
-                        {
-                            foundValues.Add(description);
-                        }
-                    }
-                }
-                else
-                {
-                    SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
-                    if (description.CheckStringSimilarity())
-                    {
-                        foundValues.Add(description);
-                    }
-                }
+                GetValuesFromParagraphSingleMatch(matches, foundValues, i, checkValue);
             }
 
             return foundValues;
+        }
+
+        private static void GetValuesFromParagraphSingleMatch(MatchCollection matches, List<SimilarityDescription> foundValues, int i, string checkValue)
+        {
+            Match singleMatch = matches[i];
+            if (singleMatch.Groups.Count > 1)
+            {
+                ProcessMultipleGroupsWithCheck(foundValues, checkValue, singleMatch);
+            }
+            else
+            {
+                ProcessSingleMatchWithCheck(foundValues, checkValue, singleMatch);
+            }
+        }
+
+        private static void ProcessSingleMatchWithCheck(List<SimilarityDescription> foundValues, string checkValue, Match singleMatch)
+        {
+            SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
+            if (description.CheckStringSimilarity())
+            {
+                foundValues.Add(description);
+            }
+        }
+
+        private static void ProcessMultipleGroupsWithCheck(List<SimilarityDescription> foundValues, string checkValue, Match singleMatch)
+        {
+            for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
+            {
+                Group groupItem = singleMatch.Groups[groupIndex];
+                SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
+                if (description.CheckStringSimilarity())
+                {
+                    foundValues.Add(description);
+                }
+            }
+        }
+
+        private static void ValidateSearchStatus(int searchStatus)
+        {
+            if (Math.Abs(searchStatus) > 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(searchStatus), Properties.Resources.outOfRangeParagraphHorizontalLocationStatus);
+            }
         }
 
         /// <summary>
@@ -211,6 +204,27 @@
             }
 
             return location--;
+        }
+
+        private bool ProcessMatchWithCheck(Regex regExObject, int location, string checkValue)
+        {
+            var foundMatches = GetMatchesFromParagraph(regExObject, this.paragraphs[location].Text, checkValue);
+            if (foundMatches.Count == 0)
+            {
+                return false;
+            }
+
+            this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
+            this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
+            return true;
+        }
+
+        private bool ProcessMatchWithoutCheck(Regex regExObject, int location, string paragraphText)
+        {
+            var foundMatches = GetMatchesFromParagraph(regExObject, paragraphText);
+            this.JoinedMatches = string.Join("|", foundMatches);
+            this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
+            return true;
         }
 
         /// <summary>
