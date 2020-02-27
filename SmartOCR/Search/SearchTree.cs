@@ -3,16 +3,26 @@
     using System;
     using System.Collections.Generic;
 
-    public class SearchTree // TODO: add summary.
+    /// <summary>
+    /// Represents collection of <see cref="TreeNode"/> instances that are used to search information in document.
+    /// </summary>
+    public class SearchTree
     {
         private readonly ConfigData configData;
         private TreeNode treeStructure;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SearchTree"/> class.
+        /// </summary>
+        /// <param name="configData">An instance of <see cref="ConfigData"/> with information about search fields.</param>
         public SearchTree(ConfigData configData)
         {
             this.configData = configData;
         }
 
+        /// <summary>
+        /// Gets collection of field nodes.
+        /// </summary>
         public List<TreeNode> Children
         {
             get
@@ -21,6 +31,12 @@
             }
         }
 
+        /// <summary>
+        /// Adds instances of <see cref="TreeNode"/> class to <paramref name="node"/> that defined by search expressions in <paramref name="fieldData"/>, starting from <paramref name="initialValueIndex"/>.
+        /// </summary>
+        /// <param name="fieldData">An instance of <see cref="ConfigField"/> class containing search field definition and search expressions.</param>
+        /// <param name="node">An instance of <see cref="TreeNode"/> class, to which new nodes are to be added.</param>
+        /// <param name="initialValueIndex">Starting level of search expressions to add.</param>
         public static void AddSearchValues(ConfigField fieldData, TreeNode node, int initialValueIndex = 0)
         {
             if (fieldData == null || node == null)
@@ -60,6 +76,10 @@
             }
         }
 
+        /// <summary>
+        /// Loops through field nodes and collects found values.
+        /// </summary>
+        /// <returns>A mapping between field names and found values.</returns>
         public Dictionary<string, string> GetValuesFromTree()
         {
             var finalValues = new Dictionary<string, string>();
@@ -83,6 +103,9 @@
             return finalValues;
         }
 
+        /// <summary>
+        /// Initializes a search tree with data from instance of <see cref="ConfigData"/>, provided in constructor.
+        /// </summary>
         public void PopulateTree()
         {
             TreeNode root = TreeNode.CreateRoot();
