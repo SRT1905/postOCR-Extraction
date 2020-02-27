@@ -3,9 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Microsoft.Office.Interop.Excel;
-    using Microsoft.Office.Interop.Word;
 
     /// <summary>
     /// Represents an entry point for processing input from command prompt or start form.
@@ -50,9 +50,7 @@
                 throw new ArgumentNullException(nameof(files));
             }
 
-            this.validFiles = this.GetValidFiles(files);
-            this.configData = new ConfigParser(configFile).ParseConfig();
-            this.outputWB = ExcelOutputWorkbook.GetOutputWorkbook();
+            this.InitializeFields(files, configFile);
         }
 
         /// <summary>
@@ -84,13 +82,31 @@
         /// <returns>Indicator that processing was successful.</returns>
         public bool TryGetData()
         {
-            if (this.validFiles.Count == 0)
+            if (this.validFiles.Count != 0)
             {
-                return false;
+                this.GetDataFromFiles();
             }
 
-            this.GetDataFromFiles();
-            return true;
+            return this.validFiles.Count != 0;
+        }
+
+        private static WordReader OpenAndReadDocument(string item)
+        {
+            var reader = new WordReader(WordApplication.OpenWordDocument(item));
+            reader.ReadDocument();
+            return reader;
+        }
+
+        private static Func<string, bool> IsFilePathValid()
+        {
+            return singlePath => File.Exists(singlePath) && !singlePath.Contains("~");
+        }
+
+        private void InitializeFields(List<string> files, string configFile)
+        {
+            this.validFiles = this.GetValidFiles(files);
+            this.configData = new ConfigParser(configFile).ParseConfig();
+            this.outputWB = ExcelOutputWorkbook.GetOutputWorkbook();
         }
 
         /// <summary>
@@ -111,25 +127,31 @@
         {
             for (int i = 0; i < this.validFiles.Count; i++)
             {
-                Dictionary<string, string> result = this.GetResultFromFile(this.validFiles[i]);
-                ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
+                this.GetDataFromSingleFile(i);
             }
 
             this.outputWB.SaveAs(this.outputLocation);
         }
 
+        private void GetDataFromSingleFile(int fileIndex)
+        {
+            Dictionary<string, string> result = this.ProcessSingleFile(this.validFiles[fileIndex]);
+            ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
+        }
+
         /// <summary>
         /// Performs processing of single document.
         /// </summary>
-        /// <param name="item">Path to single file.</param>
+        /// <param name="wordFilePath">Path to single file.</param>
         /// <returns>Mapping between config field and found value.</returns>
-        private Dictionary<string, string> GetResultFromFile(string item)
+        private Dictionary<string, string> ProcessSingleFile(string wordFilePath)
         {
-            Document document = WordApplication.OpenWordDocument(item);
-            var reader = new WordReader(document);
-            reader.ReadDocument();
-            var wordParser = new WordParser(reader, this.configData);
-            reader.Dispose();
+            WordParser wordParser;
+            using (WordReader reader = OpenAndReadDocument(wordFilePath))
+            {
+                wordParser = new WordParser(reader, this.configData);
+            }
+
             return wordParser.ParseDocument();
         }
 
@@ -141,15 +163,7 @@
         private List<string> GetValidFiles(List<string> filePaths)
         {
             var files = new List<string>();
-            for (int i = 0; i < filePaths.Count; i++)
-            {
-                string singleFile = filePaths[i];
-                if (File.Exists(singleFile) && !singleFile.Contains("~"))
-                {
-                    files.Add(singleFile);
-                }
-            }
-
+            files.AddRange(filePaths.Where(IsFilePathValid()));
             return files;
         }
     }

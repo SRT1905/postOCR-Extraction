@@ -56,7 +56,7 @@
         {
             get
             {
-                return this.ValidateIndexers(row, column)
+                return this.ValidateIndexers(ref row, ref column)
                     ? this.cells[row][column]
                     : null;
             }
@@ -103,7 +103,7 @@
             return indexer;
         }
 
-        private bool ValidateIndexers(int row, int column)
+        private bool ValidateIndexers(ref int row, ref int column)
         {
             row = ValidateSingleIndexer(row, this.RowCount);
             column = ValidateSingleIndexer(column, this.ColumnCount);
