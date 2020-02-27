@@ -6,7 +6,10 @@
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    public class WordParser // TODO: add summary.
+    /// <summary>
+    /// Used to find data, specified by configuration fields, in Word document.
+    /// </summary>
+    public class WordParser
     {
         private const long SimilaritySearchThreshold = 5;
 
@@ -15,6 +18,11 @@
         private readonly List<WordTable> tables;
         private readonly SearchTree treeStructure;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WordParser"/> class.
+        /// </summary>
+        /// <param name="reader">Contents of single Word documents.</param>
+        /// <param name="configData">A collection of configuration fields.</param>
         public WordParser(WordReader reader, ConfigData configData)
         {
             if (reader == null)
@@ -28,6 +36,10 @@
             this.configData = configData;
         }
 
+        /// <summary>
+        /// Performs search of data in document. Returns mapping between field name and found value.
+        /// </summary>
+        /// <returns>A mapping between field name and found value.</returns>
         public Dictionary<string, string> ParseDocument()
         {
             this.treeStructure.PopulateTree();
