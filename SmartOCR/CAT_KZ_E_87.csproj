@@ -98,6 +98,7 @@
     <Compile Include="Utilities\Utilities.cs" />
     <Compile Include="Word\ParagraphContainer.cs" />
     <Compile Include="Word\LineContentChecker.cs" />
+    <Compile Include="Word\WordParagraphReader.cs" />
     <Compile Include="Word\WordParser.cs" />
     <Compile Include="Word\WordReader.cs" />
     <Compile Include="Excel\ExcelApplication.cs" />

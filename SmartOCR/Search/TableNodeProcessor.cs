@@ -68,7 +68,7 @@
             {
                 for (int j = 0; j < table.ColumnCount; j++)
                 {
-                    if (ProcessSingleCell(table[i, j], regexObject, checkValue))
+                    if (table[i, j] != null && ProcessSingleCell(table[i, j], regexObject, checkValue))
                     {
                         return true;
                     }

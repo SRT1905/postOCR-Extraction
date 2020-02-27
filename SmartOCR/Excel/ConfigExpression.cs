@@ -62,8 +62,8 @@
 
         private static string[] DefineNumericParameterTitles(string valueType)
         {
-            string[] parameterTitles = new string[2] { "row", "column" };
-            string[] tableParameterTitles = new string[2] { "line_offset", "horizontal_status" };
+            string[] tableParameterTitles = new string[2] { "row", "column" };
+            string[] parameterTitles = new string[2] { "line_offset", "horizontal_status" };
 
             return valueType.Contains("Table")
                 ? tableParameterTitles

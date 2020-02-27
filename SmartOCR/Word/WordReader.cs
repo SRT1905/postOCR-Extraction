@@ -11,25 +11,21 @@
     public sealed class WordReader : IDisposable
     {
         /// <summary>
+        /// Defines lower bound of document text element length.
+        /// </summary>
+        private const byte MinimalTextLength = 2;
+
+        /// <summary>
         /// Defines limits of single document line.
         /// 72 points = 1 inch.
         /// </summary>
         private const byte VerticalPositionOffset = 6;
 
         /// <summary>
-        /// Defines lower bound of document text element length.
-        /// </summary>
-        private const byte MinimalTextLength = 2;
-
-        /// <summary>
         /// Representation of Word document that is being read.
         /// </summary>
         private readonly Document document;
-
-        /// <summary>
-        /// Editable counter of read paragraphs.
-        /// </summary>
-        private int paragraphCounter = 1;
+        private WordParagraphReader paragraphReader;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordReader"/> class.
@@ -37,17 +33,30 @@
         /// <param name="document">Word document representation.</param>
         public WordReader(Document document)
         {
-            this.LineMapping = new SortedDictionary<long, List<ParagraphContainer>>();
-            this.TableCollection = new List<WordTable>();
             this.document = document;
+            this.TableCollection = this.GetTables();
         }
+
+        /// <summary>
+        /// Gets collection of processed Word tables.
+        /// </summary>
+        public List<WordTable> TableCollection { get; private set; }
 
         /// <summary>
         /// Gets document contents grouped in separate lines.
         /// </summary>
-        public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; }
+        public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; } = new SortedDictionary<long, List<ParagraphContainer>>();
 
-        public List<WordTable> TableCollection { get; private set; }
+        /// <summary>
+        /// Closes Word document if it is open.
+        /// </summary>
+        public void Dispose()
+        {
+            if (this.document != null)
+            {
+                WordApplication.CloseDocument(this.document);
+            }
+        }
 
         /// <summary>
         /// Performs data reading from all document pages.
@@ -58,11 +67,8 @@
 
             for (int i = 1; i <= numberOfPages; i++)
             {
-                var pageContent = this.ReadSinglePage(i);
-                this.UpdateLineMapping(pageContent);
+                this.GetDataFromPage(i);
             }
-
-            this.TableCollection = this.GetTables();
         }
 
         /// <summary>
@@ -77,15 +83,12 @@
             }
         }
 
-        /// <summary>
-        /// Closes Word document if it is open.
-        /// </summary>
-        public void Dispose()
+        private static void AddDataFromCollectedParagraphs(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, SortedDictionary<long, List<ParagraphContainer>> newDocumentContent, int index)
         {
-            if (this.document != null)
-            {
-                WordApplication.CloseDocument(this.document);
-            }
+            decimal currentLocation = documentContent.Keys.ElementAt(index);
+            decimal previousLocation = newDocumentContent[newDocumentContent.Count][0].VerticalLocation;
+
+            AddDataFromSingleParagraph(documentContent, newDocumentContent, currentLocation, previousLocation);
         }
 
         /// <summary>
@@ -115,20 +118,22 @@
             List<ParagraphContainer> paragraphContainers = GetParagraphsFromTextFrame(textFrame);
             for (int i = 0; i < paragraphContainers.Count; i++)
             {
-                ParagraphContainer container = paragraphContainers[i];
-                decimal location = container.VerticalLocation;
-                if (container.Text.Length >= MinimalTextLength)
-                {
-                    if (!documentContent.ContainsKey(location))
-                    {
-                        documentContent.Add(location, new List<ParagraphContainer>());
-                    }
-
-                    documentContent[location] = InsertRangeInCollection(documentContent[location], container);
-                }
+                UpdateContentsWithParagraphs(documentContent, paragraphContainers[i]);
             }
 
             return documentContent;
+        }
+
+        private static void AddDataFromSingleParagraph(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, SortedDictionary<long, List<ParagraphContainer>> newDocumentContent, decimal currentLocation, decimal previousLocation)
+        {
+            if (IsCurrentLocationWithinPreviousOne(currentLocation, previousLocation))
+            {
+                newDocumentContent[newDocumentContent.Count].AddRange(documentContent[currentLocation]);
+            }
+            else
+            {
+                newDocumentContent.Add(newDocumentContent.Count + 1, documentContent[currentLocation]);
+            }
         }
 
         /// <summary>
@@ -138,13 +143,10 @@
         /// <returns>A collection of <see cref="ParagraphContainer"/> objects.</returns>
         private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame textFrame)
         {
-            Paragraphs paragraphs = textFrame.TextRange.Paragraphs;
-            int paragraphsCount = paragraphs.Count;
-
             var paragraphContainers = new List<ParagraphContainer>();
-            for (int i = 1; i <= paragraphsCount; i++)
+            for (int i = 1; i <= textFrame.TextRange.Paragraphs.Count; i++)
             {
-                paragraphContainers.Add(new ParagraphContainer(paragraphs[i].Range));
+                paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[i].Range));
             }
 
             return paragraphContainers;
@@ -157,37 +159,22 @@
         /// <returns>An instance of <see cref="SortedDictionary{TKey, TValue}"/> where paragraphs are mapped to line.</returns>
         private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> documentContent)
         {
-            var newDocumentContent = new SortedDictionary<long, List<ParagraphContainer>>();
+            if (documentContent.Count == 0)
+            {
+                return new SortedDictionary<long, List<ParagraphContainer>>();
+            }
 
-            try
+            var newDocumentContent = new SortedDictionary<long, List<ParagraphContainer>>()
             {
-                newDocumentContent.Add(1, documentContent.Values.First());
-            }
-            catch (InvalidOperationException)
-            {
-                return newDocumentContent;
-            }
+                { 1, documentContent.Values.First() },
+            };
 
             for (int i = 1; i < documentContent.Count; i++)
             {
-                decimal currentLocation = documentContent.Keys.ElementAt(i);
-                decimal previousLocation = newDocumentContent[newDocumentContent.Count][0].VerticalLocation;
-                if (previousLocation - VerticalPositionOffset <= currentLocation && currentLocation <= previousLocation + VerticalPositionOffset)
-                {
-                    newDocumentContent[newDocumentContent.Count].AddRange(documentContent[currentLocation]);
-                }
-                else
-                {
-                    newDocumentContent.Add(newDocumentContent.Count + 1, documentContent[currentLocation]);
-                }
+                AddDataFromCollectedParagraphs(documentContent, newDocumentContent, i);
             }
 
-            foreach (KeyValuePair<long, List<ParagraphContainer>> item in newDocumentContent)
-            {
-                item.Value.Sort();
-            }
-
-            return newDocumentContent;
+            return SortParagraphs(newDocumentContent);
         }
 
         /// <summary>
@@ -203,42 +190,67 @@
             return paragraphCollection;
         }
 
-        /// <summary>
-        /// Gets data from Paragraph objects on specific page.
-        /// </summary>
-        /// <param name="pageIndex">Index of page to read.</param>
-        /// <returns>Mapping of paragraphs, sorted by their vertical location on page.</returns>
-        private SortedDictionary<decimal, List<ParagraphContainer>> GetDataFromParagraphs(long pageIndex)
+        private static bool IsCurrentLocationWithinPreviousOne(decimal currentLocation, decimal previousLocation)
         {
-            var documentContent = new SortedDictionary<decimal, List<ParagraphContainer>>();
-            List<ParagraphContainer> validParagraphs = this.GetValidParagraphs(pageIndex);
+            return previousLocation - VerticalPositionOffset <= currentLocation && currentLocation <= previousLocation + VerticalPositionOffset;
+        }
 
-            for (int i = 0; i < validParagraphs.Count; i++)
+        private static SortedDictionary<long, List<ParagraphContainer>> ShiftContentKeys(SortedDictionary<long, List<ParagraphContainer>> pageContent, List<long> keys)
+        {
+            var shiftedMapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            for (int i = 0; i < keys.Count; i++)
             {
-                ParagraphContainer singleParagraph = validParagraphs[i];
-                decimal location = singleParagraph.VerticalLocation;
-                if (!documentContent.ContainsKey(location))
-                {
-                    documentContent.Add(location, new List<ParagraphContainer>());
-                }
-
-                documentContent[location].Add(singleParagraph);
+                shiftedMapping.Add(keys[i] + 1, pageContent[keys[i]]);
             }
 
-            return documentContent;
+            pageContent = shiftedMapping;
+            return pageContent;
+        }
+
+        private static SortedDictionary<long, List<ParagraphContainer>> SortParagraphs(SortedDictionary<long, List<ParagraphContainer>> newDocumentContent)
+        {
+            foreach (KeyValuePair<long, List<ParagraphContainer>> item in newDocumentContent)
+            {
+                item.Value.Sort();
+            }
+
+            return newDocumentContent;
+        }
+
+        private static void TryAddFrame(List<TextFrame> frames, Shape shape)
+        {
+            if (shape.TextFrame != null && shape.TextFrame.HasText != 0 && shape.TextFrame.TextRange.Text.Length > MinimalTextLength)
+            {
+                frames.Add(shape.TextFrame);
+            }
+        }
+
+        private static void TryAddVerticalLocation(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, ParagraphContainer container)
+        {
+            if (!documentContent.ContainsKey(container.VerticalLocation))
+            {
+                documentContent.Add(container.VerticalLocation, new List<ParagraphContainer>());
+            }
+        }
+
+        private static void UpdateContentsWithParagraphs(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, ParagraphContainer container)
+        {
+            if (container.Text.Length >= MinimalTextLength)
+            {
+                TryAddVerticalLocation(documentContent, container);
+                documentContent[container.VerticalLocation] = InsertRangeInCollection(documentContent[container.VerticalLocation], container);
+            }
+        }
+
+        private void GetDataFromPage(int i)
+        {
+            var pageContent = this.ReadSinglePage(i);
+            this.UpdateLineMapping(pageContent);
         }
 
         private List<WordTable> GetTables()
         {
-            List<WordTable> tables;
-            if (this.TableCollection.Count == 0)
-            {
-                tables = new List<WordTable>(this.document.Tables.Count);
-            }
-            else
-            {
-                tables = this.TableCollection;
-            }
+            List<WordTable> tables = new List<WordTable>(this.document.Tables.Count);
 
             for (int i = 1; i <= this.document.Tables.Count; i++)
             {
@@ -249,41 +261,6 @@
         }
 
         /// <summary>
-        /// Gets valid paragraphs, wrapped in <see cref="ParagraphContainer"/> instances, from specific page.
-        /// </summary>
-        /// <param name="pageIndex">Specific page index.</param>
-        /// <returns>Collection of valid paragraphs.</returns>
-        private List<ParagraphContainer> GetValidParagraphs(long pageIndex)
-        {
-            var paragraphs = this.document.Paragraphs;
-            int paragraphsCount = paragraphs.Count;
-            var paragraphCollection = new List<ParagraphContainer>();
-
-            for (int i = this.paragraphCounter; i <= paragraphsCount; i++)
-            {
-                var singleRange = paragraphs[i].Range;
-                long rangePage = singleRange.Information[WdInformation.wdActiveEndPageNumber];
-                if (rangePage < pageIndex)
-                {
-                    continue;
-                }
-
-                if (rangePage > pageIndex)
-                {
-                    this.paragraphCounter = i;
-                    break;
-                }
-
-                if (rangePage == pageIndex && singleRange.Text.Length > MinimalTextLength)
-                {
-                    paragraphCollection.Add(new ParagraphContainer(singleRange));
-                }
-            }
-
-            return paragraphCollection;
-        }
-
-        /// <summary>
         /// Gets TextFrame objects, which contain text, on specific document page.
         /// </summary>
         /// <param name="pageIndex">Index of page to read.</param>
@@ -291,26 +268,11 @@
         private List<TextFrame> GetValidTextFrames(long pageIndex)
         {
             var frames = new List<TextFrame>();
-            var shapes = this.document.Shapes;
-            int shapesCount = shapes.Count;
-            for (int i = 1; i <= shapesCount; i++)
+            for (int i = 1; i <= this.document.Shapes.Count; i++)
             {
-                var shape = shapes[i];
-                long shapePage = shape.Anchor.Information[WdInformation.wdActiveEndPageNumber];
-                if (shapePage < pageIndex)
+                if (this.document.Shapes[i].Anchor.Information[WdInformation.wdActiveEndPageNumber] == pageIndex)
                 {
-                    continue;
-                }
-
-                if (shapePage > pageIndex)
-                {
-                    break;
-                }
-
-                var frame = shape.TextFrame;
-                if (frame != null && frame.HasText != 0 && frame.TextRange.Text.Length > MinimalTextLength)
-                {
-                    frames.Add(frame);
+                    TryAddFrame(frames, this.document.Shapes[i]);
                 }
             }
 
@@ -324,11 +286,12 @@
         /// <returns>Document contents, grouped by lines.</returns>
         private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long pageIndex)
         {
-            SortedDictionary<decimal, List<ParagraphContainer>> documentContent = this.GetDataFromParagraphs(pageIndex);
-            List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
-            this.TryAddTablesFromFrames(frameCollection);
-            documentContent = AddDataFromFrames(documentContent, frameCollection);
-            return GroupParagraphsByLine(documentContent);
+            this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
+            SortedDictionary<decimal, List<ParagraphContainer>> documentContent = this.paragraphReader.GetValidParagraphs(pageIndex);
+            documentContent = this.UpdateContentsWithFrameContents(pageIndex, documentContent);
+            return documentContent.Count == 0
+                ? new SortedDictionary<long, List<ParagraphContainer>>()
+                : GroupParagraphsByLine(documentContent);
         }
 
         private void TryAddTablesFromFrames(List<TextFrame> frames)
@@ -341,6 +304,14 @@
                     this.TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
                 }
             }
+        }
+
+        private SortedDictionary<decimal, List<ParagraphContainer>> UpdateContentsWithFrameContents(long pageIndex, SortedDictionary<decimal, List<ParagraphContainer>> documentContent)
+        {
+            List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
+            this.TryAddTablesFromFrames(frameCollection);
+            documentContent = AddDataFromFrames(documentContent, frameCollection);
+            return documentContent;
         }
 
         /// <summary>
@@ -357,13 +328,7 @@
             List<long> keys = pageContent.Keys.ToList();
             if (pageContent.ContainsKey(0))
             {
-                var shiftedMapping = new SortedDictionary<long, List<ParagraphContainer>>();
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    shiftedMapping.Add(keys[i] + 1, pageContent[keys[i]]);
-                }
-
-                pageContent = shiftedMapping;
+                pageContent = ShiftContentKeys(pageContent, keys);
             }
 
             if (this.LineMapping.Count == 0)
@@ -372,6 +337,11 @@
                 return;
             }
 
+            this.UpdateLineMappingByEndLine(pageContent, keys);
+        }
+
+        private void UpdateLineMappingByEndLine(SortedDictionary<long, List<ParagraphContainer>> pageContent, List<long> keys)
+        {
             long endLine = this.LineMapping.Keys.Last();
             for (int i = 0; i < keys.Count; i++)
             {
