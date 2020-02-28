@@ -14,7 +14,7 @@
         private const long SimilaritySearchThreshold = 5;
 
         private readonly ConfigData configData;
-        private readonly SortedDictionary<long, List<ParagraphContainer>> lineMapping;
+        private readonly LineMapping lineMapping;
         private readonly List<WordTable> tables;
         private readonly SearchTree treeStructure;
 
@@ -30,7 +30,7 @@
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            this.lineMapping = reader.LineMapping;
+            this.lineMapping = reader.Mapping;
             this.tables = reader.TableCollection;
             this.treeStructure = new SearchTree(configData);
             this.configData = configData;

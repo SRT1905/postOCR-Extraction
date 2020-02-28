@@ -1,9 +1,7 @@
 ﻿namespace SmartOCR
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using Microsoft.Office.Interop.Word;
 
     /// <summary>
@@ -18,7 +16,7 @@
 
         private readonly Document document;
         private long pageIndex;
-        private SortedDictionary<decimal, List<ParagraphContainer>> paragraphs;
+        private ParagraphMapping paragraphs;
         private List<int> paragraphIndexes;
 
         /// <summary>
@@ -37,7 +35,7 @@
         /// Returns mapping between paragraph horizontal location and collection of paragraphs at location.
         /// </summary>
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
-        public SortedDictionary<decimal, List<ParagraphContainer>> GetValidParagraphs()
+        public ParagraphMapping GetValidParagraphs()
         {
             Utilities.Debug($"Getting paragraphs from page {this.pageIndex}.", 3);
             return this.paragraphs ?? this.ReadDocument();
@@ -48,7 +46,7 @@
         /// </summary>
         /// <param name="newPageIndex">New page index.</param>
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
-        public SortedDictionary<decimal, List<ParagraphContainer>> GetValidParagraphs(long newPageIndex)
+        public ParagraphMapping GetValidParagraphs(long newPageIndex)
         {
             this.pageIndex = newPageIndex;
             this.ResetParagraphIndexes();
@@ -74,9 +72,9 @@
             this.paragraphs[location].Add(paragraphs[paragraphIndex]);
         }
 
-        private SortedDictionary<decimal, List<ParagraphContainer>> ReadDocument()
+        private ParagraphMapping ReadDocument()
         {
-            this.paragraphs = new SortedDictionary<decimal, List<ParagraphContainer>>();
+            this.paragraphs = new ParagraphMapping();
             List<ParagraphContainer> paragraphs = this.GetParagraphsOnPage();
             for (int paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
             {

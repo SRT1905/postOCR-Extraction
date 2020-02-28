@@ -96,8 +96,10 @@
     <Compile Include="Utilities\SimilarityDescription.cs" />
     <Compile Include="Search\TreeNode.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Word\LineMapping.cs" />
     <Compile Include="Word\ParagraphContainer.cs" />
     <Compile Include="Word\LineContentChecker.cs" />
+    <Compile Include="Word\ParagraphMapping.cs" />
     <Compile Include="Word\WordParagraphReader.cs" />
     <Compile Include="Word\WordParser.cs" />
     <Compile Include="Word\WordReader.cs" />

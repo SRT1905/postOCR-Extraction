@@ -45,7 +45,7 @@
         /// <summary>
         /// Gets document contents grouped in separate lines.
         /// </summary>
-        public SortedDictionary<long, List<ParagraphContainer>> LineMapping { get; private set; } = new SortedDictionary<long, List<ParagraphContainer>>();
+        public LineMapping Mapping { get; private set; } = new LineMapping();
 
         /// <summary>
         /// Closes Word document if it is open.
@@ -71,7 +71,7 @@
                 this.GetDataFromPage(i);
             }
 
-            Utilities.Debug($"Total of {this.LineMapping.Values.Sum(item => item.Count)} paragraphs were distributed into {this.LineMapping.Count} lines.", 1);
+            Utilities.Debug($"Total of {this.Mapping.Values.Sum(item => item.Count)} paragraphs were distributed into {this.Mapping.Count} lines.", 1);
         }
 
         /// <summary>
@@ -82,11 +82,11 @@
         {
             if (pageIndex >= 1)
             {
-                this.LineMapping = this.ReadSinglePage(pageIndex);
+                this.Mapping = this.ReadSinglePage(pageIndex);
             }
         }
 
-        private static void AddDataFromCollectedParagraphs(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, SortedDictionary<long, List<ParagraphContainer>> newDocumentContent, int index)
+        private static void AddDataFromCollectedParagraphs(ParagraphMapping documentContent, LineMapping newDocumentContent, int index)
         {
             decimal currentLocation = documentContent.Keys.ElementAt(index);
             decimal previousLocation = newDocumentContent[newDocumentContent.Count][0].VerticalLocation;
@@ -100,7 +100,7 @@
         /// <param name="documentContent">Representation of read document contents.</param>
         /// <param name="frameCollection">Collection of TextFrame objects.</param>
         /// <returns>Representation of document contents that is extended by TextFrame objects.</returns>
-        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromFrames(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, List<TextFrame> frameCollection)
+        private static ParagraphMapping AddDataFromFrames(ParagraphMapping documentContent, List<TextFrame> frameCollection)
         {
             for (int i = 0; i < frameCollection.Count; i++)
             {
@@ -116,7 +116,7 @@
         /// <param name="documentContent">Representation of read document contents.</param>
         /// <param name="textFrame">TextFrame object containing text.</param>
         /// <returns>Representation of read document contents, extended by TextFrame contents.</returns>
-        private static SortedDictionary<decimal, List<ParagraphContainer>> AddDataFromSingleFrame(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, TextFrame textFrame)
+        private static ParagraphMapping AddDataFromSingleFrame(ParagraphMapping documentContent, TextFrame textFrame)
         {
             List<ParagraphContainer> paragraphContainers = GetParagraphsFromTextFrame(textFrame);
             for (int i = 0; i < paragraphContainers.Count; i++)
@@ -127,7 +127,7 @@
             return documentContent;
         }
 
-        private static void AddDataFromSingleParagraph(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, SortedDictionary<long, List<ParagraphContainer>> newDocumentContent, decimal currentLocation, decimal previousLocation)
+        private static void AddDataFromSingleParagraph(ParagraphMapping documentContent, LineMapping newDocumentContent, decimal currentLocation, decimal previousLocation)
         {
             if (IsCurrentLocationWithinPreviousOne(currentLocation, previousLocation))
             {
@@ -160,14 +160,14 @@
         /// </summary>
         /// <param name="documentContent">Representation of read document contents.</param>
         /// <returns>An instance of <see cref="SortedDictionary{TKey, TValue}"/> where paragraphs are mapped to line.</returns>
-        private static SortedDictionary<long, List<ParagraphContainer>> GroupParagraphsByLine(SortedDictionary<decimal, List<ParagraphContainer>> documentContent)
+        private static LineMapping GroupParagraphsByLine(ParagraphMapping documentContent)
         {
             if (documentContent.Count == 0)
             {
-                return new SortedDictionary<long, List<ParagraphContainer>>();
+                return new LineMapping();
             }
 
-            var newDocumentContent = new SortedDictionary<long, List<ParagraphContainer>>()
+            var newDocumentContent = new LineMapping()
             {
                 { 1, documentContent.Values.First() },
             };
@@ -198,9 +198,9 @@
             return previousLocation - VerticalPositionOffset <= currentLocation && currentLocation <= previousLocation + VerticalPositionOffset;
         }
 
-        private static SortedDictionary<long, List<ParagraphContainer>> ShiftContentKeys(SortedDictionary<long, List<ParagraphContainer>> pageContent, List<long> keys)
+        private static LineMapping ShiftContentKeys(LineMapping pageContent, List<long> keys)
         {
-            var shiftedMapping = new SortedDictionary<long, List<ParagraphContainer>>();
+            var shiftedMapping = new LineMapping();
             for (int i = 0; i < keys.Count; i++)
             {
                 shiftedMapping.Add(keys[i] + 1, pageContent[keys[i]]);
@@ -210,7 +210,7 @@
             return pageContent;
         }
 
-        private static SortedDictionary<long, List<ParagraphContainer>> SortParagraphs(SortedDictionary<long, List<ParagraphContainer>> newDocumentContent)
+        private static LineMapping SortParagraphs(LineMapping newDocumentContent)
         {
             foreach (KeyValuePair<long, List<ParagraphContainer>> item in newDocumentContent)
             {
@@ -228,7 +228,7 @@
             }
         }
 
-        private static void TryAddVerticalLocation(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, ParagraphContainer container)
+        private static void TryAddVerticalLocation(ParagraphMapping documentContent, ParagraphContainer container)
         {
             if (!documentContent.ContainsKey(container.VerticalLocation))
             {
@@ -236,7 +236,7 @@
             }
         }
 
-        private static void UpdateContentsWithParagraphs(SortedDictionary<decimal, List<ParagraphContainer>> documentContent, ParagraphContainer container)
+        private static void UpdateContentsWithParagraphs(ParagraphMapping documentContent, ParagraphContainer container)
         {
             if (container.Text.Length >= MinimalTextLength)
             {
@@ -287,15 +287,15 @@
         /// </summary>
         /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Document contents, grouped by lines.</returns>
-        private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long pageIndex)
+        private LineMapping ReadSinglePage(long pageIndex)
         {
             Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
             this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
-            SortedDictionary<decimal, List<ParagraphContainer>> documentContent = this.paragraphReader.GetValidParagraphs(pageIndex);
+            ParagraphMapping documentContent = this.paragraphReader.GetValidParagraphs(pageIndex);
             documentContent = this.UpdateContentsWithFrameContents(pageIndex, documentContent);
             Utilities.Debug($"Distributing data from page {pageIndex}.", 2);
             return documentContent.Count == 0
-                ? new SortedDictionary<long, List<ParagraphContainer>>()
+                ? new LineMapping()
                 : GroupParagraphsByLine(documentContent);
         }
 
@@ -311,7 +311,7 @@
             }
         }
 
-        private SortedDictionary<decimal, List<ParagraphContainer>> UpdateContentsWithFrameContents(long pageIndex, SortedDictionary<decimal, List<ParagraphContainer>> documentContent)
+        private ParagraphMapping UpdateContentsWithFrameContents(long pageIndex, ParagraphMapping documentContent)
         {
             List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
             this.TryAddTablesFromFrames(frameCollection);
@@ -324,7 +324,7 @@
         /// Merges LineMapping dictionary with provided page content.
         /// </summary>
         /// <param name="pageContent">Grouped content from single page.</param>
-        private void UpdateLineMapping(SortedDictionary<long, List<ParagraphContainer>> pageContent)
+        private void UpdateLineMapping(LineMapping pageContent)
         {
             if (pageContent.Count == 0)
             {
@@ -337,9 +337,9 @@
                 pageContent = ShiftContentKeys(pageContent, keys);
             }
 
-            if (this.LineMapping.Count == 0)
+            if (this.Mapping.Count == 0)
             {
-                this.LineMapping = pageContent;
+                this.Mapping = pageContent;
                 return;
             }
 
@@ -347,13 +347,13 @@
             this.UpdateLineMappingByEndLine(pageContent, keys);
         }
 
-        private void UpdateLineMappingByEndLine(SortedDictionary<long, List<ParagraphContainer>> pageContent, List<long> keys)
+        private void UpdateLineMappingByEndLine(LineMapping pageContent, List<long> keys)
         {
-            long endLine = this.LineMapping.Keys.Last();
+            long endLine = this.Mapping.Keys.Last();
             for (int i = 0; i < keys.Count; i++)
             {
                 long key = keys[i];
-                this.LineMapping.Add(key + endLine, pageContent[key]);
+                this.Mapping.Add(key + endLine, pageContent[key]);
             }
         }
     }
