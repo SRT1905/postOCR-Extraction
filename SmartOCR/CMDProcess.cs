@@ -48,7 +48,7 @@
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CMDProcess"/> class.
-        /// Instance identifies document type, type of entered paths and files by those paths.
+        /// Instance identifies type of entered paths and files by those paths.
         /// </summary>
         /// <param name="args">Array of command prompt arguments.</param>
         public CMDProcess(string[] args)
