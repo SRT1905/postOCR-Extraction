@@ -9,7 +9,7 @@
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.
     /// </summary>
-    public class WordParser
+    public class WordParser // TODO : add debug on node processing
     {
         private const long SimilaritySearchThreshold = 5;
 

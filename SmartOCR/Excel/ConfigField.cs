@@ -7,7 +7,7 @@
     /// <summary>
     /// Describes single search field defined in Excel config file.
     /// </summary>
-    public class ConfigField
+    public class ConfigField // TODO: implement Soundex usage
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigField"/> class.

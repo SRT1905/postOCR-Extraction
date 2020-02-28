@@ -8,7 +8,7 @@
     /// <summary>
     /// Performs collection and grouping of document contents.
     /// </summary>
-    public sealed class WordReader : IDisposable
+    public sealed class WordReader : IDisposable // TODO: implement grid-like structure
     {
         /// <summary>
         /// Defines lower bound of document text element length.
