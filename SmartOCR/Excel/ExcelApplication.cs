@@ -17,6 +17,15 @@
         private static Application instance;
 
         /// <summary>
+        /// Creates new empty Workbook with single worksheet.
+        /// </summary>
+        /// <returns>A new empty Workbook.</returns>
+        public static Workbook AddEmptyWorkbook()
+        {
+            return GetExcelApplication().Workbooks.Add();
+        }
+
+        /// <summary>
         /// Gets active workbook in Excel application, closes it and tries to delete the file, if its location is in Temp directory.
         /// </summary>
         public static void CloseActiveExcelWorkbook()
@@ -26,6 +35,10 @@
             TryDeleteTempFile(app.ActiveWorkbook.Path);
         }
 
+        /// <summary>
+        /// Gets single Excel application.
+        /// </summary>
+        /// <returns>An instance of Excel application.</returns>
         public static Application GetExcelApplication()
         {
             if (instance == null)

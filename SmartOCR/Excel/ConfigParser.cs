@@ -9,17 +9,7 @@
     /// </summary>
     public class ConfigParser
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigParser"/> class.
-        /// Sets internally stored Excel workbook as source of config data.
-        /// </summary>
-        public ConfigParser()
-        {
-            if (ConfigWorkbook == null)
-            {
-                ConfigWorkbook = this.GetInternalConfigWorkbook();
-            }
-        }
+        private static Workbook configWorkbook;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigParser"/> class.
@@ -28,13 +18,24 @@
         /// <param name="configFile">Path to config Excel workbook.</param>
         public ConfigParser(string configFile)
         {
-            ConfigWorkbook = this.GetExternalConfigWorkbook(configFile);
+            configWorkbook = this.GetExternalConfigWorkbook(configFile);
         }
 
         /// <summary>
         /// Gets single reference to Excel workbook with config data.
         /// </summary>
-        public static Workbook ConfigWorkbook { get; private set; }
+        public static Workbook ConfigWorkbook
+        {
+            get
+            {
+                return configWorkbook ?? GetInternalConfigWorkbook();
+            }
+
+            private set
+            {
+                configWorkbook = value;
+            }
+        }
 
         /// <summary>
         /// Gets config data from first worksheet on <see cref="ConfigWorkbook"/>.
@@ -42,7 +43,7 @@
         /// <returns>An instance of <see cref="ConfigData"/>.</returns>
         public ConfigData ParseConfig()
         {
-            return this.GetConfigData(ConfigWorkbook.Worksheets[1]);
+            return this.GetConfigData(configWorkbook.Worksheets[1]);
         }
 
         /// <summary>
@@ -96,16 +97,17 @@
             return data;
         }
 
-        private Workbook GetExternalConfigWorkbook(string path)
-        {
-            return ExcelApplication.OpenExcelWorkbook(path);
-        }
-
-        private Workbook GetInternalConfigWorkbook()
+        private static Workbook GetInternalConfigWorkbook()
         {
             string tempPath = Path.GetTempFileName();
             File.WriteAllBytes(tempPath, ConfigContainer.config);
-            return ExcelApplication.OpenExcelWorkbook(tempPath);
+            configWorkbook = ExcelApplication.OpenExcelWorkbook(tempPath);
+            return configWorkbook;
+        }
+
+        private Workbook GetExternalConfigWorkbook(string path)
+        {
+            return ExcelApplication.OpenExcelWorkbook(path);
         }
 
         private ConfigData GetConfigData(Worksheet sourceWS)

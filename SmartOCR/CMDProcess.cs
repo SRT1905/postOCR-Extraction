@@ -71,7 +71,7 @@
                     }
                     else
                     {
-                        Console.WriteLine(Properties.Resources.noConfigFileFound);
+                        Utilities.Debug(Properties.Resources.noConfigFileFound);
                         return;
                     }
                 }

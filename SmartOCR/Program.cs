@@ -10,6 +10,8 @@
         [STAThread]
         private static void Main(string[] args)
         {
+            Utilities.EnableDebug = args[0] == "-d";
+
             if (args.Length < 2)
             {
                 Utilities.Debug(Properties.Resources.invalidInputMessage);

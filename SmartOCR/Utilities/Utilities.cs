@@ -31,6 +31,11 @@
         private static readonly Regex RegexNumDate = CreateRegexpObject(@"(\d{2,4})");
 
         /// <summary>
+        /// Gets a value indicating whether debug logging is enabled during current run.
+        /// </summary>
+        public static bool EnableDebug { get; internal set; }
+
+        /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
         /// <param name="textPattern">Search pattern.</param>
@@ -48,8 +53,11 @@
         /// <param name="args">Arbitrary number of arguments that are fitted to <paramref name="format"/> string.</param>
         public static void Debug(string format, int debugLevel = 0, params object[] args)
         {
-            Console.Write($"{Properties.Resources.debugHashtag}{new string('\t', debugLevel)}");
-            Console.WriteLine(format, args);
+            if (Utilities.EnableDebug)
+            {
+                Console.Write($"{Properties.Resources.debugHashtag}{new string('\t', debugLevel)}");
+                Console.WriteLine(format, args);
+            }
         }
 
         /// <summary>

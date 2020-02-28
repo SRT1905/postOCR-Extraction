@@ -72,6 +72,7 @@
             return left is null ? right is null : left.CompareTo(right) >= 0;
         }
 
+        /// <inheritdoc/>
         public int CompareTo(ParagraphContainer that)
         {
             if (that == null)
@@ -82,26 +83,23 @@
             return this.HorizontalLocation.CompareTo(that.HorizontalLocation);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj is null)
-            {
-                return false;
-            }
-
-            return this.CompareTo((ParagraphContainer)obj) == 0;
+            return ReferenceEquals(this, obj)
+                ? true
+                : obj is null
+                    ? false
+                    : this.CompareTo((ParagraphContainer)obj) == 0;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"X: {this.HorizontalLocation}; Y: {this.VerticalLocation}; Text: {this.Text}";
@@ -114,8 +112,7 @@
         /// <returns>Paragraph text, cleansed of invalid characters.</returns>
         private string RemoveInvalidChars(string checkString)
         {
-            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
-            string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            string[] temp = checkString.Split(new string[] { "\r", "\a", "\t", "\f" }, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(string.Empty, temp).Replace("\v", " ");
         }
 
