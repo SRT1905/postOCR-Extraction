@@ -1,7 +1,8 @@
 ﻿namespace SmartOCR
 {
     using System;
-    using Word = Microsoft.Office.Interop.Word;
+    using Microsoft.Office.Interop.Word;
+    using Runtime = System.Runtime;
 
     /// <summary>
     /// Performs communication with MS Word application.
@@ -11,20 +12,20 @@
         /// <summary>
         /// Single instance of Word application.
         /// </summary>
-        private static Word.Application instance;
+        private static Application instance;
 
         /// <summary>
         /// Closes provided Word document without saving any changes.
         /// </summary>
         /// <param name="document">A Word document.</param>
-        public static void CloseDocument(Word.Document document)
+        public static void CloseDocument(Document document)
         {
             if (document == null)
             {
                 throw new ArgumentNullException(nameof(document));
             }
 
-            document.Close(Word.WdSaveOptions.wdDoNotSaveChanges);
+            document.Close(WdSaveOptions.wdDoNotSaveChanges);
         }
 
         /// <summary>
@@ -32,11 +33,11 @@
         /// </summary>
         public static void ExitWordApplication()
         {
-            Word.Application app = GetWordApplication();
-            app.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
+            Application app = GetWordApplication();
+            app.Quit(WdSaveOptions.wdDoNotSaveChanges);
             if (app != null)
             {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
+                Runtime.InteropServices.Marshal.ReleaseComObject(app);
             }
 
             GC.Collect();
@@ -46,14 +47,14 @@
         /// Gets existing Word application or initializes a new one.
         /// </summary>
         /// <returns>Word application.</returns>
-        public static Word.Application GetWordApplication()
+        public static Application GetWordApplication()
         {
             if (instance == null)
             {
-                instance = new Word.Application
+                instance = new Application
                 {
                     Visible = false,
-                    DisplayAlerts = Word.WdAlertLevel.wdAlertsNone,
+                    DisplayAlerts = WdAlertLevel.wdAlertsNone,
                     ScreenUpdating = false,
                 };
             }
@@ -66,9 +67,9 @@
         /// </summary>
         /// <param name="filePath">Path to document file.</param>
         /// <returns>Document representation.</returns>
-        public static Word.Document OpenWordDocument(string filePath)
+        public static Document OpenWordDocument(string filePath)
         {
-            Word.Document document = GetWordApplication().Documents.Open(filePath);
+            Document document = GetWordApplication().Documents.Open(filePath);
             document.Activate();
             return document;
         }
