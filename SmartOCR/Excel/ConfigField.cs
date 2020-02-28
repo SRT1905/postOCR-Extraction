@@ -47,6 +47,11 @@
         public string ValueType { get; }
 
         /// <summary>
+        /// Gets a value indicating whether field identifier should be searched using <see cref="ParagraphContainer.Soundex"/> instead of <see cref="ParagraphContainer.Text"/>.
+        /// </summary>
+        public bool IsSoundex { get; private set; }
+
+        /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
         /// </summary>
         /// <param name="input">String representation of Excel cell contents.</param>

@@ -11,7 +11,8 @@
         private static readonly Dictionary<char, char> CharIndexes = new Dictionary<char, char>()
         {
             { 'b', '1' }, { 'f', '1' }, { 'p', '1' }, { 'v', '1' },
-            { 'c', '2' }, { 'g', '2' }, { 'j', '2' }, { 'k', '2' }, { 'q', '2' }, { 's', '2' }, { 'x', '2' }, { 'z', '2' },
+            { 'c', '2' }, { 'g', '2' }, { 'j', '2' }, { 'k', '2' },
+            { 'q', '2' }, { 's', '2' }, { 'x', '2' }, { 'z', '2' },
             { 'd', '3' }, { 't', '3' },
             { 'l', '4' },
             { 'm', '5' }, { 'n', '5' },
@@ -23,9 +24,6 @@
             'a', 'e', 'i', 'o', 'u', 'y',
         };
 
-        private char firstLetter;
-        private List<char> sourceChars;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Soundex"/> class.
         /// </summary>
@@ -33,7 +31,7 @@
         public Soundex(string sourceValue)
         {
             this.SourceValue = sourceValue;
-            this.EncodedValue = this.EncodeSourceValue(sourceValue);
+            this.EncodedValue = EncodeValue(sourceValue);
         }
 
         /// <summary>
@@ -46,71 +44,101 @@
         /// </summary>
         public string EncodedValue { get; private set; }
 
-        private string Finalize()
+        /// <summary>
+        /// Returns encoded Soundex value of source string.
+        /// </summary>
+        /// <param name="value">Original decoded string.</param>
+        /// <returns>And encoded Soundex value.</returns>
+        public static string EncodeValue(string value)
         {
-            while (this.sourceChars.Count < 4)
+            string[] splittedValue = value.Split(' ');
+
+            for (int i = 0; i < splittedValue.Length; i++)
             {
-                this.sourceChars.Add('0');
+                splittedValue[i] = EncodeSingleWord(splittedValue[i].ToLower());
             }
 
-            return new string(this.sourceChars.Take(4).ToArray());
+            return string.Join(" ", splittedValue);
         }
 
-        private void RemoveInvalidLetters()
+        private static string EncodeSingleWord(string word)
         {
-            this.sourceChars = this.sourceChars.Skip(1).ToList();
-            this.sourceChars.RemoveAll(item => item == 'h' || item == 'w');
+            List<char> sourceChars = word.ToList();
+            char firstLetter = sourceChars[0];
+            sourceChars = PrepareSourceChars(sourceChars);
+            return Finalize(char.ToUpper(firstLetter), sourceChars);
         }
 
-        private void ReplaceCharsByIndexes()
+        private static List<char> PrepareSourceChars(List<char> sourceChars)
         {
-            for (int i = 0; i < this.sourceChars.Count; i++)
+            sourceChars = RemoveInvalidLetters(sourceChars);
+
+            // sourceChars.Insert(0, firstLetter);
+            sourceChars = DoIndexProcedures(sourceChars);
+            sourceChars = RemoveVowels(sourceChars);
+            return sourceChars;
+        }
+
+        private static string Finalize(char firstLetter, List<char> sourceChars)
+        {
+            sourceChars.Insert(0, firstLetter);
+            while (sourceChars.Count < 4)
             {
-                if (CharIndexes.ContainsKey(this.sourceChars[i]))
+                sourceChars.Add('0');
+            }
+
+            return new string(sourceChars.Take(4).ToArray());
+        }
+
+        private static List<char> RemoveInvalidLetters(List<char> sourceChars)
+        {
+            sourceChars = sourceChars.Skip(1).ToList();
+            sourceChars.RemoveAll(item => item == 'h' || item == 'w');
+            return sourceChars;
+        }
+
+        private static List<char> ReplaceCharsByIndexes(List<char> sourceChars)
+        {
+            for (int i = 0; i < sourceChars.Count; i++)
+            {
+                if (CharIndexes.ContainsKey(sourceChars[i]))
                 {
-                    this.sourceChars[i] = CharIndexes[this.sourceChars[i]];
+                    sourceChars[i] = CharIndexes[sourceChars[i]];
                 }
             }
+
+            return sourceChars;
         }
 
-        private void RemoveVowels()
+        private static List<char> RemoveVowels(List<char> sourceChars)
         {
-            this.sourceChars = this.sourceChars.Skip(1).ToList();
-            this.sourceChars.RemoveAll(item => Vowels.Contains(item));
+            sourceChars = sourceChars.Skip(1).ToList();
+            sourceChars.RemoveAll(item => Vowels.Contains(item));
+            return sourceChars;
         }
 
-        private void TrimRepeatingIndexes()
+        private static List<char> TrimRepeatingIndexes(List<char> sourceChars)
         {
             int i = 1;
-            while (i < this.sourceChars.Count)
+            while (i < sourceChars.Count)
             {
-                if (this.sourceChars[i] == this.sourceChars[i - 1] && CharIndexes.ContainsValue(this.sourceChars[i]))
+                if (sourceChars[i] == sourceChars[i - 1] && CharIndexes.ContainsValue(sourceChars[i]))
                 {
-                    this.sourceChars.RemoveAt(i);
+                    sourceChars.RemoveAt(i);
                 }
                 else
                 {
                     i++;
                 }
             }
+
+            return sourceChars;
         }
 
-        private string EncodeSourceValue(string sourceValue)
+        private static List<char> DoIndexProcedures(List<char> sourceChars)
         {
-            this.sourceChars = sourceValue.ToList();
-            this.firstLetter = this.sourceChars[0];
-            this.RemoveInvalidLetters();
-            this.sourceChars.Insert(0, this.firstLetter);
-            this.DoIndexProcedures();
-            this.RemoveVowels();
-            this.sourceChars.Insert(0, char.ToUpper(this.firstLetter));
-            return this.Finalize();
-        }
-
-        private void DoIndexProcedures()
-        {
-            this.ReplaceCharsByIndexes();
-            this.TrimRepeatingIndexes();
+            sourceChars = ReplaceCharsByIndexes(sourceChars);
+            return TrimRepeatingIndexes(sourceChars);
         }
     }
 }

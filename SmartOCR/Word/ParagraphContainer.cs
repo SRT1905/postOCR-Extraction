@@ -23,6 +23,7 @@
             this.HorizontalLocation = this.ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
             this.VerticalLocation = this.ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
             this.Text = this.RemoveInvalidChars(range.Text);
+            this.Soundex = SmartOCR.Soundex.EncodeValue(this.Text);
         }
 
         /// <summary>
@@ -30,6 +31,11 @@
         /// Measured in points (72 point = 1 inch).
         /// </summary>
         public decimal HorizontalLocation { get; }
+
+        /// <summary>
+        /// Gets Soundex equivalent of <see cref="ParagraphContainer.Text"/>.
+        /// </summary>
+        public string Soundex { get; }
 
         /// <summary>
         /// Gets paragraph text.

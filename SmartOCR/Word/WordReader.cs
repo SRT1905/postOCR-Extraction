@@ -149,7 +149,10 @@
             var paragraphContainers = new List<ParagraphContainer>();
             for (int i = 1; i <= textFrame.TextRange.Paragraphs.Count; i++)
             {
-                paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[i].Range));
+                if (textFrame.TextRange.Paragraphs[i].Range.Text.Length > MinimalTextLength)
+                {
+                    paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[i].Range));
+                }
             }
 
             return paragraphContainers;
