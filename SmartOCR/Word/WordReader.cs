@@ -63,12 +63,15 @@
         /// </summary>
         public void ReadDocument()
         {
+            Utilities.Debug($"Reading document contents.", 1);
             long numberOfPages = this.document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
 
             for (int i = 1; i <= numberOfPages; i++)
             {
                 this.GetDataFromPage(i);
             }
+
+            Utilities.Debug($"Total of {this.LineMapping.Values.Sum(item => item.Count)} paragraphs were distributed into {this.LineMapping.Count} lines.", 1);
         }
 
         /// <summary>
@@ -286,9 +289,11 @@
         /// <returns>Document contents, grouped by lines.</returns>
         private SortedDictionary<long, List<ParagraphContainer>> ReadSinglePage(long pageIndex)
         {
+            Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
             this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
             SortedDictionary<decimal, List<ParagraphContainer>> documentContent = this.paragraphReader.GetValidParagraphs(pageIndex);
             documentContent = this.UpdateContentsWithFrameContents(pageIndex, documentContent);
+            Utilities.Debug($"Distributing data from page {pageIndex}.", 2);
             return documentContent.Count == 0
                 ? new SortedDictionary<long, List<ParagraphContainer>>()
                 : GroupParagraphsByLine(documentContent);
@@ -310,6 +315,7 @@
         {
             List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
             this.TryAddTablesFromFrames(frameCollection);
+            Utilities.Debug($"Getting text in shapes from page {pageIndex}.", 3);
             documentContent = AddDataFromFrames(documentContent, frameCollection);
             return documentContent;
         }
@@ -337,6 +343,7 @@
                 return;
             }
 
+            Utilities.Debug($"Merging collected data from current page with data from previous pages.", 2);
             this.UpdateLineMappingByEndLine(pageContent, keys);
         }
 

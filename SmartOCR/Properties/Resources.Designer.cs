@@ -61,15 +61,6 @@ namespace SmartOCR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to # .
-        /// </summary>
-        internal static string debugHashtag {
-            get {
-                return ResourceManager.GetString("debugHashtag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Select directory with valid files.
         /// </summary>
         internal static string folderBrowserDialogDescription {
@@ -88,7 +79,7 @@ namespace SmartOCR.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to location configuration file..
+        ///   Looks up a localized string similar to Unable to locate configuration file..
         /// </summary>
         internal static string noConfigFileFound {
             get {

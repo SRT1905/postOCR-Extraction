@@ -26,6 +26,7 @@
         /// <returns>An instance of <see cref="Workbook"/> object.</returns>
         public static Workbook GetOutputWorkbook()
         {
+            Utilities.Debug($"Getting output workbook.");
             if (instance == null)
             {
                 instance = CreateOutputWorkbook();
@@ -40,6 +41,7 @@
         /// <param name="values">Mapping between field names and found values.</param>
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
+            Utilities.Debug($"Inserting found data into Excel output workbook.", 1);
             long rowToInput = GetLastRowInWorksheet();
             foreach (var item in values)
             {

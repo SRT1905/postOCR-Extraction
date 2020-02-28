@@ -55,6 +55,7 @@
         {
             try
             {
+                Utilities.Debug("Validating provided arguments.");
                 if (args == null)
                 {
                     Utilities.Debug(Properties.Resources.invalidInputMessage);
@@ -64,10 +65,12 @@
 
                 if (Directory.Exists(args[0]))
                 {
+                    Utilities.Debug($"Looking for configuration file in folder '{args[0]}'.", 1);
                     string[] files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly);
                     if (files.Length != 0)
                     {
                         this.configFile = files[0];
+                        Utilities.Debug($"Found configuration file: '{this.configFile}'.", 1);
                     }
                     else
                     {
@@ -78,6 +81,7 @@
                 else if (File.Exists(args[0]))
                 {
                     this.configFile = args[0];
+                    Utilities.Debug($"Found configuration file: '{this.configFile}'.", 1);
                 }
 
                 this.enteredPathType = this.ValidatePath(args[1]);
@@ -111,9 +115,12 @@
                 ? Path.Combine(this.enteredArguments[0], "output.xlsx")
                 : Path.Combine(Path.GetDirectoryName(this.enteredArguments[0]), "output.xlsx");
 
+            Utilities.Debug($"Output file location: '{outputFile}'.");
+
             while (File.Exists(outputFile))
             {
-                continue;
+                Utilities.Debug("Waiting for existing output file to be deleted.");
+                System.Threading.Thread.Sleep(1000);
             }
 
             using (var entryPoint = new ParseEntryPoint(this.GetFilesFromArgs(), this.configFile, outputFile))
@@ -165,14 +172,17 @@
         {
             if (Directory.Exists(path))
             {
+                Utilities.Debug("Arguments that represent documents to process will be processed as directories.", 1);
                 return PathType.Directory;
             }
 
             if (File.Exists(path))
             {
+                Utilities.Debug("Arguments that represent documents to process will be processed as files.", 1);
                 return PathType.File;
             }
 
+            Utilities.Debug("Arguments are identified neither as directories nor as files.", 1);
             return PathType.None;
         }
     }

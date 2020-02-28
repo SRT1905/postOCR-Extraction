@@ -42,6 +42,7 @@
         /// <returns>A mapping between field name and found value.</returns>
         public Dictionary<string, string> ParseDocument()
         {
+            Utilities.Debug($"Parsing document.", 1);
             this.treeStructure.PopulateTree();
             this.ProcessDocument();
             return this.treeStructure.GetValuesFromTree();
@@ -255,11 +256,13 @@
                 {
                     if (nodeContent.Lines[0] == 0)
                     {
+                        Utilities.Debug($"Initializing field node '{fieldNode.Content.Name}' data.", 2);
                         this.GetDataFromUndefinedNode(fieldNode);
                     }
 
                     if (nodeContent.Lines[0] != 0)
                     {
+                        Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
                         for (int i = 0; i < fieldNode.Children.Count; i++)
                         {
                             TreeNode lineNode = fieldNode.Children[i];
@@ -269,6 +272,7 @@
                 }
                 else
                 {
+                    Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
                     TableNodeProcessor processor = new TableNodeProcessor(this.tables, fieldNode);
                     processor.Process();
                 }

@@ -39,6 +39,7 @@
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
         public SortedDictionary<decimal, List<ParagraphContainer>> GetValidParagraphs()
         {
+            Utilities.Debug($"Getting paragraphs from page {this.pageIndex}.", 3);
             return this.paragraphs ?? this.ReadDocument();
         }
 

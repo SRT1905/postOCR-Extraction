@@ -131,6 +131,7 @@
             }
 
             this.outputWB.SaveAs(this.outputLocation);
+            Utilities.Debug($"Excel output workbook is saved at location '{this.outputLocation}'.");
         }
 
         private void GetDataFromSingleFile(int fileIndex)
@@ -146,6 +147,7 @@
         /// <returns>Mapping between config field and found value.</returns>
         private Dictionary<string, string> ProcessSingleFile(string wordFilePath)
         {
+            Utilities.Debug($"Processing file: '{wordFilePath}'.");
             WordParser wordParser;
             using (WordReader reader = OpenAndReadDocument(wordFilePath))
             {
@@ -164,6 +166,7 @@
         {
             var files = new List<string>();
             files.AddRange(filePaths.Where(IsFilePathValid()));
+            Utilities.Debug($"Total number of files to process: {files.Count}");
             return files;
         }
     }

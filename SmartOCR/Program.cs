@@ -24,9 +24,10 @@
 
         private static string[] CheckDebugEnablement(string[] args)
         {
-            if (args[0] == "-d")
+            if (args[0].StartsWith("-d"))
             {
                 Utilities.EnableDebug = true;
+                SetDebugLevel(args[0]);
                 args = RemoveDebugParameter(args);
             }
 
@@ -50,6 +51,16 @@
             if (cmdProcessor.ReadyToProcess)
             {
                 cmdProcessor.ExecuteProcessing();
+                Utilities.Debug($"Processing done!");
+            }
+        }
+
+        private static void SetDebugLevel(string argument)
+        {
+            argument = argument.Replace("-d", string.Empty);
+            if (argument.Length != 0)
+            {
+                Utilities.DebugLevel = Convert.ToInt32(argument);
             }
         }
     }

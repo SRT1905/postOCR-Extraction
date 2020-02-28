@@ -36,6 +36,11 @@
         public static bool EnableDebug { get; internal set; }
 
         /// <summary>
+        /// Gets or sets a lowest level of showing debug messages.
+        /// </summary>
+        public static int DebugLevel { get; set; } = -1;
+
+        /// <summary>
         /// Creates a new <see cref="Regex"/> instance with additional parameters.
         /// </summary>
         /// <param name="textPattern">Search pattern.</param>
@@ -48,15 +53,17 @@
         /// <summary>
         /// Sends debug message to <see cref="Console.Out"/>.
         /// </summary>
-        /// <param name="format">A placeholder string.</param>
+        /// <param name="message">A message string.</param>
         /// <param name="debugLevel">Used to indicate call level.</param>
-        /// <param name="args">Arbitrary number of arguments that are fitted to <paramref name="format"/> string.</param>
-        public static void Debug(string format, int debugLevel = 0, params object[] args)
+        public static void Debug(string message, int debugLevel = 0)
         {
             if (Utilities.EnableDebug)
             {
-                Console.Write($"{Properties.Resources.debugHashtag}{new string('\t', debugLevel)}");
-                Console.WriteLine(format, args);
+                if (debugLevel <= Utilities.DebugLevel || Utilities.DebugLevel == -1)
+                {
+                    Console.Write($"# {new string(' ', debugLevel)}");
+                    Console.WriteLine(message);
+                }
             }
         }
 

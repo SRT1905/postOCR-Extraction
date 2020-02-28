@@ -97,6 +97,7 @@
             }
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"Config field: {this.Name}; value type: {this.ValueType}";
