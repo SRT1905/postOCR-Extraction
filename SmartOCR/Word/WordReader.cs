@@ -64,7 +64,7 @@
         public void ReadDocument()
         {
             Utilities.Debug($"Reading document contents.", 1);
-            long numberOfPages = this.document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
+            int numberOfPages = this.document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
 
             for (int i = 1; i <= numberOfPages; i++)
             {
@@ -78,7 +78,7 @@
         /// Performs data reading from single document page.
         /// </summary>
         /// <param name="pageIndex">Index of page to read, starting from 1.</param>
-        public void ReadDocument(long pageIndex)
+        public void ReadDocument(int pageIndex)
         {
             if (pageIndex >= 1)
             {
@@ -201,7 +201,7 @@
             return previousLocation - VerticalPositionOffset <= currentLocation && currentLocation <= previousLocation + VerticalPositionOffset;
         }
 
-        private static LineMapping ShiftContentKeys(LineMapping pageContent, List<long> keys)
+        private static LineMapping ShiftContentKeys(LineMapping pageContent, List<int> keys)
         {
             var shiftedMapping = new LineMapping();
             for (int i = 0; i < keys.Count; i++)
@@ -215,7 +215,7 @@
 
         private static LineMapping SortParagraphs(LineMapping newDocumentContent)
         {
-            foreach (KeyValuePair<long, List<ParagraphContainer>> item in newDocumentContent)
+            foreach (KeyValuePair<int, List<ParagraphContainer>> item in newDocumentContent)
             {
                 item.Value.Sort();
             }
@@ -271,7 +271,7 @@
         /// </summary>
         /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Collection of valid TextFrame objects.</returns>
-        private List<TextFrame> GetValidTextFrames(long pageIndex)
+        private List<TextFrame> GetValidTextFrames(int pageIndex)
         {
             var frames = new List<TextFrame>();
             for (int i = 1; i <= this.document.Shapes.Count; i++)
@@ -290,7 +290,7 @@
         /// </summary>
         /// <param name="pageIndex">Index of page to read.</param>
         /// <returns>Document contents, grouped by lines.</returns>
-        private LineMapping ReadSinglePage(long pageIndex)
+        private LineMapping ReadSinglePage(int pageIndex)
         {
             Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
             this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
@@ -314,7 +314,7 @@
             }
         }
 
-        private ParagraphMapping UpdateContentsWithFrameContents(long pageIndex, ParagraphMapping documentContent)
+        private ParagraphMapping UpdateContentsWithFrameContents(int pageIndex, ParagraphMapping documentContent)
         {
             List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
             this.TryAddTablesFromFrames(frameCollection);
@@ -334,7 +334,7 @@
                 return;
             }
 
-            List<long> keys = pageContent.Keys.ToList();
+            List<int> keys = pageContent.Keys.ToList();
             if (pageContent.ContainsKey(0))
             {
                 pageContent = ShiftContentKeys(pageContent, keys);
@@ -350,12 +350,12 @@
             this.UpdateLineMappingByEndLine(pageContent, keys);
         }
 
-        private void UpdateLineMappingByEndLine(LineMapping pageContent, List<long> keys)
+        private void UpdateLineMappingByEndLine(LineMapping pageContent, List<int> keys)
         {
-            long endLine = this.Mapping.Keys.Last();
+            int endLine = this.Mapping.Keys.Last();
             for (int i = 0; i < keys.Count; i++)
             {
-                long key = keys[i];
+                int key = keys[i];
                 this.Mapping.Add(key + endLine, pageContent[key]);
             }
         }

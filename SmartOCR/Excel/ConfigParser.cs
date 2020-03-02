@@ -1,6 +1,5 @@
 ﻿namespace SmartOCR
 {
-    using System.Globalization;
     using System.IO;
     using Microsoft.Office.Interop.Excel;
 
@@ -54,7 +53,7 @@
         /// <param name="headerRow">Index of row on worksheet with field names.</param>
         /// <param name="fieldColumn">Index of column where field definition is contained.</param>
         /// <returns>An instance of <see cref="ConfigField"/> that describes search field and its expressions.</returns>
-        private static ConfigField GetFieldDefinition(Worksheet sourceWS, long headerRow, long fieldColumn)
+        private static ConfigField GetFieldDefinition(Worksheet sourceWS, int headerRow, int fieldColumn)
         {
             string fieldName = sourceWS.Cells.Item[headerRow, fieldColumn].Value2;
             if (string.IsNullOrEmpty(fieldName))
@@ -66,17 +65,17 @@
             return InitializeAndPopulateConfigField(sourceWS, headerRow, fieldColumn, fieldName, sourceWS.Cells.Item[headerRow + 1, fieldColumn].Value2);
         }
 
-        private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWS, long headerRow, long fieldColumn, string fieldName, string valueType)
+        private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWS, int headerRow, int fieldColumn, string fieldName, string valueType)
         {
             ConfigField field = InitializeConfigField(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2, fieldName, valueType);
             AddSearchExpressionsToField(sourceWS, headerRow, fieldColumn, valueType, field);
-            Utilities.Debug($"Value type: {field.ValueType}, Regular expression: {field.RegExPattern}, Count of search expressions {field.Expressions.Count}", 3);
+            Utilities.Debug($"Value type: {field.ValueType}, Regular expression: {field.TextExpression}, Count of search expressions {field.Expressions.Count}", 3);
             return field;
         }
 
-        private static void AddSearchExpressionsToField(Worksheet sourceWS, long headerRow, long fieldColumn, string valueType, ConfigField field)
+        private static void AddSearchExpressionsToField(Worksheet sourceWS, int headerRow, int fieldColumn, string valueType, ConfigField field)
         {
-            for (long i = headerRow + 3; i <= sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row; i++)
+            for (int i = headerRow + 3; i <= sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row; i++)
             {
                 field.AddSearchExpression(new ConfigExpression(valueType, sourceWS.Cells.Item[i, fieldColumn].Value2));
             }
@@ -89,7 +88,7 @@
             return field;
         }
 
-        private static ConfigData AddConfigFields(Worksheet sourceWS, ConfigData data, long headerRow)
+        private static ConfigData AddConfigFields(Worksheet sourceWS, ConfigData data, int headerRow)
         {
             for (int fieldIndex = 2; fieldIndex <= sourceWS.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
             {
@@ -107,6 +106,13 @@
             return configWorkbook;
         }
 
+        private static bool DoesCellHasIdentifier(Worksheet sourceWS, int headerRow)
+        {
+            return (bool)sourceWS.Cells.Item[headerRow, 1].Value2
+                                              .ToLower()
+                                              .Contains("field name");
+        }
+
         private Workbook GetExternalConfigWorkbook(string path)
         {
             return ExcelApplication.OpenExcelWorkbook(path);
@@ -116,9 +122,9 @@
         {
             Utilities.Debug("Getting config data from first worksheet.");
             ConfigData data = new ConfigData();
-            for (long headerRow = 1; headerRow <= sourceWS.UsedRange.Columns[1].Rows.Count; headerRow++)
+            for (int headerRow = 1; headerRow <= sourceWS.UsedRange.Columns[1].Rows.Count; headerRow++)
             {
-                if (sourceWS.Cells.Item[headerRow, 1].Value2.ToLower(CultureInfo.CurrentCulture).Contains("field name"))
+                if (DoesCellHasIdentifier(sourceWS, headerRow))
                 {
                     Utilities.Debug($"Found 'Field name' identifier at row {headerRow}.", 1);
                     return AddConfigFields(sourceWS, data, headerRow);

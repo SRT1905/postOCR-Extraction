@@ -48,7 +48,7 @@
         private static void ProcessArguments(string[] args)
         {
             var cmdProcessor = new CMDProcess(args);
-            if (cmdProcessor.ReadyToProcess)
+            if (cmdProcessor.IsReadyToProcess)
             {
                 cmdProcessor.ExecuteProcessing();
                 Utilities.Debug($"Processing done!");

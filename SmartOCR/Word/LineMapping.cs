@@ -5,7 +5,7 @@
     /// <summary>
     /// Represents mapping of multiple Word paragraphs to their line location on document page.
     /// </summary>
-    public class LineMapping : SortedDictionary<long, List<ParagraphContainer>>
+    public class LineMapping : SortedDictionary<int, List<ParagraphContainer>>
     {
     }
 }

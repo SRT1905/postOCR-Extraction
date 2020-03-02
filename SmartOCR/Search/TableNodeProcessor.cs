@@ -82,7 +82,7 @@
         {
             Match singleMatch = regexObject.Match(cellValue);
             int index = Convert.ToInt32(singleMatch.Groups.Count > 0);
-            return new SimilarityDescription(singleMatch.Groups[index].Value, checkValue).CheckStringSimilarity();
+            return new SimilarityDescription(singleMatch.Groups[index].Value, checkValue).AreStringsSimilar();
         }
 
         private static void PropagateStatusInTree(bool status, TreeNode node)

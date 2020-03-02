@@ -15,7 +15,7 @@
         private const byte MinimalTextLength = 2;
 
         private readonly Document document;
-        private long pageIndex;
+        private int pageIndex;
         private ParagraphMapping paragraphs;
         private List<int> paragraphIndexes;
 
@@ -24,7 +24,7 @@
         /// </summary>
         /// <param name="document">A Word document.</param>
         /// <param name="pageIndex">Page index, from which paragraphs are read.</param>
-        public WordParagraphReader(Document document, long pageIndex)
+        public WordParagraphReader(Document document, int pageIndex)
         {
             this.document = document;
             this.pageIndex = pageIndex;
@@ -46,7 +46,7 @@
         /// </summary>
         /// <param name="newPageIndex">New page index.</param>
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
-        public ParagraphMapping GetValidParagraphs(long newPageIndex)
+        public ParagraphMapping GetValidParagraphs(int newPageIndex)
         {
             this.pageIndex = newPageIndex;
             this.ResetParagraphIndexes();
@@ -90,7 +90,7 @@
 
             for (int index = 1; index <= this.document.Paragraphs.Count; index++)
             {
-                long currentPage = this.document.Paragraphs[index].Range.Information[WdInformation.wdActiveEndPageNumber];
+                int currentPage = this.document.Paragraphs[index].Range.Information[WdInformation.wdActiveEndPageNumber];
                 if (currentPage > this.pageIndex)
                 {
                     this.paragraphIndexes = Enumerable.Range(startPoint, index - startPoint + 1).ToList();

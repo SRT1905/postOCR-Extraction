@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Text.RegularExpressions;
 
@@ -11,7 +10,7 @@
     /// </summary>
     public class WordParser // TODO : add debug on node processing
     {
-        private const long SimilaritySearchThreshold = 5;
+        private const int SimilaritySearchThreshold = 5;
 
         private readonly ConfigData configData;
         private readonly LineMapping lineMapping;
@@ -64,8 +63,8 @@
         private static void AddSingleChildToFieldNode(TreeNode fieldNode, string key)
         {
             var content = fieldNode.Content;
-            long line = long.Parse(key.Split('|')[0], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
-            decimal horizontalLocation = decimal.Parse(key.Split('|')[2], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
+            int line = int.Parse(key.Split('|')[0]);
+            decimal horizontalLocation = decimal.Parse(key.Split('|')[2]);
             if (!content.Lines.Contains(line))
             {
                 content.Lines.Add(line);
@@ -89,7 +88,7 @@
                     {
                         Group groupItem = singleMatch.Groups[groupIndex];
                         SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
-                        if (description.CheckStringSimilarity())
+                        if (description.AreStringsSimilar())
                         {
                             foundValues.Add(description);
                         }
@@ -98,7 +97,7 @@
                 else
                 {
                     SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
-                    if (description.CheckStringSimilarity())
+                    if (description.AreStringsSimilar())
                     {
                         foundValues.Add(description);
                     }
@@ -140,7 +139,7 @@
             }
         }
 
-        private void AddOffsetNode(TreeNode node, int searchLevel, long offsetIndex, string foundValue, decimal position, bool addToParent)
+        private void AddOffsetNode(TreeNode node, int searchLevel, int offsetIndex, string foundValue, decimal position, bool addToParent)
         {
             if (node.Content.Lines.Count(item => item == offsetIndex) >= 2)
             {
@@ -172,7 +171,7 @@
             var keys = this.lineMapping.Keys.ToList();
             for (int keyIndex = 0; keyIndex < keys.Count; keyIndex++)
             {
-                long line = keys[keyIndex];
+                int line = keys[keyIndex];
                 for (int containerIndex = 0; containerIndex < this.lineMapping[line].Count; containerIndex++)
                 {
                     ParagraphContainer container = this.lineMapping[line][containerIndex];
@@ -194,11 +193,11 @@
             }
         }
 
-        private Dictionary<string, string> GetOffsetLines(long lineNumber, TreeNodeContent content)
+        private Dictionary<string, string> GetOffsetLines(int lineNumber, TreeNodeContent content)
         {
             Regex regexObject = Utilities.CreateRegexpObject(content.RegExPattern);
             var foundValuesCollection = new Dictionary<string, string>();
-            List<long> keys = this.lineMapping.Keys.ToList();
+            List<int> keys = this.lineMapping.Keys.ToList();
             int lineIndex = keys.IndexOf(lineNumber);
             for (int searchOffset = 1; searchOffset <= SimilaritySearchThreshold; searchOffset++)
             {
@@ -207,7 +206,7 @@
                 {
                     if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
                     {
-                        long line = keys[offsetIndex];
+                        int line = keys[offsetIndex];
                         var lineChecker = new LineContentChecker(this.lineMapping[line]);
                         if (lineChecker.CheckLineContents(regexObject, content.CheckValue))
                         {
@@ -222,7 +221,7 @@
             return foundValuesCollection;
         }
 
-        private void OffsetSearch(long lineNumber, TreeNode lineNode, int searchLevel, bool addToParent = false)
+        private void OffsetSearch(int lineNumber, TreeNode lineNode, int searchLevel, bool addToParent = false)
         {
             TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
             var lineNumbers = this.GetOffsetLines(lineNumber, lineNodeContent);
@@ -232,8 +231,8 @@
             {
                 string key = keys[i];
                 string[] splittedKey = key.Split('|');
-                long offsetIndex = long.Parse(splittedKey[0], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
-                decimal horizontalPosition = decimal.Parse(splittedKey[1], NumberStyles.Any, NumberFormatInfo.CurrentInfo);
+                int offsetIndex = int.Parse(splittedKey[0]);
+                decimal horizontalPosition = decimal.Parse(splittedKey[1]);
                 if (addToParent)
                 {
                     var parent = lineNode.Parent;
@@ -291,7 +290,7 @@
             int lineIndex = 0;
             while (lineIndex < lineNodeContent.Lines.Count)
             {
-                long lineNumber = lineNodeContent.Lines[lineIndex];
+                int lineNumber = lineNodeContent.Lines[lineIndex];
 
                 bool checkStatus = this.lineMapping.ContainsKey(lineNumber)
                     ? this.TryMatchLineData(lineNodeContent, lineNumber)
@@ -326,7 +325,7 @@
             TreeNodeContent nodeContent = node.Content;
             for (int i = 0; i < nodeContent.Lines.Count; i++)
             {
-                long lineNumber = nodeContent.Lines[i];
+                int lineNumber = nodeContent.Lines[i];
                 if (!this.lineMapping.ContainsKey(lineNumber))
                 {
                     this.OffsetSearch(lineNumber, node, searchLevel, true);
@@ -370,7 +369,7 @@
             }
         }
 
-        private bool TryMatchLineData(TreeNodeContent lineNodeContent, long lineNumber)
+        private bool TryMatchLineData(TreeNodeContent lineNodeContent, int lineNumber)
         {
             decimal paragraphHorizontalLocation = lineNodeContent.HorizontalParagraph;
             Regex regexObject = Utilities.CreateRegexpObject(lineNodeContent.RegExPattern);
@@ -383,7 +382,7 @@
             return checkStatus;
         }
 
-        private void SetOffsetChildrenLines(TreeNode node, long line)
+        private void SetOffsetChildrenLines(TreeNode node, int line)
         {
             TreeNodeContent nodeContent = node.Content;
 
@@ -392,11 +391,11 @@
                 TreeNode child = node.Children[i];
                 TreeNodeContent childContent = child.Content;
                 childContent.HorizontalParagraph = nodeContent.HorizontalParagraph;
-                List<long> keys = this.lineMapping.Keys.ToList();
+                List<int> keys = this.lineMapping.Keys.ToList();
                 int lineIndex = keys.IndexOf(line) + childContent.FirstSearchParameter;
                 if (lineIndex >= 0 && lineIndex < keys.Count)
                 {
-                    long offsetLine = keys[lineIndex];
+                    int offsetLine = keys[lineIndex];
                     childContent.Lines.Clear();
                     childContent.Lines.Add(offsetLine);
                 }

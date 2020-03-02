@@ -59,7 +59,7 @@
                 if (args == null)
                 {
                     Utilities.Debug(Properties.Resources.invalidInputMessage);
-                    this.ReadyToProcess = false;
+                    this.IsReadyToProcess = false;
                     return;
                 }
 
@@ -86,19 +86,19 @@
 
                 this.enteredPathType = this.ValidatePath(args[1]);
                 this.enteredArguments = args.Skip(1).ToList();
-                this.ReadyToProcess = true;
+                this.IsReadyToProcess = true;
             }
             catch (IndexOutOfRangeException)
             {
                 Utilities.Debug(Properties.Resources.invalidInputMessage);
-                this.ReadyToProcess = false;
+                this.IsReadyToProcess = false;
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether command prompt arguments were successfully defined.
         /// </summary>
-        public bool ReadyToProcess { get; }
+        public bool IsReadyToProcess { get; }
 
         /// <summary>
         /// Sets output file and reads data from provided files.

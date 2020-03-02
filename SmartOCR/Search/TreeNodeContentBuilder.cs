@@ -1,6 +1,6 @@
 ﻿namespace SmartOCR
 {
-    public class TreeNodeContentBuilder : IBuilder<TreeNodeContent>
+    public class TreeNodeContentBuilder : IBuilder<TreeNodeContent> // TODO: add documentation
     {
         private TreeNodeContent nodeContent;
 
@@ -81,7 +81,7 @@
             this.nodeContent.ValueType = value;
         }
 
-        public bool TryAddLine(long line)
+        public bool TryAddLine(int line)
         {
             if (!this.nodeContent.Lines.Contains(line))
             {

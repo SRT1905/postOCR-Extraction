@@ -151,7 +151,7 @@
         private static void ProcessSingleMatchWithCheck(List<SimilarityDescription> foundValues, string checkValue, Match singleMatch)
         {
             SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
-            if (description.CheckStringSimilarity())
+            if (description.AreStringsSimilar())
             {
                 foundValues.Add(description);
             }
@@ -163,7 +163,7 @@
             {
                 Group groupItem = singleMatch.Groups[groupIndex];
                 SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
-                if (description.CheckStringSimilarity())
+                if (description.AreStringsSimilar())
                 {
                     foundValues.Add(description);
                 }

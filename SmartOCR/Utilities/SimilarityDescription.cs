@@ -43,7 +43,7 @@
         /// Checks whether calculated similiarity ratio is sufficient enough to call two strings similar.
         /// </summary>
         /// <returns>true/false.</returns>
-        public bool CheckStringSimilarity()
+        public bool AreStringsSimilar()
         {
             return this.Ratio >= SimilarityRatioThreshold;
         }

@@ -42,19 +42,31 @@
         public static void ReturnValuesToWorksheet(Dictionary<string, string> values)
         {
             Utilities.Debug($"Inserting found data into Excel output workbook.", 1);
-            long rowToInput = GetLastRowInWorksheet();
+            int rowToInput = GetLastRowInWorksheet();
             foreach (var item in values)
             {
                 ProcessSingleValue(rowToInput, item);
             }
         }
 
-        private static void ProcessSingleValue(long rowToInput, KeyValuePair<string, string> item)
+        private static void ProcessSingleValue(int rowToInput, KeyValuePair<string, string> item)
         {
-            long columnIndex = FindColumnIndex(item.Key);
+            int columnIndex = FindColumnIndex(item.Key);
             if (columnIndex != 0)
             {
                 outputWorksheet.Cells[rowToInput, columnIndex] = item.Value;
+            }
+        }
+
+        private static Worksheet GetOutputWorksheet(Workbook source)
+        {
+            try
+            {
+                return source.Worksheets[1];
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                return null;
             }
         }
 
@@ -64,42 +76,50 @@
         /// <returns><see cref="Workbook"/> instance added to <see cref="Workbooks"/> collection.</returns>
         private static Workbook CreateOutputWorkbook()
         {
-            Workbook sourceWB = ConfigParser.ConfigWorkbook;
-            Workbook newWB = ExcelApplication.AddEmptyWorkbook();
-
-            Worksheet sourceWS;
-            try
-            {
-                sourceWS = sourceWB.Worksheets[1];
-            }
-            catch (System.Runtime.InteropServices.COMException)
-            {
-                return null;
-            }
-
+            Worksheet sourceWS = GetOutputWorksheet(ConfigParser.ConfigWorkbook);
             if (sourceWS == null)
             {
                 return null;
             }
 
-            outputWorksheet = newWB.Worksheets.Add(After: newWB.Worksheets[newWB.Worksheets.Count]);
-            outputWorksheet.Name = sourceWS.Name;
-            int i;
-            for (i = 1; i <= sourceWS.Cells[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
-            {
-                if (sourceWS.Cells[i, 1].Value2.ToString().ToLower().Contains("field name"))
-                {
-                    break;
-                }
-            }
+            return DefineOutputWorksheet(ExcelApplication.AddEmptyWorkbook(), sourceWS);
+        }
 
-            CopyHeaderBetweenWorkbooks(newWB, sourceWS, i);
+        private static Workbook DefineOutputWorksheet(Workbook newWB, Worksheet sourceWS)
+        {
+            InitializeOutputWorksheet(newWB, sourceWS);
+            CopyHeaderBetweenWorkbooks(newWB, sourceWS);
             return newWB;
         }
 
-        private static void CopyHeaderBetweenWorkbooks(Workbook newWB, Worksheet sourceWS, int rowIndex)
+        private static void InitializeOutputWorksheet(Workbook newWB, Worksheet sourceWS)
         {
-            Range headerRange = sourceWS.Range[sourceWS.Cells[rowIndex, 2], sourceWS.Cells[rowIndex, sourceWS.Columns.Count].End[XlDirection.xlToLeft]];
+            outputWorksheet = newWB.Worksheets.Add(After: newWB.Worksheets[newWB.Worksheets.Count]);
+            outputWorksheet.Name = sourceWS.Name;
+        }
+
+        private static int GetIdentifyingRow(Worksheet sourceWS)
+        {
+            for (int i = 1; i <= sourceWS.Cells[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
+            {
+                if (sourceWS.Cells[i, 1].Value2
+                    .ToString()
+                    .ToLower()
+                    .Contains("field name"))
+                {
+                    return i;
+                }
+            }
+
+            return 1;
+        }
+
+        private static void CopyHeaderBetweenWorkbooks(Workbook newWB, Worksheet sourceWS)
+        {
+            int rowIndex = GetIdentifyingRow(sourceWS);
+            Range headerRange = sourceWS.UsedRange.Offset[rowIndex - 1, 1].Resize[1, sourceWS.UsedRange.Columns.Count - 1];
+
+            // Range headerRange = sourceWS.Range[sourceWS.Cells[rowIndex, 2], sourceWS.Cells[rowIndex, sourceWS.Columns.Count].End[XlDirection.xlToLeft]];
             headerRange.Copy((Range)outputWorksheet.Cells.Item[1, 1]);
 
             newWB.Worksheets[1].Delete();
@@ -110,10 +130,10 @@
         /// </summary>
         /// <param name="fieldName">Field name to search.</param>
         /// <returns>Index of matched column.</returns>
-        private static long FindColumnIndex(string fieldName)
+        private static int FindColumnIndex(string fieldName)
         {
-            long lastColumn = outputWorksheet.UsedRange.Columns.Count; // .Cells[1, outputWorksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
-            for (long i = 1; i <= lastColumn; i++)
+            int lastColumn = outputWorksheet.UsedRange.Columns.Count; // .Cells[1, outputWorksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
+            for (int i = 1; i <= lastColumn; i++)
             {
                 if (outputWorksheet.Cells[1, i].Value2 == fieldName)
                 {
@@ -121,14 +141,14 @@
                 }
             }
 
-            return 0;
+            return 1;
         }
 
         /// <summary>
         /// Gets first empty row in <see cref="Worksheet"/> used range.
         /// </summary>
         /// <returns>Index of row.</returns>
-        private static long GetLastRowInWorksheet()
+        private static int GetLastRowInWorksheet()
         {
             return outputWorksheet.UsedRange.SpecialCells(XlCellType.xlCellTypeLastCell).Row + 1; // .Rows[outputWorksheet.UsedRange.Rows.Count].Row + 1;
         }

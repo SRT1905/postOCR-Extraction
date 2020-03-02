@@ -27,14 +27,14 @@
         public List<ConfigExpression> Expressions { get; } = new List<ConfigExpression>();
 
         /// <summary>
-        /// Gets or sets string value that is used to check similarity between it and values that match <see cref="RegExPattern"/>.
+        /// Gets or sets string value that is used to check similarity between it and values that match <see cref="TextExpression"/>.
         /// </summary>
         public string ExpectedName { get; set; }
 
         /// <summary>
-        /// Gets or sets regular expression pattern.
+        /// Gets or sets identifying expression - whether Regex pattern or Soundex value.
         /// </summary>
-        public string RegExPattern { get; set; }
+        public string TextExpression { get; set; }
 
         /// <summary>
         /// Gets field name.
@@ -59,7 +59,7 @@
         {
             if (input == null)
             {
-                this.RegExPattern = this.Name;
+                this.TextExpression = this.Name;
                 this.ExpectedName = this.Name;
                 return;
             }
@@ -77,7 +77,7 @@
                 splittedValue.RemoveAt(splittedValue.Count - 1);
             }
 
-            this.RegExPattern = string.IsNullOrEmpty(splittedValue[0])
+            this.TextExpression = string.IsNullOrEmpty(splittedValue[0])
                 ? this.Name
                 : splittedValue[0];
             this.ExpectedName = string.IsNullOrEmpty(splittedValue[1])

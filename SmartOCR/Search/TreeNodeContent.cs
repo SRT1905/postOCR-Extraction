@@ -14,7 +14,7 @@
         /// </summary>
         public TreeNodeContent()
         {
-            this.Lines = new List<long>();
+            this.Lines = new List<int>();
         }
 
         /// <summary>
@@ -72,7 +72,7 @@
         /// <summary>
         /// Gets collection of document lines where match was found.
         /// </summary>
-        public List<long> Lines { get; }
+        public List<int> Lines { get; }
 
         /// <summary>
         /// Gets or sets field name.

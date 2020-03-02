@@ -122,12 +122,12 @@
 
         private static TreeNode AddFieldNode(TreeNode rootNode, ConfigField fieldData)
         {
-            var paragraphCollection = new List<long>() { 0 };
+            var paragraphCollection = new List<int>() { 0 };
 
             TreeNodeContent content = new TreeNodeContent()
             {
                 Name = fieldData.Name,
-                RegExPattern = fieldData.RegExPattern,
+                RegExPattern = fieldData.TextExpression,
                 NodeLabel = "Field",
                 ValueType = fieldData.ValueType,
                 CheckValue = fieldData.ExpectedName,
@@ -197,7 +197,7 @@
                     HorizontalParagraph = ((TreeNodeContent)singleParagraphNode.Content).HorizontalParagraph,
                     ValueType = singleParagraphNode.Content.ValueType,
                 };
-                long offsetLine = singleParagraphNode.Content.Lines[0];
+                int offsetLine = singleParagraphNode.Content.Lines[0];
 
                 if (content.ValueType.Contains("Table"))
                 {
