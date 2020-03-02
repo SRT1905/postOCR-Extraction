@@ -7,7 +7,7 @@
     /// <summary>
     /// Describes single search field defined in Excel config file.
     /// </summary>
-    public class ConfigField // TODO: implement Soundex usage
+    public class ConfigField
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigField"/> class.
@@ -49,7 +49,7 @@
         /// <summary>
         /// Gets a value indicating whether field identifier should be searched using <see cref="ParagraphContainer.Soundex"/> instead of <see cref="ParagraphContainer.Text"/>.
         /// </summary>
-        public bool IsSoundex { get; private set; }
+        public bool UseSoundex { get; private set; }
 
         /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
@@ -83,6 +83,7 @@
             this.ExpectedName = string.IsNullOrEmpty(splittedValue[1])
                 ? this.Name
                 : splittedValue[1];
+            this.ValidateSoundexStatus();
         }
 
         /// <summary>
@@ -106,6 +107,16 @@
         public override string ToString()
         {
             return $"Config field: {this.Name}; value type: {this.ValueType}";
+        }
+
+        private void ValidateSoundexStatus()
+        {
+            if (this.TextExpression.StartsWith("soundex"))
+            {
+                var extractor = Utilities.CreateRegexpObject(@"soundex\((.*)\)");
+                this.TextExpression = extractor.Match(this.TextExpression).Groups[1].Value;
+                this.UseSoundex = true;
+            }
         }
     }
 }

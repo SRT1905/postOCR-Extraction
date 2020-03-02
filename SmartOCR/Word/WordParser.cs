@@ -8,7 +8,7 @@
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.
     /// </summary>
-    public class WordParser // TODO : add debug on node processing
+    public class WordParser // TODO: add debug on node processing
     {
         private const int SimilaritySearchThreshold = 5;
 
@@ -75,28 +75,18 @@
             }
         }
 
-        private static List<SimilarityDescription> GetMatchesFromParagraph(string textToCheck, Regex regexObject, string checkValue)
+        private static List<SimilarityDescription> GetMatchesFromParagraph(ParagraphContainer container, TreeNodeContent nodeContent)
         {
-            MatchCollection matches = regexObject.Matches(textToCheck);
+            MatchCollection matches = Utilities.CreateRegexpObject(nodeContent.TextExpression).Matches(container.Text);
             var foundValues = new List<SimilarityDescription>();
             for (int i = 0; i < matches.Count; i++)
             {
-                Match singleMatch = matches[i];
-                if (singleMatch.Groups.Count > 1)
+                int startIndex = matches[i].Groups.Count > 1
+                    ? 1
+                    : 0;
+                for (int groupIndex = startIndex; groupIndex < matches[i].Groups.Count; groupIndex++)
                 {
-                    for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
-                    {
-                        Group groupItem = singleMatch.Groups[groupIndex];
-                        SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
-                        if (description.AreStringsSimilar())
-                        {
-                            foundValues.Add(description);
-                        }
-                    }
-                }
-                else
-                {
-                    SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
+                    SimilarityDescription description = new SimilarityDescription(matches[i].Groups[groupIndex].Value, nodeContent.CheckValue);
                     if (description.AreStringsSimilar())
                     {
                         foundValues.Add(description);
@@ -139,6 +129,21 @@
             }
         }
 
+        private static List<SimilarityDescription> GetSoundexMatchesFromParagraph(ParagraphContainer container, TreeNodeContent nodeContent)
+        {
+            List<SimilarityDescription> matches = new List<SimilarityDescription>();
+            foreach (string soundexWord in container.Soundex.Split(' '))
+            {
+                SimilarityDescription description = new SimilarityDescription(soundexWord, nodeContent.TextExpression);
+                if (description.AreStringsSimilar())
+                {
+                    matches.Add(description);
+                }
+            }
+
+            return matches;
+        }
+
         private void AddOffsetNode(TreeNode node, int searchLevel, int offsetIndex, string foundValue, decimal position, bool addToParent)
         {
             if (node.Content.Lines.Count(item => item == offsetIndex) >= 2)
@@ -150,12 +155,12 @@
             contentBuilder.TryAddLine(offsetIndex);
             contentBuilder.SetHorizontalParagraph(position);
             contentBuilder.SetNodeLabel(node.Content.NodeLabel);
-            contentBuilder.SetRegExPattern(node.Content.RegExPattern);
+            contentBuilder.SetRegExPattern(node.Content.TextExpression);
 
             if (addToParent)
             {
                 contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel);
-                contentBuilder.SetRegExPattern(node.Children[0].Content.RegExPattern);
+                contentBuilder.SetRegExPattern(node.Children[0].Content.TextExpression);
             }
 
             TreeNode childNode = node.AddChild(contentBuilder.Build());
@@ -165,37 +170,38 @@
 
         private void GetDataFromUndefinedNode(TreeNode fieldNode)
         {
-            Regex regexObject = Utilities.CreateRegexpObject(fieldNode.Content.RegExPattern);
-            Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
-
-            var keys = this.lineMapping.Keys.ToList();
-            for (int keyIndex = 0; keyIndex < keys.Count; keyIndex++)
-            {
-                int line = keys[keyIndex];
-                for (int containerIndex = 0; containerIndex < this.lineMapping[line].Count; containerIndex++)
-                {
-                    ParagraphContainer container = this.lineMapping[line][containerIndex];
-                    if (regexObject.IsMatch(container.Text))
-                    {
-                        var matchedDataCollection = GetMatchesFromParagraph(container.Text, regexObject, fieldNode.Content.CheckValue);
-
-                        for (int i = 0; i < matchedDataCollection.Count; i++)
-                        {
-                            collectedData.Add($"{line}|{containerIndex}|{container.HorizontalLocation}|{i}", matchedDataCollection[i]);
-                        }
-                    }
-                }
-            }
-
+            Dictionary<string, SimilarityDescription> collectedData = this.ProcessUndefinedNode(fieldNode);
             if (collectedData.Count != 0)
             {
                 this.UpdateFieldNode(collectedData, fieldNode);
             }
         }
 
+        private Dictionary<string, SimilarityDescription> ProcessUndefinedNode(TreeNode fieldNode)
+        {
+            Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
+
+            foreach (var item in this.lineMapping)
+            {
+                for (int containerIndex = 0; containerIndex < item.Value.Count; containerIndex++)
+                {
+                    ParagraphContainer container = item.Value[containerIndex];
+                    List<SimilarityDescription> matches = fieldNode.Content.UseSoundex
+                        ? GetSoundexMatchesFromParagraph(container, fieldNode.Content)
+                        : GetMatchesFromParagraph(container, fieldNode.Content);
+                    for (int matchIndex = 0; matchIndex < matches.Count; matchIndex++)
+                    {
+                        collectedData.Add($"{item.Key}|{containerIndex}|{container.HorizontalLocation}|{matchIndex}", matches[matchIndex]);
+                    }
+                }
+            }
+
+            return collectedData;
+        }
+
         private Dictionary<string, string> GetOffsetLines(int lineNumber, TreeNodeContent content)
         {
-            Regex regexObject = Utilities.CreateRegexpObject(content.RegExPattern);
+            Regex regexObject = Utilities.CreateRegexpObject(content.TextExpression);
             var foundValuesCollection = new Dictionary<string, string>();
             List<int> keys = this.lineMapping.Keys.ToList();
             int lineIndex = keys.IndexOf(lineNumber);
@@ -250,30 +256,40 @@
             for (int fieldIndex = 0; fieldIndex < this.treeStructure.Children.Count; fieldIndex++)
             {
                 TreeNode fieldNode = this.treeStructure.Children[fieldIndex];
-                TreeNodeContent nodeContent = fieldNode.Content;
-                if (!nodeContent.ValueType.Contains("Table"))
+                if (!fieldNode.Content.ValueType.Contains("Table"))
                 {
-                    if (nodeContent.Lines[0] == 0)
-                    {
-                        Utilities.Debug($"Initializing field node '{fieldNode.Content.Name}' data.", 2);
-                        this.GetDataFromUndefinedNode(fieldNode);
-                    }
-
-                    if (nodeContent.Lines[0] != 0)
-                    {
-                        Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
-                        for (int i = 0; i < fieldNode.Children.Count; i++)
-                        {
-                            TreeNode lineNode = fieldNode.Children[i];
-                            this.ProcessLineNode(lineNode);
-                        }
-                    }
+                    this.InitializeLineNodeAndGetData(fieldNode);
                 }
                 else
                 {
-                    Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
-                    TableNodeProcessor processor = new TableNodeProcessor(this.tables, fieldNode);
-                    processor.Process();
+                    this.InitializeTableNodeAndGetData(fieldNode);
+                }
+            }
+        }
+
+        private void InitializeTableNodeAndGetData(TreeNode fieldNode)
+        {
+            Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
+            TableNodeProcessor processor = new TableNodeProcessor(this.tables, fieldNode);
+            processor.Process();
+        }
+
+        private void InitializeLineNodeAndGetData(TreeNode fieldNode)
+        {
+            TreeNodeContent nodeContent = fieldNode.Content;
+            if (nodeContent.Lines[0] == 0)
+            {
+                Utilities.Debug($"Initializing field node '{fieldNode.Content.Name}' data.", 2);
+                this.GetDataFromUndefinedNode(fieldNode);
+            }
+
+            if (nodeContent.Lines[0] != 0)
+            {
+                Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
+                for (int i = 0; i < fieldNode.Children.Count; i++)
+                {
+                    TreeNode lineNode = fieldNode.Children[i];
+                    this.ProcessLineNode(lineNode);
                 }
             }
         }
@@ -329,50 +345,67 @@
                 if (!this.lineMapping.ContainsKey(lineNumber))
                 {
                     this.OffsetSearch(lineNumber, node, searchLevel, true);
+                    return;
                 }
-                else
+
+                List<ParagraphContainer> paragraphCollection = this.lineMapping[lineNumber];
+                this.DefineSearchIndexesWhenProcessingValue(nodeContent, paragraphCollection, out int startIndex, out int finishIndex);
+
+                for (int paragraphIndex = startIndex; paragraphIndex <= finishIndex; paragraphIndex++)
                 {
-                    List<ParagraphContainer> paragraphCollection = this.lineMapping[lineNumber];
-                    int startIndex = 0;
-                    int finishIndex = paragraphCollection.Count - 1;
-                    switch (nodeContent.SecondSearchParameter)
+                    if (this.ProcessValueInSingleParagraph(paragraphCollection[paragraphIndex].Text, node))
                     {
-                        case 1:
-                            startIndex = GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: true);
-                            finishIndex = paragraphCollection.Count - 1;
-                            break;
-                        case -1:
-                            startIndex = 0;
-                            finishIndex = GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: false);
-                            break;
-                        default:
-                            break;
+                        return;
                     }
-
-                    for (int paragraphIndex = startIndex; paragraphIndex <= finishIndex; paragraphIndex++)
-                    {
-                        string paragraphText = paragraphCollection[paragraphIndex].Text;
-                        Regex regexObject = Utilities.CreateRegexpObject(nodeContent.RegExPattern);
-
-                        MatchProcessor matchProcessor = new MatchProcessor(paragraphText, regexObject, nodeContent.ValueType);
-                        if (!string.IsNullOrEmpty(matchProcessor.Result))
-                        {
-                            nodeContent.FoundValue = matchProcessor.Result;
-                            nodeContent.Status = true;
-                            PropagateStatusInTree(true, node);
-                            return;
-                        }
-                    }
-
-                    this.OffsetSearch(lineNumber, node, searchLevel, true);
                 }
+
+                this.OffsetSearch(lineNumber, node, searchLevel, addToParent: true);
             }
+        }
+
+        private void DefineSearchIndexesWhenProcessingValue(
+            TreeNodeContent nodeContent,
+            List<ParagraphContainer> paragraphCollection,
+            out int startIndex,
+            out int finishIndex)
+        {
+            startIndex = 0;
+            finishIndex = paragraphCollection.Count - 1;
+            switch (nodeContent.SecondSearchParameter)
+            {
+                case 1:
+                    startIndex = GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: true);
+                    break;
+                case -1:
+                    finishIndex = GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: false);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private bool ProcessValueInSingleParagraph(string paragraphText, TreeNode node)
+        {
+            TreeNodeContent nodeContent = node.Content;
+
+            MatchProcessor matchProcessor = new MatchProcessor(
+                paragraphText,
+                Utilities.CreateRegexpObject(nodeContent.TextExpression),
+                nodeContent.ValueType);
+            if (!string.IsNullOrEmpty(matchProcessor.Result))
+            {
+                nodeContent.FoundValue = matchProcessor.Result;
+                nodeContent.Status = true;
+                PropagateStatusInTree(true, node);
+            }
+
+            return nodeContent.Status;
         }
 
         private bool TryMatchLineData(TreeNodeContent lineNodeContent, int lineNumber)
         {
             decimal paragraphHorizontalLocation = lineNodeContent.HorizontalParagraph;
-            Regex regexObject = Utilities.CreateRegexpObject(lineNodeContent.RegExPattern);
+            Regex regexObject = Utilities.CreateRegexpObject(lineNodeContent.TextExpression);
             var lineChecker = new LineContentChecker(this.lineMapping[lineNumber], paragraphHorizontalLocation, lineNodeContent.SecondSearchParameter);
             bool checkStatus = lineChecker.CheckLineContents(regexObject, lineNodeContent.CheckValue);
             lineNodeContent.HorizontalParagraph = checkStatus

@@ -63,7 +63,7 @@
 
         public void SetRegExPattern(string value)
         {
-            this.nodeContent.RegExPattern = value;
+            this.nodeContent.TextExpression = value;
         }
 
         public void SetSecondSearchParameter(int value)
@@ -90,6 +90,11 @@
             }
 
             return false;
+        }
+
+        public void SetSoundexUsageStatus(bool value)
+        {
+            this.nodeContent.UseSoundex = value;
         }
     }
 }

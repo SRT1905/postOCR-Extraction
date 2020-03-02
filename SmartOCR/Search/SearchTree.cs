@@ -127,10 +127,11 @@
             TreeNodeContent content = new TreeNodeContent()
             {
                 Name = fieldData.Name,
-                RegExPattern = fieldData.TextExpression,
+                TextExpression = fieldData.TextExpression,
                 NodeLabel = "Field",
                 ValueType = fieldData.ValueType,
                 CheckValue = fieldData.ExpectedName,
+                UseSoundex = fieldData.UseSoundex,
             };
             content.Lines.Add(paragraphCollection[0]);
 
@@ -158,9 +159,10 @@
             {
                 Name = node.Content.Name,
                 NodeLabel = $"Search {initialValueIndex}",
-                RegExPattern = singleValueDefinition.RegExPattern,
+                TextExpression = singleValueDefinition.RegExPattern,
                 HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
                 ValueType = node.Content.ValueType,
+                UseSoundex = node.Content.UseSoundex,
             };
             if (content.ValueType.Contains("Table"))
             {
@@ -193,9 +195,10 @@
                 {
                     Name = fieldName,
                     NodeLabel = $"Search {valueIndex}",
-                    RegExPattern = singleValueDefinition.RegExPattern,
+                    TextExpression = singleValueDefinition.RegExPattern,
                     HorizontalParagraph = ((TreeNodeContent)singleParagraphNode.Content).HorizontalParagraph,
                     ValueType = singleParagraphNode.Content.ValueType,
+                    UseSoundex = node.Content.UseSoundex,
                 };
                 int offsetLine = singleParagraphNode.Content.Lines[0];
 
@@ -277,12 +280,7 @@
                 if (node.Content.Name == fieldName)
                 {
                     this.GetDataFromNode(node, foundData);
-                    if (foundData[true].Count != 0)
-                    {
-                        return foundData[true];
-                    }
-
-                    return foundData[false];
+                    return foundData[foundData[true].Count != 0];
                 }
             }
 

@@ -33,7 +33,7 @@
             this.HorizontalParagraph = content.HorizontalParagraph;
             this.Name = content.Name;
             this.NodeLabel = content.NodeLabel;
-            this.RegExPattern = content.RegExPattern;
+            this.TextExpression = content.TextExpression;
             this.Status = content.Status;
             this.CheckValue = content.CheckValue;
             this.FoundValue = content.FoundValue;
@@ -87,7 +87,7 @@
         /// <summary>
         /// Gets or sets regular expression pattern that is used to match text.
         /// </summary>
-        public string RegExPattern { get; set; }
+        public string TextExpression { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether match has been found.
@@ -98,5 +98,10 @@
         /// Gets or sets value type of searched value.
         /// </summary>
         public string ValueType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether <see cref="TextExpression"/> is referred to as Regex pattern or Soundex expression.
+        /// </summary>
+        public bool UseSoundex { get; set; }
     }
 }

@@ -102,7 +102,7 @@
 
         private bool TryGetDataFromTable(WordTable table)
         {
-            return TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.RegExPattern), this.tableNode.Content.CheckValue)
+            return TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue)
                 ? this.ProcessNodeData(table)
                 : false;
         }
@@ -111,7 +111,7 @@
         {
             TreeNode childNode = this.GetTerminalNode();
             string itemByExpressionPosition = GetCellByNodeContent(table, childNode);
-            Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.RegExPattern);
+            Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.TextExpression);
             return regexObject.IsMatch(itemByExpressionPosition)
                 ? ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject)
                 : false;
