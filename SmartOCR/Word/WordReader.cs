@@ -26,6 +26,8 @@
         /// </summary>
         private readonly Document document;
         private WordParagraphReader paragraphReader;
+        private WordTextFrameReader frameReader;
+        private List<WordTable> tables = new List<WordTable>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordReader"/> class.
@@ -34,13 +36,23 @@
         public WordReader(Document document)
         {
             this.document = document;
-            this.TableCollection = this.GetTables();
         }
 
         /// <summary>
         /// Gets collection of processed Word tables.
         /// </summary>
-        public List<WordTable> TableCollection { get; private set; }
+        public List<WordTable> TableCollection
+        {
+            get
+            {
+                return this.tables;
+            }
+
+            private set
+            {
+                this.tables = value;
+            }
+        }
 
         /// <summary>
         /// Gets document contents grouped in separate lines.
@@ -66,9 +78,9 @@
             Utilities.Debug($"Reading document contents.", 1);
             int numberOfPages = this.document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
 
-            for (int i = 1; i <= numberOfPages; i++)
+            for (int pageIndex = 1; pageIndex <= numberOfPages; pageIndex++)
             {
-                this.GetDataFromPage(i);
+                this.GetDataFromPage(pageIndex);
             }
 
             Utilities.Debug($"Total of {this.Mapping.Values.Sum(item => item.Count)} paragraphs were distributed into {this.Mapping.Count} lines.", 1);
@@ -88,46 +100,31 @@
 
         private static void AddDataFromCollectedParagraphs(ParagraphMapping documentContent, LineMapping newDocumentContent, int index)
         {
-            decimal currentLocation = documentContent.Keys.ElementAt(index);
-            decimal previousLocation = newDocumentContent[newDocumentContent.Count][0].VerticalLocation;
-
-            AddDataFromSingleParagraph(documentContent, newDocumentContent, currentLocation, previousLocation);
+            AddDataFromSingleParagraph(
+                documentContent,
+                newDocumentContent,
+                documentContent.Keys.ElementAt(index),
+                newDocumentContent[newDocumentContent.Count][0].VerticalLocation);
         }
 
-        /// <summary>
-        /// Gets data from TextFrame objects and adds it to document contents container.
-        /// </summary>
-        /// <param name="documentContent">Representation of read document contents.</param>
-        /// <param name="frameCollection">Collection of TextFrame objects.</param>
-        /// <returns>Representation of document contents that is extended by TextFrame objects.</returns>
-        private static ParagraphMapping AddDataFromFrames(ParagraphMapping documentContent, List<TextFrame> frameCollection)
+        private static ParagraphMapping MergeParagraphs(ParagraphMapping defaultParagraphMapping, ParagraphMapping frameParagraphMapping)
         {
-            for (int i = 0; i < frameCollection.Count; i++)
+            foreach (var item in frameParagraphMapping)
             {
-                documentContent = AddDataFromSingleFrame(documentContent, frameCollection[i]);
+                foreach (ParagraphContainer paragraph in item.Value)
+                {
+                    UpdateContentsWithParagraphs(defaultParagraphMapping, paragraph);
+                }
             }
 
-            return documentContent;
+            return defaultParagraphMapping;
         }
 
-        /// <summary>
-        /// Gets data from TextFrame object and adds it to document contents representation.
-        /// </summary>
-        /// <param name="documentContent">Representation of read document contents.</param>
-        /// <param name="textFrame">TextFrame object containing text.</param>
-        /// <returns>Representation of read document contents, extended by TextFrame contents.</returns>
-        private static ParagraphMapping AddDataFromSingleFrame(ParagraphMapping documentContent, TextFrame textFrame)
-        {
-            List<ParagraphContainer> paragraphContainers = GetParagraphsFromTextFrame(textFrame);
-            for (int i = 0; i < paragraphContainers.Count; i++)
-            {
-                UpdateContentsWithParagraphs(documentContent, paragraphContainers[i]);
-            }
-
-            return documentContent;
-        }
-
-        private static void AddDataFromSingleParagraph(ParagraphMapping documentContent, LineMapping newDocumentContent, decimal currentLocation, decimal previousLocation)
+        private static void AddDataFromSingleParagraph(
+            ParagraphMapping documentContent,
+            LineMapping newDocumentContent,
+            decimal currentLocation,
+            decimal previousLocation)
         {
             if (IsCurrentLocationWithinPreviousOne(currentLocation, previousLocation))
             {
@@ -140,40 +137,20 @@
         }
 
         /// <summary>
-        /// Extracts paragraphs from <see cref="TextFrame"/> object.
-        /// </summary>
-        /// <param name="textFrame">A <see cref="TextFrame"/> instance that contains text.</param>
-        /// <returns>A collection of <see cref="ParagraphContainer"/> objects.</returns>
-        private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame textFrame)
-        {
-            var paragraphContainers = new List<ParagraphContainer>();
-            for (int i = 1; i <= textFrame.TextRange.Paragraphs.Count; i++)
-            {
-                if (textFrame.TextRange.Paragraphs[i].Range.Text.Length > MinimalTextLength)
-                {
-                    paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[i].Range));
-                }
-            }
-
-            return paragraphContainers;
-        }
-
-        /// <summary>
         /// Groups document contents, arranged by vertical location on page, in separate lines.
         /// </summary>
         /// <param name="documentContent">Representation of read document contents.</param>
         /// <returns>An instance of <see cref="SortedDictionary{TKey, TValue}"/> where paragraphs are mapped to line.</returns>
         private static LineMapping GroupParagraphsByLine(ParagraphMapping documentContent)
         {
+            LineMapping newDocumentContent = new LineMapping();
+
             if (documentContent.Count == 0)
             {
-                return new LineMapping();
+                return newDocumentContent;
             }
 
-            var newDocumentContent = new LineMapping()
-            {
-                { 1, documentContent.Values.First() },
-            };
+            newDocumentContent.Add(1, documentContent.Values.First());
 
             for (int i = 1; i < documentContent.Count; i++)
             {
@@ -189,7 +166,8 @@
         /// <param name="paragraphCollection">Collection of ParagraphContainer objects.</param>
         /// <param name="textRangeContainer">ParagraphContainer instance to add.</param>
         /// <returns>Updated collection of ParagraphContainer objects.</returns>
-        private static List<ParagraphContainer> InsertRangeInCollection(List<ParagraphContainer> paragraphCollection, ParagraphContainer textRangeContainer)
+        private static List<ParagraphContainer> InsertRangeInCollection(
+            List<ParagraphContainer> paragraphCollection, ParagraphContainer textRangeContainer)
         {
             paragraphCollection.Add(textRangeContainer);
             paragraphCollection.Sort();
@@ -198,7 +176,8 @@
 
         private static bool IsCurrentLocationWithinPreviousOne(decimal currentLocation, decimal previousLocation)
         {
-            return previousLocation - VerticalPositionOffset <= currentLocation && currentLocation <= previousLocation + VerticalPositionOffset;
+            return previousLocation - VerticalPositionOffset <= currentLocation &&
+                   currentLocation <= previousLocation + VerticalPositionOffset;
         }
 
         private static LineMapping ShiftContentKeys(LineMapping pageContent, List<int> keys)
@@ -223,15 +202,8 @@
             return newDocumentContent;
         }
 
-        private static void TryAddFrame(List<TextFrame> frames, Shape shape)
-        {
-            if (shape.TextFrame != null && shape.TextFrame.HasText != 0 && shape.TextFrame.TextRange.Text.Length > MinimalTextLength)
-            {
-                frames.Add(shape.TextFrame);
-            }
-        }
-
-        private static void TryAddVerticalLocation(ParagraphMapping documentContent, ParagraphContainer container)
+        private static void TryAddVerticalLocation(
+            ParagraphMapping documentContent, ParagraphContainer container)
         {
             if (!documentContent.ContainsKey(container.VerticalLocation))
             {
@@ -239,50 +211,22 @@
             }
         }
 
-        private static void UpdateContentsWithParagraphs(ParagraphMapping documentContent, ParagraphContainer container)
+        private static void UpdateContentsWithParagraphs(
+            ParagraphMapping documentContent, ParagraphContainer container)
         {
-            if (container.Text.Length >= MinimalTextLength)
+            if (container.Text.Length < MinimalTextLength)
             {
-                TryAddVerticalLocation(documentContent, container);
-                documentContent[container.VerticalLocation] = InsertRangeInCollection(documentContent[container.VerticalLocation], container);
+                return;
             }
+
+            TryAddVerticalLocation(documentContent, container);
+            documentContent[container.VerticalLocation] = InsertRangeInCollection(documentContent[container.VerticalLocation], container);
         }
 
         private void GetDataFromPage(int i)
         {
             var pageContent = this.ReadSinglePage(i);
             this.UpdateLineMapping(pageContent);
-        }
-
-        private List<WordTable> GetTables()
-        {
-            List<WordTable> tables = new List<WordTable>(this.document.Tables.Count);
-
-            for (int i = 1; i <= this.document.Tables.Count; i++)
-            {
-                tables.Add(new WordTable(this.document.Tables[i]));
-            }
-
-            return tables;
-        }
-
-        /// <summary>
-        /// Gets TextFrame objects, which contain text, on specific document page.
-        /// </summary>
-        /// <param name="pageIndex">Index of page to read.</param>
-        /// <returns>Collection of valid TextFrame objects.</returns>
-        private List<TextFrame> GetValidTextFrames(int pageIndex)
-        {
-            var frames = new List<TextFrame>();
-            for (int i = 1; i <= this.document.Shapes.Count; i++)
-            {
-                if (this.document.Shapes[i].Anchor.Information[WdInformation.wdActiveEndPageNumber] == pageIndex)
-                {
-                    TryAddFrame(frames, this.document.Shapes[i]);
-                }
-            }
-
-            return frames;
         }
 
         /// <summary>
@@ -293,34 +237,34 @@
         private LineMapping ReadSinglePage(int pageIndex)
         {
             Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
-            this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
-            ParagraphMapping documentContent = this.paragraphReader.GetValidParagraphs(pageIndex);
-            documentContent = this.UpdateContentsWithFrameContents(pageIndex, documentContent);
+            this.InitializeReaders(pageIndex);
+            ParagraphMapping documentContent = this.GetDataFromReaders(pageIndex);
+            this.UpdateTableCollection();
             Utilities.Debug($"Distributing data from page {pageIndex}.", 2);
             return documentContent.Count == 0
                 ? new LineMapping()
                 : GroupParagraphsByLine(documentContent);
         }
 
-        private void TryAddTablesFromFrames(List<TextFrame> frames)
+        private void UpdateTableCollection()
         {
-            for (int frameIndex = 0; frameIndex < frames.Count; frameIndex++)
+            foreach (ITableReader item in new ITableReader[2] { this.paragraphReader, this.frameReader })
             {
-                TextFrame item = frames[frameIndex];
-                for (int i = 1; i <= item.TextRange.Tables.Count; i++)
-                {
-                    this.TableCollection.Add(new WordTable(item.TextRange.Tables[i]));
-                }
+                this.TableCollection.AddRange(item.GetWordTables());
             }
         }
 
-        private ParagraphMapping UpdateContentsWithFrameContents(int pageIndex, ParagraphMapping documentContent)
+        private ParagraphMapping GetDataFromReaders(int pageIndex)
         {
-            List<TextFrame> frameCollection = this.GetValidTextFrames(pageIndex);
-            this.TryAddTablesFromFrames(frameCollection);
-            Utilities.Debug($"Getting text in shapes from page {pageIndex}.", 3);
-            documentContent = AddDataFromFrames(documentContent, frameCollection);
-            return documentContent;
+            return MergeParagraphs(
+                this.paragraphReader.GetParagraphMapping(pageIndex),
+                this.frameReader.GetParagraphMapping());
+        }
+
+        private void InitializeReaders(int pageIndex)
+        {
+            this.paragraphReader = this.paragraphReader ?? new WordParagraphReader(this.document, pageIndex);
+            this.frameReader = this.frameReader ?? new WordTextFrameReader(this.document, pageIndex);
         }
 
         /// <summary>

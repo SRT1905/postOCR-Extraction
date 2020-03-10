@@ -96,6 +96,7 @@
     <Compile Include="Utilities\SimilarityDescription.cs" />
     <Compile Include="Search\TreeNode.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Word\ITableReader.cs" />
     <Compile Include="Word\LineMapping.cs" />
     <Compile Include="Word\ParagraphContainer.cs" />
     <Compile Include="Word\LineContentChecker.cs" />
@@ -115,6 +116,7 @@
       <DependentUpon>ConfigContainer.resx</DependentUpon>
     </Compile>
     <Compile Include="Word\WordTable.cs" />
+    <Compile Include="Word\WordTextFrameReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ConfigContainer.resx">

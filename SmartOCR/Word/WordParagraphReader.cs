@@ -7,7 +7,7 @@
     /// <summary>
     /// Used to collect data from Word paragraphs.
     /// </summary>
-    internal class WordParagraphReader
+    internal class WordParagraphReader : ITableReader
     {
         /// <summary>
         /// Defines lower bound of document text element length.
@@ -35,7 +35,7 @@
         /// Returns mapping between paragraph horizontal location and collection of paragraphs at location.
         /// </summary>
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
-        public ParagraphMapping GetValidParagraphs()
+        public ParagraphMapping GetParagraphMapping()
         {
             Utilities.Debug($"Getting paragraphs from page {this.pageIndex}.", 3);
             return this.paragraphs ?? this.ReadDocument();
@@ -46,11 +46,28 @@
         /// </summary>
         /// <param name="newPageIndex">New page index.</param>
         /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
-        public ParagraphMapping GetValidParagraphs(int newPageIndex)
+        public ParagraphMapping GetParagraphMapping(int newPageIndex)
         {
             this.pageIndex = newPageIndex;
             this.ResetParagraphIndexes();
-            return this.GetValidParagraphs();
+            return this.GetParagraphMapping();
+        }
+
+        /// <inheritdoc/>
+        public List<WordTable> GetWordTables()
+        {
+            List<WordTable> tables = new List<WordTable>(this.document.Tables.Count);
+
+            for (int i = 1; i <= this.document.Tables.Count; i++)
+            {
+                Table table = this.document.Tables[i];
+                if (table.Range.Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
+                {
+                    tables.Add(new WordTable(table));
+                }
+            }
+
+            return tables;
         }
 
         private static void TryGetDataFromParagraph(List<ParagraphContainer> paragraphCollection, Range singleRange)
