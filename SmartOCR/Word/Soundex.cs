@@ -6,7 +6,7 @@
     /// <summary>
     /// Used to encode strings respresentation so that they can be matched despite minor differences in spelling.
     /// </summary>
-    public class Soundex
+    public struct Soundex
     {
         private static readonly Dictionary<char, char> CharIndexes = new Dictionary<char, char>()
         {
@@ -25,7 +25,7 @@
         };
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Soundex"/> class.
+        /// Initializes a new instance of the <see cref="Soundex"/> struct.
         /// </summary>
         /// <param name="sourceValue">Original decoded string value.</param>
         public Soundex(string sourceValue)
