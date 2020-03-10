@@ -51,28 +51,27 @@
             }
 
             List<ConfigExpression> valuesCollection = fieldData.Expressions;
-            if (node.Children.Count == 0 && valuesCollection.Count < initialValueIndex + 1)
+            if (valuesCollection.Count < initialValueIndex + 1)
             {
+                if (node.Children.Count != 0)
+                {
+                    return;
+                }
+
                 AddSearchValuesToChildlessNode(node, initialValueIndex - 1, valuesCollection);
             }
 
-            if (valuesCollection.Count < initialValueIndex + 1)
-            {
-                return;
-            }
-
-            string fieldName = nodeContent.Name;
             if (nodeContent.NodeLabel == "Line" || nodeContent.NodeLabel == "Field")
             {
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     TreeNode child = node.Children[i];
-                    AddSearchValuesToSingleNode(fieldName, child, valuesCollection, initialValueIndex);
+                    AddSearchValuesToSingleNode(nodeContent.Name, child, valuesCollection, initialValueIndex);
                 }
             }
             else
             {
-                AddSearchValuesToSingleNode(fieldName, node, valuesCollection, initialValueIndex);
+                AddSearchValuesToSingleNode(nodeContent.Name, node, valuesCollection, initialValueIndex);
             }
         }
 
@@ -144,8 +143,7 @@
                     NodeLabel = "Line",
                 };
                 childContent.Lines.Add(paragraphCollection[i]);
-                var childNode = new TreeNode(childContent);
-                node.AddChild(childNode);
+                node.AddChild(new TreeNode(childContent));
             }
 
             rootNode.AddChild(node);
@@ -158,31 +156,18 @@
             TreeNodeContent content = new TreeNodeContent()
             {
                 Name = node.Content.Name,
-                NodeLabel = $"Search {initialValueIndex}",
+                NodeLabel = initialValueIndex + 1 == valuesCollection.Count
+                    ? "Terminal"
+                    : $"Search {initialValueIndex}",
                 TextExpression = singleValueDefinition.RegExPattern,
-                HorizontalParagraph = ((TreeNodeContent)node.Content).HorizontalParagraph,
+                HorizontalParagraph = node.Content.HorizontalParagraph,
                 ValueType = node.Content.ValueType,
                 UseSoundex = node.Content.UseSoundex,
             };
-            if (content.ValueType.Contains("Table"))
-            {
-                content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
-                content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
-            }
-            else
-            {
-                content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
-                content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
-            }
-
-            if (initialValueIndex + 1 == valuesCollection.Count)
-            {
-                content.NodeLabel = "Terminal";
-            }
+            DefineNumericSearchParameters(singleValueDefinition, content);
 
             content.Lines.Add(node.Content.Lines[0]);
-            TreeNode newNode = new TreeNode(content);
-            node.AddChild(newNode);
+            node.AddChild(new TreeNode(content));
         }
 
         private static void AddSearchValuesToSingleNode(string fieldName, TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
@@ -194,34 +179,33 @@
                 TreeNodeContent content = new TreeNodeContent()
                 {
                     Name = fieldName,
-                    NodeLabel = $"Search {valueIndex}",
+                    NodeLabel = valueIndex + 1 == valuesCollection.Count
+                        ? "Terminal"
+                        : $"Search {valueIndex}",
                     TextExpression = singleValueDefinition.RegExPattern,
-                    HorizontalParagraph = ((TreeNodeContent)singleParagraphNode.Content).HorizontalParagraph,
+                    HorizontalParagraph = singleParagraphNode.Content.HorizontalParagraph,
                     ValueType = singleParagraphNode.Content.ValueType,
-                    UseSoundex = node.Content.UseSoundex,
+                    UseSoundex = singleParagraphNode.Content.UseSoundex,
                 };
-                int offsetLine = singleParagraphNode.Content.Lines[0];
 
-                if (content.ValueType.Contains("Table"))
-                {
-                    content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
-                    content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
-                }
-                else
-                {
-                    content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
-                    content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
-                }
+                DefineNumericSearchParameters(singleValueDefinition, content);
 
-                if (valueIndex + 1 == valuesCollection.Count)
-                {
-                    content.NodeLabel = "Terminal";
-                }
+                content.Lines.Add(singleParagraphNode.Content.Lines[0]);
+                singleParagraphNode = singleParagraphNode.AddChild(new TreeNode(content));
+            }
+        }
 
-                content.Lines.Add(offsetLine);
-
-                var newNode = new TreeNode(content);
-                singleParagraphNode = singleParagraphNode.AddChild(newNode);
+        private static void DefineNumericSearchParameters(ConfigExpression singleValueDefinition, TreeNodeContent content)
+        {
+            if (content.ValueType.Contains("Table"))
+            {
+                content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
+                content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
+            }
+            else
+            {
+                content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
+                content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
             }
         }
 
