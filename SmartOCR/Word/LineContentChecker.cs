@@ -12,6 +12,7 @@
     {
         private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
         private readonly int searchStatus;
+        private readonly bool useSoundex;
         private int finishIndex;
         private int startIndex = 0;
 
@@ -20,10 +21,12 @@
         /// Instance has collection of paragraphs to test.
         /// </summary>
         /// <param name="paragraphs">Collection of paragraphs.</param>
-        public LineContentChecker(List<ParagraphContainer> paragraphs)
+        /// <param name="useSoundex">Indicates whether <see cref="ParagraphContainer.Soundex"/> property should be used instead of <see cref="ParagraphContainer.Text"/>.</param>
+        public LineContentChecker(List<ParagraphContainer> paragraphs, bool useSoundex)
         {
             this.paragraphs = paragraphs ?? throw new ArgumentNullException(nameof(paragraphs));
             this.finishIndex = paragraphs.Count - 1;
+            this.useSoundex = useSoundex;
         }
 
         /// <summary>
@@ -32,11 +35,12 @@
         /// Passed location and search status define selection of paragraphs.
         /// </summary>
         /// <param name="paragraphs">Collection of paragraphs.</param>
+        /// <param name="useSoundex">Indicates whether <see cref="ParagraphContainer.Soundex"/> property should be used instead of <see cref="ParagraphContainer.Text"/>.</param>
         /// <param name="paragraphLocation">Location of margin paragraph.</param>
         /// <param name="searchStatus">Indicates whether test is performed on all paragraphs or by some margin. Must be in range [-1; 1].</param>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="searchStatus"/> value is provided.</exception>
-        public LineContentChecker(List<ParagraphContainer> paragraphs, decimal paragraphLocation, int searchStatus)
-            : this(paragraphs)
+        public LineContentChecker(List<ParagraphContainer> paragraphs, bool useSoundex, decimal paragraphLocation, int searchStatus)
+            : this(paragraphs, useSoundex)
         {
             ValidateSearchStatus(searchStatus);
 
@@ -65,16 +69,21 @@
         {
             for (int location = this.startIndex; location <= this.finishIndex; location++)
             {
-                if (regExObject.IsMatch(this.paragraphs[location].Text))
+                string paragraphContent = this.useSoundex
+                    ? this.paragraphs[location].Soundex
+                    : this.paragraphs[location].Text;
+                if (regExObject.IsMatch(paragraphContent))
                 {
                     if (string.IsNullOrEmpty(checkValue))
                     {
-                        return this.ProcessMatchWithoutCheck(regExObject, location, this.paragraphs[location].Text);
+                        return this.ProcessMatchWithoutCheck(regExObject, location, paragraphContent);
                     }
-
-                    if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
+                    else
                     {
-                        return true;
+                        if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -193,22 +202,18 @@
                 location = ~location;
             }
 
-            if (returnNextLargest)
-            {
-                if (location == this.paragraphs.Count)
-                {
-                    return location--;
-                }
-
-                return location;
-            }
-
-            return location--;
+            return returnNextLargest
+                ? location == this.paragraphs.Count
+                    ? --location
+                    : location
+                : location--;
         }
 
         private bool ProcessMatchWithCheck(Regex regExObject, int location, string checkValue)
         {
-            var foundMatches = GetMatchesFromParagraph(regExObject, this.paragraphs[location].Text, checkValue);
+            var foundMatches = this.useSoundex
+                ? GetMatchesFromParagraph(regExObject, this.paragraphs[location].Soundex, checkValue)
+                : GetMatchesFromParagraph(regExObject, this.paragraphs[location].Text, checkValue);
             if (foundMatches.Count == 0)
             {
                 return false;

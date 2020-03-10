@@ -42,6 +42,7 @@
             this.FirstSearchParameter = content.FirstSearchParameter;
             this.Lines.Clear();
             this.Lines.AddRange(content.Lines);
+            this.UseSoundex = content.UseSoundex;
         }
 
         /// <summary>

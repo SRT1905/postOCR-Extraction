@@ -114,7 +114,8 @@
             if (this.TextExpression.StartsWith("soundex"))
             {
                 var extractor = Utilities.CreateRegexpObject(@"soundex\((.*)\)");
-                this.TextExpression = extractor.Match(this.TextExpression).Groups[1].Value;
+                this.TextExpression = Soundex.EncodeValue(extractor.Match(this.TextExpression).Groups[1].Value);
+                this.ExpectedName = Soundex.EncodeValue(this.ExpectedName);
                 this.UseSoundex = true;
             }
         }

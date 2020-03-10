@@ -69,6 +69,8 @@
             {
                 content.Lines.Add(line);
                 var builder = new TreeNodeContentBuilder(content);
+                builder.ResetLines();
+                builder.TryAddLine(line);
                 builder.SetNodeLabel("Line");
                 builder.SetHorizontalParagraph(horizontalLocation);
                 fieldNode.AddChild(builder.Build());
@@ -132,9 +134,9 @@
         private static List<SimilarityDescription> GetSoundexMatchesFromParagraph(ParagraphContainer container, TreeNodeContent nodeContent)
         {
             List<SimilarityDescription> matches = new List<SimilarityDescription>();
-            foreach (string soundexWord in container.Soundex.Split(' '))
+            foreach (Match item in Utilities.CreateRegexpObject(nodeContent.TextExpression).Matches(container.Soundex))
             {
-                SimilarityDescription description = new SimilarityDescription(soundexWord, nodeContent.TextExpression);
+                SimilarityDescription description = new SimilarityDescription(item.Value, nodeContent.TextExpression);
                 if (description.AreStringsSimilar())
                 {
                     matches.Add(description);
@@ -213,7 +215,7 @@
                     if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
                     {
                         int line = keys[offsetIndex];
-                        var lineChecker = new LineContentChecker(this.lineMapping[line]);
+                        var lineChecker = new LineContentChecker(this.lineMapping[line], content.UseSoundex);
                         if (lineChecker.CheckLineContents(regexObject, content.CheckValue))
                         {
                             foundValuesCollection.Add(
@@ -406,7 +408,8 @@
         {
             decimal paragraphHorizontalLocation = lineNodeContent.HorizontalParagraph;
             Regex regexObject = Utilities.CreateRegexpObject(lineNodeContent.TextExpression);
-            var lineChecker = new LineContentChecker(this.lineMapping[lineNumber], paragraphHorizontalLocation, lineNodeContent.SecondSearchParameter);
+            var lineChecker = new LineContentChecker(
+                this.lineMapping[lineNumber], lineNodeContent.UseSoundex, paragraphHorizontalLocation, lineNodeContent.SecondSearchParameter);
             bool checkStatus = lineChecker.CheckLineContents(regexObject, lineNodeContent.CheckValue);
             lineNodeContent.HorizontalParagraph = checkStatus
                 ? lineChecker.ParagraphHorizontalLocation
