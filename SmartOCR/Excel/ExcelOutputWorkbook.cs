@@ -77,12 +77,10 @@
         private static Workbook CreateOutputWorkbook()
         {
             Worksheet sourceWS = GetOutputWorksheet(ConfigParser.ConfigWorkbook);
-            if (sourceWS == null)
-            {
-                return null;
-            }
 
-            return DefineOutputWorksheet(ExcelApplication.AddEmptyWorkbook(), sourceWS);
+            return sourceWS == null
+                ? null
+                : DefineOutputWorksheet(ExcelApplication.AddEmptyWorkbook(), sourceWS);
         }
 
         private static Workbook DefineOutputWorksheet(Workbook newWB, Worksheet sourceWS)
@@ -116,12 +114,8 @@
 
         private static void CopyHeaderBetweenWorkbooks(Workbook newWB, Worksheet sourceWS)
         {
-            int rowIndex = GetIdentifyingRow(sourceWS);
-            Range headerRange = sourceWS.UsedRange.Offset[rowIndex - 1, 1].Resize[1, sourceWS.UsedRange.Columns.Count - 1];
-
-            // Range headerRange = sourceWS.Range[sourceWS.Cells[rowIndex, 2], sourceWS.Cells[rowIndex, sourceWS.Columns.Count].End[XlDirection.xlToLeft]];
+            Range headerRange = sourceWS.UsedRange.Offset[GetIdentifyingRow(sourceWS) - 1, 1].Resize[1, sourceWS.UsedRange.Columns.Count - 1];
             headerRange.Copy((Range)outputWorksheet.Cells.Item[1, 1]);
-
             newWB.Worksheets[1].Delete();
         }
 
@@ -132,7 +126,7 @@
         /// <returns>Index of matched column.</returns>
         private static int FindColumnIndex(string fieldName)
         {
-            int lastColumn = outputWorksheet.UsedRange.Columns.Count; // .Cells[1, outputWorksheet.Columns.Count].End[XlDirection.xlToLeft].Column;
+            int lastColumn = outputWorksheet.UsedRange.Columns.Count;
             for (int i = 1; i <= lastColumn; i++)
             {
                 if (outputWorksheet.Cells[1, i].Value2 == fieldName)

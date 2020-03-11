@@ -44,7 +44,7 @@
         /// <summary>
         /// Path to external config file.
         /// </summary>
-        private readonly string configFile;
+        private string configFile;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CMDProcess"/> class.
@@ -56,32 +56,9 @@
             try
             {
                 Utilities.Debug("Validating provided arguments.");
-                if (args == null)
+                if (!this.IsFirstArgumentValid(args))
                 {
-                    Utilities.Debug(Properties.Resources.invalidInputMessage);
-                    this.IsReadyToProcess = false;
                     return;
-                }
-
-                if (Directory.Exists(args[0]))
-                {
-                    Utilities.Debug($"Looking for configuration file in folder '{args[0]}'.", 1);
-                    string[] files = Directory.GetFiles(args[0], "*.xlsx", SearchOption.TopDirectoryOnly);
-                    if (files.Length != 0)
-                    {
-                        this.configFile = files[0];
-                        Utilities.Debug($"Found configuration file: '{this.configFile}'.", 1);
-                    }
-                    else
-                    {
-                        Utilities.Debug(Properties.Resources.noConfigFileFound);
-                        return;
-                    }
-                }
-                else if (File.Exists(args[0]))
-                {
-                    this.configFile = args[0];
-                    Utilities.Debug($"Found configuration file: '{this.configFile}'.", 1);
                 }
 
                 this.enteredPathType = this.ValidatePath(args[1]);
@@ -98,7 +75,7 @@
         /// <summary>
         /// Gets a value indicating whether command prompt arguments were successfully defined.
         /// </summary>
-        public bool IsReadyToProcess { get; }
+        public bool IsReadyToProcess { get; private set; }
 
         /// <summary>
         /// Sets output file and reads data from provided files.
@@ -129,10 +106,48 @@
             }
         }
 
-        /// <summary>
-        /// Processes entered path type and path argument(s).
-        /// </summary>
-        /// <returns>List of files, specified by arguments.</returns>
+        private bool IsFirstArgumentValid(string[] arguments)
+        {
+            if (arguments == null)
+            {
+                Utilities.Debug(Properties.Resources.invalidInputMessage);
+                this.IsReadyToProcess = false;
+                return false;
+            }
+
+            this.configFile = this.GetConfigFileFromArgument(arguments[0]);
+            if (string.IsNullOrEmpty(this.configFile))
+            {
+                Utilities.Debug(Properties.Resources.noConfigFileFound);
+                this.IsReadyToProcess = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetConfigFileFromArgument(string argument)
+        {
+            if (Directory.Exists(argument))
+            {
+                Utilities.Debug($"Looking for configuration file in folder '{argument}'.", 1);
+                string[] files = Directory.GetFiles(argument, "*.xlsx", SearchOption.TopDirectoryOnly);
+                if (files.Length != 0)
+                {
+                    Utilities.Debug($"Found configuration file: '{files[0]}'.", 1);
+                    return files[0];
+                }
+            }
+
+            if (File.Exists(argument))
+            {
+                Utilities.Debug($"Found configuration file: '{argument}'.", 1);
+                return argument;
+            }
+
+            return null;
+        }
+
         private List<string> GetFilesFromArgs()
         {
             if (this.enteredPathType == PathType.Directory)

@@ -24,7 +24,7 @@
         /// <param name="useSoundex">Indicates whether <see cref="ParagraphContainer.Soundex"/> property should be used instead of <see cref="ParagraphContainer.Text"/>.</param>
         public LineContentChecker(List<ParagraphContainer> paragraphs, bool useSoundex)
         {
-            this.paragraphs = paragraphs ?? throw new ArgumentNullException(nameof(paragraphs));
+            this.paragraphs = paragraphs;
             this.finishIndex = paragraphs.Count - 1;
             this.useSoundex = useSoundex;
         }

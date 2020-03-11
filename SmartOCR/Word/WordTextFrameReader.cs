@@ -39,13 +39,8 @@
         /// <inheritdoc/>
         public List<WordTable> GetWordTables()
         {
-            List<WordTable> tables = new List<WordTable>(this.document.Tables.Count);
-            var frames = this.GetValidTextFrames();
-
-            for (int frameIndex = 0; frameIndex < frames.Count; frameIndex++)
-            {
-                GetTablesFromSingleFrame(tables, frames[frameIndex]);
-            }
+            var tables = new List<WordTable>(this.document.Tables.Count);
+            this.CollectTablesFromFrames(tables);
 
             return tables;
         }
@@ -76,12 +71,17 @@
         private static ParagraphMapping AddDataFromFrames(List<TextFrame> frameCollection)
         {
             var documentContent = new ParagraphMapping();
+            PopulateParagraphMapping(frameCollection, documentContent);
+
+            return documentContent;
+        }
+
+        private static void PopulateParagraphMapping(List<TextFrame> frameCollection, ParagraphMapping documentContent)
+        {
             for (int i = 0; i < frameCollection.Count; i++)
             {
                 AddDataFromSingleFrame(documentContent, frameCollection[i]);
             }
-
-            return documentContent;
         }
 
         /// <summary>
@@ -106,42 +106,67 @@
         private static List<ParagraphContainer> GetParagraphsFromTextFrame(TextFrame textFrame)
         {
             var paragraphContainers = new List<ParagraphContainer>();
-            for (int i = 1; i <= textFrame.TextRange.Paragraphs.Count; i++)
+            for (int frameParagraphIndex = 1; frameParagraphIndex <= textFrame.TextRange.Paragraphs.Count; frameParagraphIndex++)
             {
-                if (textFrame.TextRange.Paragraphs[i].Range.Text.Length > MinimalTextLength)
-                {
-                    paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[i].Range));
-                }
+                TryAddFrameContent(textFrame, paragraphContainers, frameParagraphIndex);
             }
 
             return paragraphContainers;
         }
 
+        private static void TryAddFrameContent(TextFrame textFrame, List<ParagraphContainer> paragraphContainers, int frameParagraphIndex)
+        {
+            if (textFrame.TextRange.Paragraphs[frameParagraphIndex].Range.Text.Length > MinimalTextLength)
+            {
+                paragraphContainers.Add(new ParagraphContainer(textFrame.TextRange.Paragraphs[frameParagraphIndex].Range));
+            }
+        }
+
         private static void AddParagraphToContents(ParagraphMapping documentContent, ParagraphContainer paragraph)
         {
             decimal location = paragraph.VerticalLocation;
+            TryAddNewLocationToDocumentContent(documentContent, location);
+
+            documentContent[location].Add(paragraph);
+        }
+
+        private static void TryAddNewLocationToDocumentContent(ParagraphMapping documentContent, decimal location)
+        {
             if (!documentContent.ContainsKey(location))
             {
                 documentContent.Add(location, new List<ParagraphContainer>());
             }
+        }
 
-            documentContent[location].Add(paragraph);
+        private void CollectTablesFromFrames(List<WordTable> tables)
+        {
+            var frames = this.GetValidTextFrames();
+
+            for (int frameIndex = 0; frameIndex < frames.Count; frameIndex++)
+            {
+                GetTablesFromSingleFrame(tables, frames[frameIndex]);
+            }
         }
 
         private List<TextFrame> GetValidTextFrames()
         {
             var frames = new List<TextFrame>();
-            for (int i = 1; i <= this.document.Shapes.Count; i++)
+            for (int shapeIndex = 1; shapeIndex <= this.document.Shapes.Count; shapeIndex++)
             {
-                if (this.document.Shapes[i]
-                                 .Anchor
-                                 .Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
-                {
-                    TryAddFrame(frames, this.document.Shapes[i]);
-                }
+                this.ExtractFramesFromShapes(frames, shapeIndex);
             }
 
             return frames;
+        }
+
+        private void ExtractFramesFromShapes(List<TextFrame> frames, int shapeIndex)
+        {
+            if (this.document.Shapes[shapeIndex]
+                             .Anchor
+                             .Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
+            {
+                TryAddFrame(frames, this.document.Shapes[shapeIndex]);
+            }
         }
     }
 }

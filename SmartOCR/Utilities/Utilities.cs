@@ -41,7 +41,7 @@
         public static int DebugLevel { get; set; } = -1;
 
         /// <summary>
-        /// Creates a new <see cref="Regex"/> instance with additional parameters.
+        /// Creates a new <see cref="Regex"/> instance with multiline and ignore case mode.
         /// </summary>
         /// <param name="textPattern">Search pattern.</param>
         /// <returns><see cref="Regex"/> object.</returns>
