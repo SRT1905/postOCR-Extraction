@@ -82,8 +82,6 @@
             {
                 this.GetDataFromPage(pageIndex);
             }
-
-            Utilities.Debug($"Total of {this.Mapping.Values.Sum(item => item.Count)} paragraphs were distributed into {this.Mapping.Count} lines.", 1);
         }
 
         /// <summary>
@@ -98,13 +96,13 @@
             }
         }
 
-        private static void AddDataFromCollectedParagraphs(ParagraphMapping documentContent, LineMapping newDocumentContent, int index)
+        private static void AddDataFromCollectedParagraphs(ParagraphMapping documentContent, LineMapping lineMapping, int index)
         {
             AddDataFromSingleParagraph(
                 documentContent,
-                newDocumentContent,
+                lineMapping,
                 documentContent.Keys.ElementAt(index),
-                newDocumentContent[newDocumentContent.Count][0].VerticalLocation);
+                lineMapping[lineMapping.Count][0].VerticalLocation);
         }
 
         private static ParagraphMapping MergeParagraphs(ParagraphMapping defaultParagraphMapping, ParagraphMapping frameParagraphMapping)
@@ -143,21 +141,21 @@
         /// <returns>An instance of <see cref="SortedDictionary{TKey, TValue}"/> where paragraphs are mapped to line.</returns>
         private static LineMapping GroupParagraphsByLine(ParagraphMapping documentContent)
         {
-            LineMapping newDocumentContent = new LineMapping();
+            LineMapping lineMapping = new LineMapping();
 
             if (documentContent.Count == 0)
             {
-                return newDocumentContent;
+                return lineMapping;
             }
 
-            newDocumentContent.Add(1, documentContent.Values.First());
+            lineMapping.Add(1, documentContent.Values.First());
 
-            for (int i = 1; i < documentContent.Count; i++)
+            for (int index = 1; index < documentContent.Count; index++)
             {
-                AddDataFromCollectedParagraphs(documentContent, newDocumentContent, i);
+                AddDataFromCollectedParagraphs(documentContent, lineMapping, index);
             }
 
-            return SortParagraphs(newDocumentContent);
+            return SortParagraphs(lineMapping);
         }
 
         /// <summary>
@@ -180,16 +178,13 @@
                    currentLocation <= previousLocation + VerticalPositionOffset;
         }
 
-        private static LineMapping ShiftContentKeys(LineMapping pageContent, List<int> keys)
+        private static void ShiftContentKeys(LineMapping pageContent)
         {
-            var shiftedMapping = new LineMapping();
-            for (int i = 0; i < keys.Count; i++)
+            List<int> originalKeys = pageContent.Keys.ToList();
+            for (int i = 0; i < originalKeys.Count; i++)
             {
-                shiftedMapping.Add(keys[i] + 1, pageContent[keys[i]]);
+                pageContent.RenameKey(originalKeys[i], originalKeys[i] + 1);
             }
-
-            pageContent = shiftedMapping;
-            return pageContent;
         }
 
         private static LineMapping SortParagraphs(LineMapping newDocumentContent)
@@ -237,10 +232,12 @@
         private LineMapping ReadSinglePage(int pageIndex)
         {
             Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
+
             this.InitializeReaders(pageIndex);
             ParagraphMapping documentContent = this.GetDataFromReaders(pageIndex);
-            this.UpdateTableCollection();
+
             Utilities.Debug($"Distributing data from page {pageIndex}.", 2);
+
             return documentContent.Count == 0
                 ? new LineMapping()
                 : GroupParagraphsByLine(documentContent);
@@ -256,6 +253,7 @@
 
         private ParagraphMapping GetDataFromReaders(int pageIndex)
         {
+            this.UpdateTableCollection();
             return MergeParagraphs(
                 this.paragraphReader.GetParagraphMapping(pageIndex),
                 this.frameReader.GetParagraphMapping());
@@ -278,10 +276,9 @@
                 return;
             }
 
-            List<int> keys = pageContent.Keys.ToList();
             if (pageContent.ContainsKey(0))
             {
-                pageContent = ShiftContentKeys(pageContent, keys);
+                ShiftContentKeys(pageContent);
             }
 
             if (this.Mapping.Count == 0)
@@ -291,16 +288,16 @@
             }
 
             Utilities.Debug($"Merging collected data from current page with data from previous pages.", 2);
-            this.UpdateLineMappingByEndLine(pageContent, keys);
+            this.UpdateLineMappingByEndLine(pageContent);
         }
 
-        private void UpdateLineMappingByEndLine(LineMapping pageContent, List<int> keys)
+        private void UpdateLineMappingByEndLine(LineMapping pageContent)
         {
             int endLine = this.Mapping.Keys.Last();
-            for (int i = 0; i < keys.Count; i++)
+            for (int i = 0; i < pageContent.Count; i++)
             {
-                int key = keys[i];
-                this.Mapping.Add(key + endLine, pageContent[key]);
+                var currentItem = pageContent.ElementAt(i);
+                this.Mapping.Add(currentItem.Key + endLine, currentItem.Value);
             }
         }
     }
