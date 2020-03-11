@@ -87,6 +87,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Search\UndefinedNodeProcessor.cs" />
     <Compile Include="Utilities\IBuilder.cs" />
     <Compile Include="Search\TableNodeProcessor.cs" />
     <Compile Include="Search\TreeNodeContent.cs" />

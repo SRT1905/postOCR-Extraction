@@ -12,10 +12,10 @@
     {
         private const int SimilaritySearchThreshold = 5;
 
-        private readonly ConfigData configData;
-        private readonly LineMapping lineMapping;
-        private readonly List<WordTable> tables;
-        private readonly SearchTree treeStructure;
+        private ConfigData configData;
+        private LineMapping lineMapping;
+        private List<WordTable> tables;
+        private SearchTree treeStructure;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordParser"/> class.
@@ -29,10 +29,7 @@
                 throw new ArgumentNullException(nameof(reader));
             }
 
-            this.lineMapping = reader.Mapping;
-            this.tables = reader.TableCollection;
-            this.treeStructure = new SearchTree(configData);
-            this.configData = configData;
+            this.InitializeFields(reader, configData);
         }
 
         /// <summary>
@@ -47,78 +44,28 @@
             return this.treeStructure.GetValuesFromTree();
         }
 
-        private static void AddChildrenToFieldNode(TreeNode fieldNode, Dictionary<string, SimilarityDescription> collectedData, double maxSimilarity)
-        {
-            var keys = collectedData.Keys.ToList();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                string key = keys[i];
-                if (maxSimilarity == collectedData[key].Ratio)
-                {
-                    AddSingleChildToFieldNode(fieldNode, key);
-                }
-            }
-        }
-
-        private static void AddSingleChildToFieldNode(TreeNode fieldNode, string key)
-        {
-            var content = fieldNode.Content;
-            int line = int.Parse(key.Split('|')[0]);
-            decimal horizontalLocation = decimal.Parse(key.Split('|')[2]);
-            if (!content.Lines.Contains(line))
-            {
-                content.Lines.Add(line);
-                var builder = new TreeNodeContentBuilder(content);
-                builder.ResetLines();
-                builder.TryAddLine(line);
-                builder.SetNodeLabel("Line");
-                builder.SetHorizontalParagraph(horizontalLocation);
-                fieldNode.AddChild(builder.Build());
-            }
-        }
-
-        private static List<SimilarityDescription> GetMatchesFromParagraph(ParagraphContainer container, TreeNodeContent nodeContent)
-        {
-            MatchCollection matches = Utilities.CreateRegexpObject(nodeContent.TextExpression).Matches(container.Text);
-            var foundValues = new List<SimilarityDescription>();
-            for (int i = 0; i < matches.Count; i++)
-            {
-                int startIndex = matches[i].Groups.Count > 1
-                    ? 1
-                    : 0;
-                for (int groupIndex = startIndex; groupIndex < matches[i].Groups.Count; groupIndex++)
-                {
-                    SimilarityDescription description = new SimilarityDescription(matches[i].Groups[groupIndex].Value, nodeContent.CheckValue);
-                    if (description.AreStringsSimilar())
-                    {
-                        foundValues.Add(description);
-                    }
-                }
-            }
-
-            return foundValues;
-        }
-
         private static int GetParagraphByLocation(List<ParagraphContainer> paragraphCollection, decimal position, bool returnNextLargest)
         {
-            List<decimal> locations = paragraphCollection.Select(item => item.HorizontalLocation).ToList();
-            int location = locations.BinarySearch(position);
+            int location = paragraphCollection.Select(item => item.HorizontalLocation).ToList().BinarySearch(position);
             if (location < 0)
             {
                 location = ~location;
             }
 
-            if (returnNextLargest)
-            {
-                if (location == paragraphCollection.Count)
-                {
-                    return location--;
-                }
+            return !returnNextLargest || location == paragraphCollection.Count
+                ? --location
+                : location;
 
-                return location;
-            }
+            // if (returnNextLargest)
+            // {
+            //     if (location == paragraphCollection.Count)
+            //     {
+            //         return location--;
+            //     }
+            //     return location;
+            // }
 
-            return location--;
+            // return location--;
         }
 
         private static void PropagateStatusInTree(bool status, TreeNode node)
@@ -131,19 +78,28 @@
             }
         }
 
-        private static List<SimilarityDescription> GetSoundexMatchesFromParagraph(ParagraphContainer container, TreeNodeContent nodeContent)
+        private static TreeNode InitializeOffsetChildNode(TreeNode node, int offsetIndex, decimal position, bool addToParent)
         {
-            List<SimilarityDescription> matches = new List<SimilarityDescription>();
-            foreach (Match item in Utilities.CreateRegexpObject(nodeContent.TextExpression).Matches(container.Soundex))
+            var contentBuilder = new TreeNodeContentBuilder(node.Content).AddLine(offsetIndex)
+                                                                         .SetHorizontalParagraph(position)
+                                                                         .SetNodeLabel(node.Content.NodeLabel)
+                                                                         .SetTextExpression(node.Content.TextExpression);
+
+            if (addToParent)
             {
-                SimilarityDescription description = new SimilarityDescription(item.Value, nodeContent.TextExpression);
-                if (description.AreStringsSimilar())
-                {
-                    matches.Add(description);
-                }
+                contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel)
+                              .SetTextExpression(node.Children[0].Content.TextExpression);
             }
 
-            return matches;
+            return node.AddChild(contentBuilder.Build());
+        }
+
+        private void InitializeFields(WordReader reader, ConfigData configData)
+        {
+            this.lineMapping = reader.Mapping;
+            this.tables = reader.TableCollection;
+            this.treeStructure = new SearchTree(configData);
+            this.configData = configData;
         }
 
         private void AddOffsetNode(TreeNode node, int searchLevel, int offsetIndex, string foundValue, decimal position, bool addToParent)
@@ -153,52 +109,9 @@
                 return;
             }
 
-            var contentBuilder = new TreeNodeContentBuilder(node.Content);
-            contentBuilder.TryAddLine(offsetIndex);
-            contentBuilder.SetHorizontalParagraph(position);
-            contentBuilder.SetNodeLabel(node.Content.NodeLabel);
-            contentBuilder.SetRegExPattern(node.Content.TextExpression);
-
-            if (addToParent)
-            {
-                contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel);
-                contentBuilder.SetRegExPattern(node.Children[0].Content.TextExpression);
-            }
-
-            TreeNode childNode = node.AddChild(contentBuilder.Build());
+            TreeNode childNode = InitializeOffsetChildNode(node, offsetIndex, position, addToParent);
             childNode.Content.FoundValue = foundValue;
             SearchTree.AddSearchValues(this.configData[childNode.Content.Name], childNode, searchLevel);
-        }
-
-        private void GetDataFromUndefinedNode(TreeNode fieldNode)
-        {
-            Dictionary<string, SimilarityDescription> collectedData = this.ProcessUndefinedNode(fieldNode);
-            if (collectedData.Count != 0)
-            {
-                this.UpdateFieldNode(collectedData, fieldNode);
-            }
-        }
-
-        private Dictionary<string, SimilarityDescription> ProcessUndefinedNode(TreeNode fieldNode)
-        {
-            Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
-
-            foreach (var item in this.lineMapping)
-            {
-                for (int containerIndex = 0; containerIndex < item.Value.Count; containerIndex++)
-                {
-                    ParagraphContainer container = item.Value[containerIndex];
-                    List<SimilarityDescription> matches = fieldNode.Content.UseSoundex
-                        ? GetSoundexMatchesFromParagraph(container, fieldNode.Content)
-                        : GetMatchesFromParagraph(container, fieldNode.Content);
-                    for (int matchIndex = 0; matchIndex < matches.Count; matchIndex++)
-                    {
-                        collectedData.Add($"{item.Key}|{containerIndex}|{container.HorizontalLocation}|{matchIndex}", matches[matchIndex]);
-                    }
-                }
-            }
-
-            return collectedData;
         }
 
         private Dictionary<string, string> GetOffsetLines(int lineNumber, TreeNodeContent content)
@@ -278,14 +191,13 @@
 
         private void InitializeLineNodeAndGetData(TreeNode fieldNode)
         {
-            TreeNodeContent nodeContent = fieldNode.Content;
-            if (nodeContent.Lines[0] == 0)
+            if (fieldNode.Content.Lines[0] == 0)
             {
                 Utilities.Debug($"Initializing field node '{fieldNode.Content.Name}' data.", 2);
-                this.GetDataFromUndefinedNode(fieldNode);
+                fieldNode = new UndefinedNodeProcessor(fieldNode, this.lineMapping, this.configData).GetProcessedNode();
             }
 
-            if (nodeContent.Lines[0] != 0)
+            if (fieldNode.Content.Lines[0] != 0)
             {
                 Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
                 for (int i = 0; i < fieldNode.Children.Count; i++)
@@ -436,19 +348,6 @@
                     childContent.Lines.Add(offsetLine);
                 }
             }
-        }
-
-        private void UpdateFieldNode(Dictionary<string, SimilarityDescription> collectedData, TreeNode fieldNode)
-        {
-            fieldNode.Children.Clear();
-            if (fieldNode.Content.Lines.Count != 0)
-            {
-                fieldNode.Content.Lines.RemoveAt(0);
-            }
-
-            double maxSimilarity = collectedData.Values.ToList().Max(item => item.Ratio);
-            AddChildrenToFieldNode(fieldNode, collectedData, maxSimilarity);
-            SearchTree.AddSearchValues(this.configData[fieldNode.Content.Name], fieldNode);
         }
     }
 }
