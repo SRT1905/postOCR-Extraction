@@ -43,7 +43,6 @@
             : this(paragraphs, useSoundex)
         {
             ValidateSearchStatus(searchStatus);
-
             this.ParagraphHorizontalLocation = paragraphLocation;
             this.searchStatus = searchStatus;
             this.SetSearchIndexes();
@@ -69,21 +68,17 @@
         {
             for (int location = this.startIndex; location <= this.finishIndex; location++)
             {
-                string paragraphContent = this.useSoundex
-                    ? this.paragraphs[location].Soundex
-                    : this.paragraphs[location].Text;
+                string paragraphContent = this.GetTextToCheckByItsLocation(location);
                 if (regExObject.IsMatch(paragraphContent))
                 {
                     if (string.IsNullOrEmpty(checkValue))
                     {
                         return this.ProcessMatchWithoutCheck(regExObject, location, paragraphContent);
                     }
-                    else
+
+                    if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
                     {
-                        if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -104,24 +99,29 @@
             var foundValues = new List<string>();
             for (int i = 0; i < matches.Count; i++)
             {
-                GetValuesFromParagraphSingleMatch(matches, foundValues, i);
+                GetValuesFromParagraphSingleMatch(matches[i], foundValues);
             }
 
             return foundValues;
         }
 
-        private static void GetValuesFromParagraphSingleMatch(MatchCollection matches, List<string> foundValues, int i)
+        private static void GetValuesFromParagraphSingleMatch(Match match, List<string> foundValues)
         {
-            if (matches[i].Groups.Count > 1)
+            if (match.Groups.Count > 1)
             {
-                for (int groupIndex = 1; groupIndex < matches[i].Groups.Count; groupIndex++)
-                {
-                    foundValues.Add(matches[i].Groups[groupIndex].Value);
-                }
+                GetValuesFromParagraphGroupsMatch(match, foundValues);
             }
             else
             {
-                foundValues.Add(matches[i].Value);
+                foundValues.Add(match.Value);
+            }
+        }
+
+        private static void GetValuesFromParagraphGroupsMatch(Match match, List<string> foundValues)
+        {
+            for (int groupIndex = 1; groupIndex < match.Groups.Count; groupIndex++)
+            {
+                foundValues.Add(match.Groups[groupIndex].Value);
             }
         }
 
@@ -136,17 +136,16 @@
         {
             MatchCollection matches = regexObject.Matches(textToCheck);
             List<SimilarityDescription> foundValues = new List<SimilarityDescription>();
-            for (int i = 0; i < matches.Count; i++)
+            foreach (Match match in matches)
             {
-                GetValuesFromParagraphSingleMatch(matches, foundValues, i, checkValue);
+                GetValuesFromParagraphSingleMatch(match, foundValues, checkValue);
             }
 
             return foundValues;
         }
 
-        private static void GetValuesFromParagraphSingleMatch(MatchCollection matches, List<SimilarityDescription> foundValues, int i, string checkValue)
+        private static void GetValuesFromParagraphSingleMatch(Match singleMatch, List<SimilarityDescription> foundValues, string checkValue)
         {
-            Match singleMatch = matches[i];
             if (singleMatch.Groups.Count > 1)
             {
                 ProcessMultipleGroupsWithCheck(foundValues, checkValue, singleMatch);
@@ -170,12 +169,16 @@
         {
             for (int groupIndex = 1; groupIndex < singleMatch.Groups.Count; groupIndex++)
             {
-                Group groupItem = singleMatch.Groups[groupIndex];
-                SimilarityDescription description = new SimilarityDescription(groupItem.Value, checkValue);
-                if (description.AreStringsSimilar())
-                {
-                    foundValues.Add(description);
-                }
+                TryAddSimilarityDescription(foundValues, checkValue, singleMatch.Groups[groupIndex]);
+            }
+        }
+
+        private static void TryAddSimilarityDescription(List<SimilarityDescription> foundValues, string checkValue, Group singleGroup)
+        {
+            SimilarityDescription description = new SimilarityDescription(singleGroup.Value, checkValue);
+            if (description.AreStringsSimilar())
+            {
+                foundValues.Add(description);
             }
         }
 
@@ -188,6 +191,20 @@
             }
         }
 
+        private static int ValidateNegativeParagraphLocation(int location)
+        {
+            return location < 0
+                ? ~location
+                : location;
+        }
+
+        private string GetTextToCheckByItsLocation(int location)
+        {
+            return this.useSoundex
+                                ? this.paragraphs[location].Soundex
+                                : this.paragraphs[location].Text;
+        }
+
         /// <summary>
         /// Looks up index of paragraph, which horizontal location matches passed location.
         /// </summary>
@@ -195,33 +212,42 @@
         /// <returns>Index of paragraph with matching location.</returns>
         private int GetParagraphByLocation(bool returnNextLargest)
         {
-            List<int> locations = this.paragraphs.Select(item => (int)item.HorizontalLocation).ToList();
-            int location = locations.BinarySearch((int)this.ParagraphHorizontalLocation);
-            if (location < 0)
-            {
-                location = ~location;
-            }
+            int location = this.paragraphs.Select(item => (int)item.HorizontalLocation)
+                                          .ToList()
+                                          .BinarySearch((int)this.ParagraphHorizontalLocation);
+            return this.GetValidatedParagraphLocation(
+                returnNextLargest,
+                ValidateNegativeParagraphLocation(location));
+        }
 
-            return returnNextLargest
-                ? location == this.paragraphs.Count
-                    ? --location
-                    : location
-                : location--;
+        private int GetValidatedParagraphLocation(bool returnNextLargest, int location)
+        {
+            return !returnNextLargest || location == this.paragraphs.Count
+                ? --location
+                : location;
         }
 
         private bool ProcessMatchWithCheck(Regex regExObject, int location, string checkValue)
         {
-            var foundMatches = this.useSoundex
+            List<SimilarityDescription> foundMatches = this.GetMatchesWithCheckValue(regExObject, location, checkValue);
+            this.CombineMatchesAndSetFoundLocation(location, foundMatches);
+            return foundMatches.Count != 0;
+        }
+
+        private void CombineMatchesAndSetFoundLocation(int location, List<SimilarityDescription> foundMatches)
+        {
+            if (foundMatches.Count != 0)
+            {
+                this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
+                this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
+            }
+        }
+
+        private List<SimilarityDescription> GetMatchesWithCheckValue(Regex regExObject, int location, string checkValue)
+        {
+            return this.useSoundex
                 ? GetMatchesFromParagraph(regExObject, this.paragraphs[location].Soundex, checkValue)
                 : GetMatchesFromParagraph(regExObject, this.paragraphs[location].Text, checkValue);
-            if (foundMatches.Count == 0)
-            {
-                return false;
-            }
-
-            this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
-            this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
-            return true;
         }
 
         private bool ProcessMatchWithoutCheck(Regex regExObject, int location, string paragraphText)

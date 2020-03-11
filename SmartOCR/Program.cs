@@ -1,6 +1,7 @@
 ﻿namespace SmartOCR
 {
     using System;
+    using System.Linq;
 
     /// <summary>
     /// Entry point.
@@ -26,23 +27,23 @@
         {
             if (args[0].StartsWith("-d"))
             {
-                Utilities.EnableDebug = true;
-                SetDebugLevel(args[0]);
-                args = RemoveDebugParameter(args);
+                args = ProcessDebugParameter(args);
             }
 
             return args;
         }
 
+        private static string[] ProcessDebugParameter(string[] args)
+        {
+            Utilities.EnableDebug = true;
+            SetDebugLevel(args[0]);
+            args = RemoveDebugParameter(args);
+            return args;
+        }
+
         private static string[] RemoveDebugParameter(string[] args)
         {
-            string[] newArgs = new string[args.Length - 1];
-            for (int i = 1; i < args.Length; i++)
-            {
-                newArgs[i - 1] = args[i];
-            }
-
-            return newArgs;
+            return args.Skip(1).ToArray();
         }
 
         private static void ProcessArguments(string[] args)

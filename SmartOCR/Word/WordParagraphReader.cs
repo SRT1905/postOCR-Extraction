@@ -56,15 +56,11 @@
         /// <inheritdoc/>
         public List<WordTable> GetWordTables()
         {
-            List<WordTable> tables = new List<WordTable>(this.document.Tables.Count);
+            List<WordTable> tables = new List<WordTable>();
 
             for (int i = 1; i <= this.document.Tables.Count; i++)
             {
-                Table table = this.document.Tables[i];
-                if (table.Range.Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
-                {
-                    tables.Add(new WordTable(table));
-                }
+                this.TryAddTableToCollection(tables, this.document.Tables[i]);
             }
 
             return tables;
@@ -78,15 +74,33 @@
             }
         }
 
+        private static List<int> GetRange(int start, int finish)
+        {
+            return Enumerable.Range(start, finish).ToList();
+        }
+
         private void AddParagraphToContents(List<ParagraphContainer> paragraphs, int paragraphIndex)
         {
             decimal location = paragraphs[paragraphIndex].VerticalLocation;
+            this.TryAddNewLocation(location);
+
+            this.paragraphs[location].Add(paragraphs[paragraphIndex]);
+        }
+
+        private void TryAddNewLocation(decimal location)
+        {
             if (!this.paragraphs.ContainsKey(location))
             {
                 this.paragraphs.Add(location, new List<ParagraphContainer>());
             }
+        }
 
-            this.paragraphs[location].Add(paragraphs[paragraphIndex]);
+        private void TryAddTableToCollection(List<WordTable> tables, Table wordTable)
+        {
+            if (wordTable.Range.Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
+            {
+                tables.Add(new WordTable(wordTable));
+            }
         }
 
         private ParagraphMapping ReadDocument()
@@ -104,31 +118,34 @@
         private void ResetParagraphIndexes()
         {
             int startPoint = 0;
-
-            for (int index = 1; index <= this.document.Paragraphs.Count; index++)
+            for (int paragraphIndex = 1; paragraphIndex <= this.document.Paragraphs.Count; paragraphIndex++)
             {
-                int currentPage = this.document.Paragraphs[index].Range.Information[WdInformation.wdActiveEndPageNumber];
+                int currentPage = this.document.Paragraphs[paragraphIndex].Range.Information[WdInformation.wdActiveEndPageNumber];
                 if (currentPage > this.pageIndex)
                 {
-                    this.paragraphIndexes = Enumerable.Range(startPoint, index - startPoint + 1).ToList();
+                    this.paragraphIndexes = GetRange(startPoint, paragraphIndex - startPoint + 1);
                     return;
                 }
 
-                if (startPoint == 0 && this.pageIndex == currentPage)
-                {
-                    startPoint = index;
-                }
+                startPoint = this.SetStartPoint(startPoint, paragraphIndex, currentPage);
             }
 
-            this.paragraphIndexes = Enumerable.Range(startPoint, this.document.Paragraphs.Count).ToList();
+            this.paragraphIndexes = GetRange(startPoint, this.document.Paragraphs.Count);
+        }
+
+        private int SetStartPoint(int startPoint, int paragraphIndex, int currentPage)
+        {
+            return startPoint == 0 && this.pageIndex == currentPage
+                ? paragraphIndex
+                : startPoint;
         }
 
         private List<ParagraphContainer> GetParagraphsOnPage()
         {
             var paragraphCollection = new List<ParagraphContainer>();
-            for (int i = 0; i < this.paragraphIndexes.Count; i++)
+            foreach (int paragraphIndex in this.paragraphIndexes)
             {
-                TryGetDataFromParagraph(paragraphCollection, this.document.Paragraphs[this.paragraphIndexes[i]].Range);
+                TryGetDataFromParagraph(paragraphCollection, this.document.Paragraphs[paragraphIndex].Range);
             }
 
             return paragraphCollection;

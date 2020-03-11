@@ -126,8 +126,7 @@
         /// <returns>Index of matched column.</returns>
         private static int FindColumnIndex(string fieldName)
         {
-            int lastColumn = outputWorksheet.UsedRange.Columns.Count;
-            for (int i = 1; i <= lastColumn; i++)
+            for (int i = 1; i <= outputWorksheet.UsedRange.Columns.Count; i++)
             {
                 if (outputWorksheet.Cells[1, i].Value2 == fieldName)
                 {
