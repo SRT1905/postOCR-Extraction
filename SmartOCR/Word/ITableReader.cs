@@ -5,7 +5,7 @@
     /// <summary>
     /// Defines a generalized interface for any class performing collection and transformation of Word tables.
     /// </summary>
-    internal interface ITableReader
+    public interface ITableReader
     {
         /// <summary>
         /// Returns a collection of transformed Word tables within page provided in class constructor.

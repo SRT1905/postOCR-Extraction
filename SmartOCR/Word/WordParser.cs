@@ -10,8 +10,6 @@
     /// </summary>
     public class WordParser // TODO: add debug on node processing
     {
-        private const int SimilaritySearchThreshold = 5;
-
         private ConfigData configData;
         private LineMapping lineMapping;
         private List<WordTable> tables;
@@ -47,25 +45,24 @@
         private static int GetParagraphByLocation(List<ParagraphContainer> paragraphCollection, decimal position, bool returnNextLargest)
         {
             int location = paragraphCollection.Select(item => item.HorizontalLocation).ToList().BinarySearch(position);
-            if (location < 0)
-            {
-                location = ~location;
-            }
+            return GetValidatedParagraphLocation(
+                paragraphCollection,
+                ValidateNegativeParagraphLocation(location),
+                returnNextLargest);
+        }
 
+        private static int ValidateNegativeParagraphLocation(int location)
+        {
+            return location < 0
+                ? ~location
+                : location;
+        }
+
+        private static int GetValidatedParagraphLocation(List<ParagraphContainer> paragraphCollection, int location, bool returnNextLargest)
+        {
             return !returnNextLargest || location == paragraphCollection.Count
                 ? --location
                 : location;
-
-            // if (returnNextLargest)
-            // {
-            //     if (location == paragraphCollection.Count)
-            //     {
-            //         return location--;
-            //     }
-            //     return location;
-            // }
-
-            // return location--;
         }
 
         private static void PropagateStatusInTree(bool status, TreeNode node)
@@ -78,92 +75,12 @@
             }
         }
 
-        private static TreeNode InitializeOffsetChildNode(TreeNode node, int offsetIndex, decimal position, bool addToParent)
-        {
-            var contentBuilder = new TreeNodeContentBuilder(node.Content).AddLine(offsetIndex)
-                                                                         .SetHorizontalParagraph(position)
-                                                                         .SetNodeLabel(node.Content.NodeLabel)
-                                                                         .SetTextExpression(node.Content.TextExpression);
-
-            if (addToParent)
-            {
-                contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel)
-                              .SetTextExpression(node.Children[0].Content.TextExpression);
-            }
-
-            return node.AddChild(contentBuilder.Build());
-        }
-
         private void InitializeFields(WordReader reader, ConfigData configData)
         {
             this.lineMapping = reader.Mapping;
             this.tables = reader.TableCollection;
             this.treeStructure = new SearchTree(configData);
             this.configData = configData;
-        }
-
-        private void AddOffsetNode(TreeNode node, int searchLevel, int offsetIndex, string foundValue, decimal position, bool addToParent)
-        {
-            if (node.Content.Lines.Count(item => item == offsetIndex) >= 2)
-            {
-                return;
-            }
-
-            TreeNode childNode = InitializeOffsetChildNode(node, offsetIndex, position, addToParent);
-            childNode.Content.FoundValue = foundValue;
-            SearchTree.AddSearchValues(this.configData[childNode.Content.Name], childNode, searchLevel);
-        }
-
-        private Dictionary<string, string> GetOffsetLines(int lineNumber, TreeNodeContent content)
-        {
-            Regex regexObject = Utilities.CreateRegexpObject(content.TextExpression);
-            var foundValuesCollection = new Dictionary<string, string>();
-            List<int> keys = this.lineMapping.Keys.ToList();
-            int lineIndex = keys.IndexOf(lineNumber);
-            for (int searchOffset = 1; searchOffset <= SimilaritySearchThreshold; searchOffset++)
-            {
-                List<int> offsetIndexes = new List<int>() { lineIndex + searchOffset, lineIndex - searchOffset };
-                foreach (int offsetIndex in offsetIndexes)
-                {
-                    if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
-                    {
-                        int line = keys[offsetIndex];
-                        var lineChecker = new LineContentChecker(this.lineMapping[line], content.UseSoundex);
-                        if (lineChecker.CheckLineContents(regexObject, content.CheckValue))
-                        {
-                            foundValuesCollection.Add(
-                                string.Join("|", line, lineChecker.ParagraphHorizontalLocation),
-                                lineChecker.JoinedMatches);
-                        }
-                    }
-                }
-            }
-
-            return foundValuesCollection;
-        }
-
-        private void OffsetSearch(int lineNumber, TreeNode lineNode, int searchLevel, bool addToParent = false)
-        {
-            TreeNodeContent lineNodeContent = (TreeNodeContent)lineNode.Content;
-            var lineNumbers = this.GetOffsetLines(lineNumber, lineNodeContent);
-
-            var keys = lineNumbers.Keys.ToList();
-            for (int i = 0; i < keys.Count; i++)
-            {
-                string key = keys[i];
-                string[] splittedKey = key.Split('|');
-                int offsetIndex = int.Parse(splittedKey[0]);
-                decimal horizontalPosition = decimal.Parse(splittedKey[1]);
-                if (addToParent)
-                {
-                    var parent = lineNode.Parent;
-                    this.AddOffsetNode(parent, searchLevel, offsetIndex, lineNumbers[key], horizontalPosition, addToParent);
-                }
-                else
-                {
-                    this.AddOffsetNode(lineNode, searchLevel, offsetIndex, lineNumbers[key], horizontalPosition, addToParent);
-                }
-            }
         }
 
         private void ProcessDocument()
@@ -232,7 +149,8 @@
                 }
                 else
                 {
-                    this.OffsetSearch(lineNumber, lineNode, searchLevel, true);
+                    new OffsetNodeProcessor(this.configData[lineNodeContent.Name], this.lineMapping)
+                        .OffsetSearch(lineNumber, lineNode, searchLevel, true);
                 }
 
                 lineIndex++;
@@ -258,7 +176,8 @@
                 int lineNumber = nodeContent.Lines[i];
                 if (!this.lineMapping.ContainsKey(lineNumber))
                 {
-                    this.OffsetSearch(lineNumber, node, searchLevel, true);
+                    new OffsetNodeProcessor(this.configData[nodeContent.Name], this.lineMapping)
+                        .OffsetSearch(lineNumber, node, searchLevel, true);
                     return;
                 }
 
@@ -273,7 +192,8 @@
                     }
                 }
 
-                this.OffsetSearch(lineNumber, node, searchLevel, addToParent: true);
+                new OffsetNodeProcessor(this.configData[nodeContent.Name], this.lineMapping)
+                    .OffsetSearch(lineNumber, node, searchLevel, true);
             }
         }
 

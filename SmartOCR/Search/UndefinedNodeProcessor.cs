@@ -8,7 +8,7 @@
     /// <summary>
     /// Used to initialize field node with high-level search information.
     /// </summary>
-    internal class UndefinedNodeProcessor
+    public class UndefinedNodeProcessor
     {
         private TreeNode node;
         private LineMapping lineMapping;

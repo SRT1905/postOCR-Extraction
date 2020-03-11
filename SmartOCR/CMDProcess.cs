@@ -8,7 +8,7 @@
     /// <summary>
     /// Specifies the type of entered command propmt arguments.
     /// </summary>
-    internal enum PathType : int
+    public enum PathType : int
     {
         /// <summary>
         /// Represents invalid path type.

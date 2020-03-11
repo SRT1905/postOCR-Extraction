@@ -7,7 +7,7 @@
     /// <summary>
     /// Used to collect data from Word paragraphs.
     /// </summary>
-    internal class WordParagraphReader : ITableReader
+    public class WordParagraphReader : ITableReader
     {
         /// <summary>
         /// Defines lower bound of document text element length.

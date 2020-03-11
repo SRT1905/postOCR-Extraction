@@ -6,7 +6,7 @@
     /// <summary>
     /// Used to collect data from Word text frames.
     /// </summary>
-    internal class WordTextFrameReader : ITableReader
+    public class WordTextFrameReader : ITableReader
     {
         /// <summary>
         /// Defines lower bound of document text element length.
