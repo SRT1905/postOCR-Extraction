@@ -119,20 +119,7 @@
 
         private static List<char> TrimRepeatingIndexes(List<char> sourceChars)
         {
-            int i = 1;
-            while (i < sourceChars.Count)
-            {
-                if (sourceChars[i] == sourceChars[i - 1] && CharIndexes.ContainsValue(sourceChars[i]))
-                {
-                    sourceChars.RemoveAt(i);
-                }
-                else
-                {
-                    i++;
-                }
-            }
-
-            return sourceChars;
+            return sourceChars.Distinct().ToList();
         }
 
         private static List<char> DoIndexProcedures(List<char> sourceChars)
