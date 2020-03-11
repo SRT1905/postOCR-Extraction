@@ -196,7 +196,7 @@
 
         private void AddSingleChildToFieldNode(string key)
         {
-            this.TryAddLineNode(Convert.ToInt32(key.Split('|')[0]), Convert.ToInt32(key.Split('|')[2]));
+            this.TryAddLineNode(Convert.ToInt32(key.Split('|')[0]), Convert.ToDecimal(key.Split('|')[2]));
         }
 
         private void TryAddLineNode(int line, decimal horizontalLocation)

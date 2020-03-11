@@ -39,40 +39,23 @@
         /// <param name="initialValueIndex">Starting level of search expressions to add.</param>
         public static void AddSearchValues(ConfigField fieldData, TreeNode node, int initialValueIndex = 0)
         {
-            if (fieldData == null || node == null)
-            {
-                throw new ArgumentNullException($"{nameof(fieldData)}|{nameof(node)}");
-            }
-
-            var nodeContent = node.Content;
-            if (nodeContent.NodeLabel == "Terminal")
+            PerformNullCheck(fieldData, node);
+            if (node.Content.NodeLabel == "Terminal")
             {
                 return;
             }
 
-            List<ConfigExpression> valuesCollection = fieldData.Expressions;
-            if (valuesCollection.Count < initialValueIndex + 1)
+            if (fieldData.Expressions.Count < initialValueIndex + 1)
             {
                 if (node.Children.Count != 0)
                 {
                     return;
                 }
 
-                AddSearchValuesToChildlessNode(node, initialValueIndex - 1, valuesCollection);
+                AddSearchValuesToChildlessNode(node, fieldData.Expressions, initialValueIndex - 1);
             }
 
-            if (nodeContent.NodeLabel == "Line" || nodeContent.NodeLabel == "Field")
-            {
-                for (int i = 0; i < node.Children.Count; i++)
-                {
-                    TreeNode child = node.Children[i];
-                    AddSearchValuesToSingleNode(nodeContent.Name, child, valuesCollection, initialValueIndex);
-                }
-            }
-            else
-            {
-                AddSearchValuesToSingleNode(nodeContent.Name, node, valuesCollection, initialValueIndex);
-            }
+            AddSearchValuesToValidNode(fieldData, node, initialValueIndex);
         }
 
         /// <summary>
@@ -85,19 +68,7 @@
             var finalValues = new Dictionary<string, string>();
             foreach (ConfigField field in this.configData.Fields)
             {
-                List<string> childrenCollection = this.GetChildrenByFieldName(field.Name);
-                var result = new HashSet<string>();
-                if (childrenCollection.Count != 0)
-                {
-                    result.UnionWith(childrenCollection);
-                }
-                else
-                {
-                    var preTerminalCollection = this.GetDataFromPreTerminalNodes(field.Name);
-                    result.UnionWith(preTerminalCollection);
-                }
-
-                finalValues.Add(field.Name, string.Join("|", result));
+                this.GetValuesForSingleField(finalValues, field);
             }
 
             return finalValues;
@@ -112,101 +83,113 @@
             TreeNode root = TreeNode.CreateRoot();
             foreach (ConfigField field in this.configData.Fields)
             {
-                TreeNode fieldNode = AddFieldNode(root, field);
-                AddSearchValues(field, fieldNode);
+                AddSearchValues(field, AddFieldNode(root, field));
             }
 
             this.treeStructure = root;
         }
 
+        private static void AddSearchValuesToValidNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
+        {
+            if (node.Content.NodeLabel == "Line" || node.Content.NodeLabel == "Field")
+            {
+                AddSearchValuesToHighLevelNode(node, fieldData.Expressions, initialValueIndex);
+            }
+            else
+            {
+                AddSearchValuesToSingleNode(node, fieldData.Expressions, initialValueIndex);
+            }
+        }
+
+        private static void PerformNullCheck(ConfigField fieldData, TreeNode node)
+        {
+            if (fieldData == null || node == null)
+            {
+                throw new ArgumentNullException($"{nameof(fieldData)}|{nameof(node)}");
+            }
+        }
+
+        private static void AddSearchValuesToHighLevelNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
+        {
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                AddSearchValuesToSingleNode(node.Children[i], valuesCollection, initialValueIndex);
+            }
+        }
+
         private static TreeNode AddFieldNode(TreeNode rootNode, ConfigField fieldData)
         {
-            var paragraphCollection = new List<int>() { 0 };
-
-            TreeNodeContent content = new TreeNodeContent()
-            {
-                Name = fieldData.Name,
-                TextExpression = fieldData.TextExpression,
-                NodeLabel = "Field",
-                ValueType = fieldData.ValueType,
-                CheckValue = fieldData.ExpectedName,
-                UseSoundex = fieldData.UseSoundex,
-            };
-            content.Lines.Add(paragraphCollection[0]);
-
-            TreeNode node = new TreeNode(content);
-
-            for (int i = 0; i < paragraphCollection.Count; i++)
-            {
-                TreeNodeContent childContent = new TreeNodeContent(content)
-                {
-                    NodeLabel = "Line",
-                };
-                childContent.Lines.Add(paragraphCollection[i]);
-                node.AddChild(new TreeNode(childContent));
-            }
-
+            TreeNode node = InitializeNodeFromConfigField(fieldData);
+            node.AddChild(
+                new TreeNode(
+                    new TreeNodeContentBuilder(node.Content).SetNodeLabel("Line")
+                                                            .AddLine(0)
+                                                            .Build()));
             rootNode.AddChild(node);
             return node;
         }
 
-        private static void AddSearchValuesToChildlessNode(TreeNode node, int initialValueIndex, List<ConfigExpression> valuesCollection)
+        private static TreeNode InitializeNodeFromConfigField(ConfigField fieldData)
         {
-            ConfigExpression singleValueDefinition = valuesCollection[initialValueIndex];
-            TreeNodeContent content = new TreeNodeContent()
-            {
-                Name = node.Content.Name,
-                NodeLabel = initialValueIndex + 1 == valuesCollection.Count
-                    ? "Terminal"
-                    : $"Search {initialValueIndex}",
-                TextExpression = singleValueDefinition.RegExPattern,
-                HorizontalParagraph = node.Content.HorizontalParagraph,
-                ValueType = node.Content.ValueType,
-                UseSoundex = node.Content.UseSoundex,
-            };
-            DefineNumericSearchParameters(singleValueDefinition, content);
-
-            content.Lines.Add(node.Content.Lines[0]);
-            node.AddChild(new TreeNode(content));
+            TreeNodeContent content = new TreeNodeContentBuilder().SetName(fieldData.Name)
+                                                                  .SetTextExpression(fieldData.TextExpression)
+                                                                  .SetNodeLabel("Field")
+                                                                  .SetValueType(fieldData.ValueType)
+                                                                  .SetCheckValue(fieldData.ExpectedName)
+                                                                  .SetSoundexUsageStatus(fieldData.UseSoundex)
+                                                                  .AddLine(0)
+                                                                  .Build();
+            return new TreeNode(content);
         }
 
-        private static void AddSearchValuesToSingleNode(string fieldName, TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
+        private static void AddSearchValuesToChildlessNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
+        {
+            node.AddChild(
+                new TreeNode(
+                    InitializeContentToAddSearchValues(node, valuesCollection, initialValueIndex).Build()));
+        }
+
+        private static void AddSearchValuesToSingleNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
         {
             TreeNode singleParagraphNode = node;
             for (int valueIndex = initialValueIndex; valueIndex < valuesCollection.Count; valueIndex++)
             {
-                ConfigExpression singleValueDefinition = valuesCollection[valueIndex];
-                TreeNodeContent content = new TreeNodeContent()
-                {
-                    Name = fieldName,
-                    NodeLabel = valueIndex + 1 == valuesCollection.Count
-                        ? "Terminal"
-                        : $"Search {valueIndex}",
-                    TextExpression = singleValueDefinition.RegExPattern,
-                    HorizontalParagraph = singleParagraphNode.Content.HorizontalParagraph,
-                    ValueType = singleParagraphNode.Content.ValueType,
-                    UseSoundex = singleParagraphNode.Content.UseSoundex,
-                };
-
-                DefineNumericSearchParameters(singleValueDefinition, content);
-
-                content.Lines.Add(singleParagraphNode.Content.Lines[0]);
-                singleParagraphNode = singleParagraphNode.AddChild(new TreeNode(content));
+                singleParagraphNode = singleParagraphNode.AddChild(
+                    new TreeNode(
+                        InitializeContentToAddSearchValues(singleParagraphNode, valuesCollection, valueIndex).Build()));
             }
         }
 
-        private static void DefineNumericSearchParameters(ConfigExpression singleValueDefinition, TreeNodeContent content)
+        private static TreeNodeContentBuilder InitializeContentToAddSearchValues(
+            TreeNode node,
+            List<ConfigExpression> valuesCollection,
+            int initialValueIndex)
         {
-            if (content.ValueType.Contains("Table"))
-            {
-                content.FirstSearchParameter = singleValueDefinition.SearchParameters["row"];
-                content.SecondSearchParameter = singleValueDefinition.SearchParameters["column"];
-            }
-            else
-            {
-                content.FirstSearchParameter = singleValueDefinition.SearchParameters["line_offset"];
-                content.SecondSearchParameter = singleValueDefinition.SearchParameters["horizontal_status"];
-            }
+            TreeNodeContentBuilder contentBuilder = new TreeNodeContentBuilder().SetName(node.Content.Name)
+                                                                                .SetNodeLabel(initialValueIndex + 1 == valuesCollection.Count
+                                                                                                ? "Terminal"
+                                                                                                : $"Search {initialValueIndex}")
+                                                                                .SetTextExpression(valuesCollection[initialValueIndex].RegExPattern)
+                                                                                .SetHorizontalParagraph(node.Content.HorizontalParagraph)
+                                                                                .SetValueType(node.Content.ValueType)
+                                                                                .SetSoundexUsageStatus(node.Content.UseSoundex)
+                                                                                .AddLine(node.Content.Lines[0]);
+            contentBuilder = DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
+            return contentBuilder;
+        }
+
+        private static TreeNodeContentBuilder DefineNumericSearchParameters(Dictionary<string, int> searchParameters, string valueType, TreeNodeContentBuilder contentBuilder)
+        {
+            return valueType.Contains("Table")
+                ? contentBuilder.SetFirstSearchParameter(searchParameters["row"])
+                                .SetSecondSearchParameter(searchParameters["column"])
+                : contentBuilder.SetFirstSearchParameter(searchParameters["line_offset"])
+                                .SetSecondSearchParameter(searchParameters["horizontal_status"]);
+        }
+
+        private void GetValuesForSingleField(Dictionary<string, string> finalValues, ConfigField field)
+        {
+            finalValues.Add(field.Name, string.Join("|", this.GetDataFromChildren(field.Name, this.GetChildrenByFieldName(field.Name))));
         }
 
         private List<string> GetChildrenByFieldName(string fieldName)
@@ -222,6 +205,13 @@
             }
 
             return childrenCollection;
+        }
+
+        private HashSet<string> GetDataFromChildren(string fieldName, List<string> childrenCollection)
+        {
+            return childrenCollection.Count != 0
+                ? new HashSet<string>(childrenCollection)
+                : new HashSet<string>(this.GetDataFromPreTerminalNodes(fieldName));
         }
 
         private void GetDataFromNode(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
