@@ -49,11 +49,11 @@
         /// <returns>An instance of <see cref="TreeNode"/> named "root".</returns>
         public static TreeNode CreateRoot()
         {
-            var builder = new TreeNodeContentBuilder();
-            builder.SetName("root");
-            builder.TryAddLine(0);
-            builder.SetHorizontalParagraph(0);
-            return new TreeNode(builder.Build());
+            return new TreeNode(
+                new TreeNodeContentBuilder().SetName("root")
+                                            .AddLine(0)
+                                            .SetHorizontalParagraph(0)
+                                            .Build());
         }
 
         /// <summary>
