@@ -1,0 +1,123 @@
+﻿namespace SmartOCR
+{
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+
+    /// <summary>
+    /// Used to search values, specified by configuration fields, in Word paragraphs, distributed by lines.
+    /// </summary>
+    public class LineNodeProcessor
+    {
+        private readonly ConfigField configField;
+        private readonly LineMapping lineMapping;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineNodeProcessor"/> class.
+        /// </summary>
+        /// <param name="configField">A source description of search field.</param>
+        /// <param name="lineMapping">A mapping between document line and paragraphs on it.</param>
+        public LineNodeProcessor(ConfigField configField, LineMapping lineMapping)
+        {
+            this.configField = configField;
+            this.lineMapping = lineMapping;
+        }
+
+        /// <summary>
+        /// Loops through every Word paragraph searching for specified values.
+        /// </summary>
+        /// <param name="lineNode">An instance of <see cref="TreeNode"/> class, in respect to which search is made.</param>
+        /// <param name="searchLevel">Level of search, equals 0 by default.</param>
+        public void ProcessLineNode(TreeNode lineNode, int searchLevel = 0)
+        {
+            if (lineNode.Content.NodeLabel != "Terminal")
+            {
+                int lineIndex = 0;
+                while (lineIndex < lineNode.Content.Lines.Count)
+                {
+                    this.ProcessSingleLineNode(lineNode, lineNode.Content.Lines[lineIndex], searchLevel);
+                    lineIndex++;
+                }
+            }
+            else
+            {
+                new TerminalNodeProcessor(this.configField, this.lineMapping).Process(lineNode, searchLevel);
+            }
+        }
+
+        private void ProcessSingleLineNode(TreeNode lineNode, int lineNumber, int searchLevel)
+        {
+            if (this.GetLineStatus(lineNode.Content, lineNumber))
+            {
+                this.SetOffsetChildrenLines(lineNode, lineNumber);
+                this.ProcessLineNodeChildren(lineNode, searchLevel);
+            }
+            else
+            {
+                new OffsetNodeProcessor(this.configField, this.lineMapping).OffsetSearch(lineNode, lineNumber, searchLevel, addToParent: true);
+            }
+        }
+
+        private bool GetLineStatus(TreeNodeContent lineNodeContent, int lineNumber)
+        {
+            return this.lineMapping.ContainsKey(lineNumber)
+                ? this.TryMatchLineData(lineNodeContent, lineNumber)
+                : false;
+        }
+
+        private void ProcessLineNodeChildren(TreeNode lineNode, int searchLevel)
+        {
+            int childIndex = 0;
+            while (childIndex < lineNode.Children.Count)
+            {
+                TreeNode childNode = lineNode.Children[childIndex];
+                this.ProcessLineNode(childNode, searchLevel + 1);
+                childIndex++;
+            }
+        }
+
+        private void SetOffsetChildrenLines(TreeNode node, int line)
+        {
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                this.SetOffsetLineForSingleChild(node, line, i);
+            }
+        }
+
+        private void SetOffsetLineForSingleChild(TreeNode node, int line, int childIndex)
+        {
+            TreeNodeContent childContent = node.Children[childIndex].Content;
+            childContent.HorizontalParagraph = node.Content.HorizontalParagraph;
+            List<int> keys = this.lineMapping.Keys.ToList();
+            this.TryAddLineToChildContent(
+                childContent,
+                keys,
+                keys.IndexOf(line) + childContent.FirstSearchParameter);
+        }
+
+        private void TryAddLineToChildContent(TreeNodeContent childContent, List<int> keys, int lineIndex)
+        {
+            if (lineIndex >= 0 && lineIndex < this.lineMapping.Count)
+            {
+                childContent.Lines.Clear();
+                childContent.Lines.Add(keys[lineIndex]);
+            }
+        }
+
+        private bool TryMatchLineData(TreeNodeContent lineNodeContent, int lineNumber)
+        {
+            var lineChecker = new LineContentChecker(this.lineMapping[lineNumber], lineNodeContent);
+            bool checkStatus = lineChecker.CheckLineContents(
+                Utilities.CreateRegexpObject(lineNodeContent.TextExpression),
+                lineNodeContent.CheckValue);
+
+            if (checkStatus)
+            {
+                lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
+            }
+
+            lineNodeContent.FoundValue = lineChecker.JoinedMatches;
+            return checkStatus;
+        }
+    }
+}

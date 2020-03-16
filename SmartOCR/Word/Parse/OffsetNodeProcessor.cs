@@ -31,11 +31,11 @@
         /// <summary>
         /// Perform offset search starting from provided line.
         /// </summary>
-        /// <param name="lineNumber">A starting search line.</param>
         /// <param name="node">An instance of <see cref="TreeNode"/> class, in respect to which offset search is made.</param>
+        /// <param name="lineNumber">A starting search line.</param>
         /// <param name="searchLevel">Current search depth level.</param>
         /// <param name="addToParent">Indicates whether found offset node should be added to provided node parent or to provided node itself.</param>
-        public void OffsetSearch(int lineNumber, TreeNode node, int searchLevel, bool addToParent = false)
+        public void OffsetSearch(TreeNode node, int lineNumber, int searchLevel, bool addToParent = false)
         {
             this.InitializeFields(node, searchLevel, addToParent);
             foreach (var valuePair in this.GetOffsetLines(lineNumber))
@@ -50,6 +50,11 @@
             }
         }
 
+        private static void AddFoundMatches(Dictionary<string, string> foundValuesCollection, int line, LineContentChecker lineChecker)
+        {
+            foundValuesCollection.Add(string.Join("|", line, lineChecker.ParagraphHorizontalLocation), lineChecker.JoinedMatches);
+        }
+
         private void InitializeFields(TreeNode node, int searchLevel, bool addToParent)
         {
             this.node = node;
@@ -60,27 +65,35 @@
         private Dictionary<string, string> GetOffsetLines(int lineNumber)
         {
             var foundValuesCollection = new Dictionary<string, string>();
+
             List<int> keys = this.lineMapping.Keys.ToList();
-            int lineIndex = keys.IndexOf(lineNumber);
             for (int searchOffset = 1; searchOffset <= SimilaritySearchThreshold; searchOffset++)
             {
-                foreach (int offsetIndex in new[] { lineIndex + searchOffset, lineIndex - searchOffset })
-                {
-                    if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
-                    {
-                        int line = keys[offsetIndex];
-                        var lineChecker = new LineContentChecker(this.lineMapping[line], this.node.Content.UseSoundex);
-                        if (lineChecker.CheckLineContents(Utilities.CreateRegexpObject(this.node.Content.TextExpression), this.node.Content.CheckValue))
-                        {
-                            foundValuesCollection.Add(
-                                string.Join("|", line, lineChecker.ParagraphHorizontalLocation),
-                                lineChecker.JoinedMatches);
-                        }
-                    }
-                }
+                this.GetLinesBySpecificOffset(foundValuesCollection, keys, keys.IndexOf(lineNumber), searchOffset);
             }
 
             return foundValuesCollection;
+        }
+
+        private void GetLinesBySpecificOffset(Dictionary<string, string> foundValuesCollection, List<int> keys, int lineIndex, int searchOffset)
+        {
+            foreach (int offsetIndex in new[] { lineIndex + searchOffset, lineIndex - searchOffset })
+            {
+                this.TryGetMatchInOffsetLine(foundValuesCollection, keys, offsetIndex);
+            }
+        }
+
+        private void TryGetMatchInOffsetLine(Dictionary<string, string> foundValuesCollection, List<int> keys, int offsetIndex)
+        {
+            if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
+            {
+                int line = keys[offsetIndex];
+                var lineChecker = new LineContentChecker(this.lineMapping[line], this.node.Content.UseSoundex);
+                if (lineChecker.CheckLineContents(Utilities.CreateRegexpObject(this.node.Content.TextExpression), this.node.Content.CheckValue))
+                {
+                    AddFoundMatches(foundValuesCollection, line, lineChecker);
+                }
+            }
         }
 
         private void AddOffsetNode(TreeNode node, int offsetIndex, string foundValue, decimal position)

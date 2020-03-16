@@ -80,13 +80,7 @@
         public void PopulateTree()
         {
             Utilities.Debug($"Populating search tree with config data.", 2);
-            TreeNode root = TreeNode.CreateRoot();
-            foreach (ConfigField field in this.configData.Fields)
-            {
-                AddSearchValues(field, AddFieldNode(root, field));
-            }
-
-            this.treeStructure = root;
+            this.treeStructure = this.PopulateRoot();
         }
 
         private static void AddSearchValuesToValidNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
@@ -187,6 +181,33 @@
                                 .SetSecondSearchParameter(searchParameters["horizontal_status"]);
         }
 
+        private static void GetDataFromNodeWithNonEmptyValue(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
+        {
+            if (node.Content.Status)
+            {
+                foundData[true].Add(node.Content.FoundValue);
+            }
+            else
+            {
+                if (node.Parent.Content.NodeLabel != "Field")
+                {
+                    foundData[false].Add(node.Content.FoundValue);
+                }
+            }
+        }
+
+        private TreeNode PopulateRoot()
+        {
+            TreeNode root = TreeNode.CreateRoot();
+
+            foreach (ConfigField field in this.configData.Fields)
+            {
+                AddSearchValues(field, AddFieldNode(root, field));
+            }
+
+            return root;
+        }
+
         private void GetValuesForSingleField(Dictionary<string, string> finalValues, ConfigField field)
         {
             finalValues.Add(field.Name, string.Join("|", this.GetDataFromChildren(field.Name, this.GetChildrenByFieldName(field.Name))));
@@ -228,17 +249,7 @@
 
             if (!string.IsNullOrEmpty(node.Content.FoundValue))
             {
-                if (node.Content.Status)
-                {
-                    foundData[true].Add(node.Content.FoundValue);
-                }
-                else
-                {
-                    if (node.Parent.Content.NodeLabel != "Field")
-                    {
-                        foundData[false].Add(node.Content.FoundValue);
-                    }
-                }
+                GetDataFromNodeWithNonEmptyValue(node, foundData);
             }
         }
 

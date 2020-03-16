@@ -35,16 +35,14 @@
         /// Passed location and search status define selection of paragraphs.
         /// </summary>
         /// <param name="paragraphs">Collection of paragraphs.</param>
-        /// <param name="useSoundex">Indicates whether <see cref="ParagraphContainer.Soundex"/> property should be used instead of <see cref="ParagraphContainer.Text"/>.</param>
-        /// <param name="paragraphLocation">Location of margin paragraph.</param>
-        /// <param name="searchStatus">Indicates whether test is performed on all paragraphs or by some margin. Must be in range [-1; 1].</param>
+        /// <param name="nodeContent">An instance of <see cref="TreeNodeContent"/>, containing info about soundex usage, location and search status.</param>
         /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="searchStatus"/> value is provided.</exception>
-        public LineContentChecker(List<ParagraphContainer> paragraphs, bool useSoundex, decimal paragraphLocation, int searchStatus)
-            : this(paragraphs, useSoundex)
+        public LineContentChecker(List<ParagraphContainer> paragraphs, TreeNodeContent nodeContent)
+            : this(paragraphs, nodeContent.UseSoundex)
         {
-            ValidateSearchStatus(searchStatus);
-            this.ParagraphHorizontalLocation = paragraphLocation;
-            this.searchStatus = searchStatus;
+            ValidateSearchStatus(nodeContent.SecondSearchParameter);
+            this.ParagraphHorizontalLocation = nodeContent.HorizontalParagraph;
+            this.searchStatus = nodeContent.SecondSearchParameter;
             this.SetSearchIndexes();
         }
 
@@ -267,10 +265,8 @@
             {
                 case 1:
                     this.startIndex = this.GetParagraphByLocation(true);
-                    this.finishIndex = this.paragraphs.Count - 1;
                     break;
                 case -1:
-                    this.startIndex = 0;
                     this.finishIndex = this.GetParagraphByLocation(false);
                     break;
                 default:

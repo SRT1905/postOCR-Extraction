@@ -21,6 +21,8 @@
             {
                 ProcessArguments(args);
             }
+
+            System.Console.Read();
         }
 
         private static string[] CheckDebugEnablement(string[] args)
