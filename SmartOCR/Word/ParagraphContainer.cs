@@ -23,7 +23,7 @@
             this.HorizontalLocation = this.ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
             this.VerticalLocation = this.ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
             this.Text = this.RemoveInvalidChars(range.Text);
-            this.Soundex = SmartOCR.Soundex.EncodeValue(this.Text);
+            this.Soundex = new DefaultSoundexEncoder(this.Text).EncodedValue;
         }
 
         /// <summary>

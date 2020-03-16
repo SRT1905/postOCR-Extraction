@@ -66,16 +66,7 @@
 
             var splittedValue = input.Split(';').ToList();
 
-            while (splittedValue.Count != 2)
-            {
-                splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
-                for (int i = 2; i < splittedValue.Count; i++)
-                {
-                    splittedValue[i - 1] = splittedValue[i];
-                }
-
-                splittedValue.RemoveAt(splittedValue.Count - 1);
-            }
+            JoinSplittedRegularExpression(splittedValue);
 
             this.TextExpression = string.IsNullOrEmpty(splittedValue[0])
                 ? this.Name
@@ -109,15 +100,41 @@
             return $"Config field: {this.Name}; value type: {this.ValueType}";
         }
 
+        private static void JoinSplittedRegularExpression(List<string> splittedValue)
+        {
+            while (splittedValue.Count != 2)
+            {
+                splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
+                for (int i = 2; i < splittedValue.Count; i++)
+                {
+                    splittedValue[i - 1] = splittedValue[i];
+                }
+
+                splittedValue.RemoveAt(splittedValue.Count - 1);
+            }
+        }
+
+        private static string EncodeString(string value)
+        {
+            return new DefaultSoundexEncoder(value).EncodedValue;
+        }
+
         private void ValidateSoundexStatus()
         {
             if (this.TextExpression.StartsWith("soundex"))
             {
-                var extractor = Utilities.CreateRegexpObject(@"soundex\((.*)\)");
-                this.TextExpression = Soundex.EncodeValue(extractor.Match(this.TextExpression).Groups[1].Value);
-                this.ExpectedName = Soundex.EncodeValue(this.ExpectedName);
-                this.UseSoundex = true;
+                this.PopulatePropertiesWithSoundex();
             }
+        }
+
+        private void PopulatePropertiesWithSoundex()
+        {
+            this.TextExpression = EncodeString(Utilities.CreateRegexpObject(@"soundex\((.*)\)")
+                                                                        .Match(this.TextExpression)
+                                                                        .Groups[1]
+                                                                        .Value);
+            this.ExpectedName = EncodeString(this.ExpectedName);
+            this.UseSoundex = true;
         }
     }
 }

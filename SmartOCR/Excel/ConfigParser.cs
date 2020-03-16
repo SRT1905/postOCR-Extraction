@@ -69,7 +69,7 @@
         {
             ConfigField field = InitializeConfigField(sourceWS.Cells.Item[headerRow + 2, fieldColumn].Value2, fieldName, valueType);
             AddSearchExpressionsToField(sourceWS, headerRow, fieldColumn, valueType, field);
-            Utilities.Debug($"Value type: {field.ValueType}, Regular expression: {field.TextExpression}, Count of search expressions {field.Expressions.Count}", 3);
+            Utilities.Debug($"Value type: {field.ValueType}, {(field.UseSoundex ? "Soundex" : "Regular")} expression: {field.TextExpression}, Count of search expressions: {field.Expressions.Count}", 3);
             return field;
         }
 

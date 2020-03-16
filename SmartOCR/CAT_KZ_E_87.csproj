@@ -105,7 +105,9 @@
     <Compile Include="Word\ParagraphContainer.cs" />
     <Compile Include="Word\Parse\LineContentChecker.cs" />
     <Compile Include="Word\ParagraphMapping.cs" />
-    <Compile Include="Word\Soundex.cs" />
+    <Compile Include="Word\Soundex\DaitchMokotoffSoundexEncoder.cs" />
+    <Compile Include="Word\Soundex\DefaultSoundexEncoder.cs" />
+    <Compile Include="Word\Soundex\Soundex.cs" />
     <Compile Include="Word\Read\WordParagraphReader.cs" />
     <Compile Include="Word\Parse\WordParser.cs" />
     <Compile Include="Word\Read\WordReader.cs" />
