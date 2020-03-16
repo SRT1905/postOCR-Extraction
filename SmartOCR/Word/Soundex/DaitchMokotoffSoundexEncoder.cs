@@ -21,7 +21,7 @@
         }
 
         /// <inheritdoc/>
-        protected override string EncodeSingleWord(string word) // TODO: add implementation
+        protected override string EncodeSingleWord(string word) // TODO: add Daitch-Mokotoff Soundex implementation
         {
             throw new NotImplementedException();
         }

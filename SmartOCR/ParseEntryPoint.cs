@@ -138,6 +138,7 @@
         {
             Dictionary<string, string> result = this.ProcessSingleFile(this.validFiles[fileIndex]);
             ExcelOutputWorkbook.ReturnValuesToWorksheet(result);
+            Utilities.Debug($"File '{this.validFiles[fileIndex]}' was processed.", 1);
         }
 
         /// <summary>

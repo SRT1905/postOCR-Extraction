@@ -87,12 +87,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Word\Parse\LineNodeProcessor.cs" />
-    <Compile Include="Word\Parse\OffsetNodeProcessor.cs" />
-    <Compile Include="Word\Parse\TerminalNodeProcessor.cs" />
-    <Compile Include="Word\Parse\UndefinedNodeProcessor.cs" />
+    <Compile Include="Word\Parse\NodeProcessors\LineNodeProcessor.cs" />
+    <Compile Include="Word\Parse\NodeProcessors\OffsetNodeProcessor.cs" />
+    <Compile Include="Word\Parse\NodeProcessors\TerminalNodeProcessor.cs" />
+    <Compile Include="Word\Parse\NodeProcessors\UndefinedNodeProcessor.cs" />
     <Compile Include="Utilities\IBuilder.cs" />
-    <Compile Include="Word\Parse\TableNodeProcessor.cs" />
+    <Compile Include="Word\Parse\NodeProcessors\TableNodeProcessor.cs" />
     <Compile Include="Search\TreeNodeContent.cs" />
     <Compile Include="Search\TreeNodeContentBuilder.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />

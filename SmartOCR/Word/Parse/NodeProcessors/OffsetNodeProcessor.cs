@@ -37,6 +37,7 @@
         /// <param name="addToParent">Indicates whether found offset node should be added to provided node parent or to provided node itself.</param>
         public void OffsetSearch(TreeNode node, int lineNumber, int searchLevel, bool addToParent = false)
         {
+            Utilities.Debug($"Performing offset search for {node.Content.NodeLabel} node '{node.Content.Name}, starting from line {lineNumber}", 4);
             this.InitializeFields(node, searchLevel, addToParent);
             foreach (var valuePair in this.GetOffsetLines(lineNumber))
             {
@@ -52,6 +53,7 @@
 
         private static void AddFoundMatches(Dictionary<string, string> foundValuesCollection, int line, LineContentChecker lineChecker)
         {
+            Utilities.Debug($"Found offset match at line {line}: '{lineChecker.JoinedMatches}'.", 4);
             foundValuesCollection.Add(string.Join("|", line, lineChecker.ParagraphHorizontalLocation), lineChecker.JoinedMatches);
         }
 

@@ -35,6 +35,8 @@
                     return;
                 }
             }
+
+            Utilities.Debug($"No matches were found for table node {this.tableNode.Content.Name}", 3);
         }
 
         private static bool ExtractValueFromMatch(TreeNode childNode, string itemByExpressionPosition, Regex regexObject)
@@ -56,26 +58,11 @@
         {
             if (!string.IsNullOrEmpty(matchProcessor.Result))
             {
+                Utilities.Debug($"Match, extracted from table: {matchProcessor.Result}.", 5);
                 childNode.Content.FoundValue = matchProcessor.Result;
                 childNode.Content.Status = true;
                 PropagateStatusInTree(true, childNode);
             }
-        }
-
-        private static bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
-        {
-            for (int i = 0; i < table.RowCount; i++)
-            {
-                for (int j = 0; j < table.ColumnCount; j++)
-                {
-                    if (table[i, j] != null && ProcessSingleCell(table[i, j], regexObject, checkValue))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static bool ProcessSingleCell(string cellValue, Regex regexObject, string checkValue)
@@ -100,9 +87,26 @@
             return table[childNode.Content.FirstSearchParameter, childNode.Content.SecondSearchParameter];
         }
 
+        private bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
+        {
+            for (int i = 0; i < table.RowCount; i++)
+            {
+                for (int j = 0; j < table.ColumnCount; j++)
+                {
+                    if (table[i, j] != null && ProcessSingleCell(table[i, j], regexObject, checkValue))
+                    {
+                        Utilities.Debug($"Found match for table node {this.tableNode.Content.Name}. Table anchor: '{table.Anchor}', cell: '{table[i, j]}'.", 3);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private bool TryGetDataFromTable(WordTable table)
         {
-            return TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue)
+            return this.TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue)
                 ? this.ProcessNodeData(table)
                 : false;
         }

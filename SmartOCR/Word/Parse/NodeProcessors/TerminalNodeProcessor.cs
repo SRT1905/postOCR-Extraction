@@ -30,6 +30,7 @@
         /// <param name="searchLevel">Level of search, equals 0 by default.</param>
         public void Process(TreeNode terminalNode, int searchLevel)
         {
+            Utilities.Debug($"Processing terminal node '{terminalNode.Content.Name}'.", 3);
             TreeNodeContent nodeContent = terminalNode.Content;
             foreach (int lineNumber in nodeContent.Lines)
             {
@@ -84,6 +85,7 @@
 
         private static void DoProceduresOnSuccessfulTerminalMatch(TreeNode node, string result)
         {
+            Utilities.Debug($"Found successful match for terminal node '{node.Content.Name}': {result}.", 4);
             node.Content.FoundValue = result;
             node.Content.Status = true;
             PropagateStatusUpTree(node.Content.Status, node);

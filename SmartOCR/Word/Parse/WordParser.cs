@@ -8,7 +8,7 @@
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.
     /// </summary>
-    public class WordParser // TODO: add debug on node processing
+    public class WordParser
     {
         private ConfigData configData;
         private LineMapping lineMapping;
@@ -85,6 +85,12 @@
             }
         }
 
+        private void InitializeTableNodeAndGetData(TreeNode fieldNode)
+        {
+            Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
+            new TableNodeProcessor(this.tables, fieldNode).Process();
+        }
+
         private TreeNode InitializeFieldNode(TreeNode fieldNode)
         {
             if (fieldNode.Content.Lines[0] == 0)
@@ -94,13 +100,6 @@
             }
 
             return fieldNode;
-        }
-
-        private void InitializeTableNodeAndGetData(TreeNode fieldNode)
-        {
-            Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
-            TableNodeProcessor processor = new TableNodeProcessor(this.tables, fieldNode);
-            processor.Process();
         }
     }
 }

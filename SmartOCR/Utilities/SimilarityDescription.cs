@@ -35,6 +35,11 @@
         public double Ratio { get; private set; }
 
         /// <summary>
+        /// Gets source value.
+        /// </summary>
+        public string Source { get; private set; }
+
+        /// <summary>
         /// Gets saved value of found string.
         /// </summary>
         public string Value { get; private set; }
@@ -46,6 +51,12 @@
         public bool AreStringsSimilar()
         {
             return this.Ratio >= SimilarityRatioThreshold;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"Value '{this.Value}' matches source '{this.Source}' by {this.Ratio * 100}%";
         }
 
         private static void ValidateInput(string foundString, string checkString)
@@ -133,6 +144,7 @@
                 foundString.Length + StringLengthOffset >= checkString.Length)
             {
                 this.Ratio = this.GetStringSimilarity(foundString, checkString);
+                this.Source = checkString;
                 this.Value = foundString;
             }
         }

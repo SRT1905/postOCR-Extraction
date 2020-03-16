@@ -47,6 +47,7 @@
 
         private void ProcessSingleLineNode(TreeNode lineNode, int lineNumber, int searchLevel)
         {
+            Utilities.Debug($"Processing node '{lineNode.Content.Name}' labeled as '{lineNode.Content.NodeLabel}'.", 3);
             if (this.GetLineStatus(lineNode.Content, lineNumber))
             {
                 this.SetOffsetChildrenLines(lineNode, lineNumber);
@@ -117,6 +118,7 @@
             }
 
             lineNodeContent.FoundValue = lineChecker.JoinedMatches;
+            Utilities.Debug($"Found match in line {lineNumber}: {lineNodeContent.FoundValue}", 4);
             return checkStatus;
         }
     }

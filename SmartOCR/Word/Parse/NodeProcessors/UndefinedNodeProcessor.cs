@@ -73,6 +73,7 @@
 
         private Dictionary<string, SimilarityDescription> ProcessUndefinedNode()
         {
+            Utilities.Debug($"Gathering initial matches for field '{this.node.Content.Name}'.", 3);
             Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
 
             foreach (var lineContents in this.lineMapping)
@@ -80,6 +81,7 @@
                 this.ProcessLineForUndefinedNode(collectedData, lineContents);
             }
 
+            Utilities.Debug($"Found {collectedData.Count} initial matches for field '{this.node.Content.Name}'.", 3);
             return collectedData;
         }
 
@@ -99,11 +101,13 @@
             ParagraphContainer container)
         {
             List<SimilarityDescription> matchedDescriptions = this.GetSimilarityDescriptionCollection(container);
-            for (int matchIndex = 0; matchIndex < matchedDescriptions.Count; matchIndex++)
+            foreach (SimilarityDescription description in matchedDescriptions)
             {
+                Utilities.Debug($"Found initial match at line {lineContents.Key} in paragrpaph '{container}'.", 4);
+                Utilities.Debug($"{description}.", 5);
                 collectedData.Add(
-                    CreateSimilarityDictionaryKey(lineContents, container, matchIndex),
-                    matchedDescriptions[matchIndex]);
+                    CreateSimilarityDictionaryKey(lineContents, container, matchedDescriptions.IndexOf(description)),
+                    description);
             }
         }
 
@@ -147,10 +151,7 @@
 
         private void GetSingleMatchFromParagraph(Match match, List<SimilarityDescription> foundValues)
         {
-            this.GetMatchGroupsFromParagraph(
-                match.Groups.Count > 1 ? 1 : 0,
-                match,
-                foundValues);
+            this.GetMatchGroupsFromParagraph(match.Groups.Count > 1 ? 1 : 0, match, foundValues);
         }
 
         private void GetMatchGroupsFromParagraph(int groupIndex, Match match, List<SimilarityDescription> foundValues)

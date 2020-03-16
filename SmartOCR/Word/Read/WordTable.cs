@@ -9,6 +9,7 @@
     public class WordTable
     {
         private readonly string[][] cells;
+        private readonly ParagraphContainer anchor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordTable"/> class.
@@ -22,6 +23,18 @@
             }
 
             this.cells = InitializeCells(wordTable);
+            this.anchor = this.GetFirstCellDescription(wordTable);
+        }
+
+        /// <summary>
+        /// Gets paragraph description of top-left table cell.
+        /// </summary>
+        public ParagraphContainer Anchor
+        {
+            get
+            {
+                return this.anchor;
+            }
         }
 
         /// <summary>
@@ -101,6 +114,22 @@
                 ? marginValue + indexer
                 : indexer;
             return indexer;
+        }
+
+        private ParagraphContainer GetFirstCellDescription(Table wordTable)
+        {
+            for (int i = 0; i < this.RowCount; i++)
+            {
+                for (int j = 0; j < this.ColumnCount; j++)
+                {
+                    if (!string.IsNullOrEmpty(this[i, j]))
+                    {
+                        return new ParagraphContainer(wordTable.Cell(i + 1, j + 1).Range);
+                    }
+                }
+            }
+
+            return null;
         }
 
         private bool ValidateIndexers(ref int row, ref int column)
