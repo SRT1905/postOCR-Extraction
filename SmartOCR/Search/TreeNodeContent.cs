@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
 
     /// <summary>
     /// Class represents description of TreeNode search parameters.
@@ -30,19 +32,24 @@
                 throw new ArgumentNullException(nameof(content));
             }
 
-            this.HorizontalParagraph = content.HorizontalParagraph;
-            this.Name = content.Name;
-            this.NodeLabel = content.NodeLabel;
-            this.TextExpression = content.TextExpression;
-            this.Status = content.Status;
-            this.CheckValue = content.CheckValue;
-            this.FoundValue = content.FoundValue;
-            this.ValueType = content.ValueType;
-            this.SecondSearchParameter = content.SecondSearchParameter;
-            this.FirstSearchParameter = content.FirstSearchParameter;
+            foreach (PropertyInfo property in typeof(TreeNodeContent).GetProperties().Where(p => p.CanWrite))
+            {
+                property.SetValue(this, property.GetValue(content, null), null);
+            }
+
+            // this.HorizontalParagraph = content.HorizontalParagraph;
+            // this.Name = content.Name;
+            // this.NodeLabel = content.NodeLabel;
+            // this.TextExpression = content.TextExpression;
+            // this.Status = content.Status;
+            // this.CheckValue = content.CheckValue;
+            // this.FoundValue = content.FoundValue;
+            // this.ValueType = content.ValueType;
+            // this.SecondSearchParameter = content.SecondSearchParameter;
+            // this.FirstSearchParameter = content.FirstSearchParameter;
+            // this.UseSoundex = content.UseSoundex;
             this.Lines.Clear();
             this.Lines.AddRange(content.Lines);
-            this.UseSoundex = content.UseSoundex;
         }
 
         /// <summary>
