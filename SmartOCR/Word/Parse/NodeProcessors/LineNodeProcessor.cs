@@ -32,16 +32,42 @@
         {
             if (lineNode.Content.NodeLabel != "Terminal")
             {
-                int lineIndex = 0;
-                while (lineIndex < lineNode.Content.Lines.Count)
-                {
-                    this.ProcessSingleLineNode(lineNode, lineNode.Content.Lines[lineIndex], searchLevel);
-                    lineIndex++;
-                }
+                this.ProcessNonTerminalNode(lineNode, searchLevel);
             }
             else
             {
                 new TerminalNodeProcessor(this.configField, this.lineMapping).Process(lineNode, searchLevel);
+            }
+        }
+
+        private static bool CheckLineContents(TreeNodeContent lineNodeContent, LineContentChecker lineChecker)
+        {
+            return lineChecker.CheckLineContents(
+                Utilities.CreateRegexpObject(lineNodeContent.TextExpression),
+                lineNodeContent.CheckValue);
+        }
+
+        private static bool GetLineCheckStatus(TreeNodeContent lineNodeContent, int lineNumber, LineContentChecker lineChecker)
+        {
+            bool checkStatus = CheckLineContents(lineNodeContent, lineChecker);
+
+            if (checkStatus)
+            {
+                lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
+                Utilities.Debug($"Found match in line {lineNumber}: {lineNodeContent.FoundValue}", 4);
+            }
+
+            lineNodeContent.FoundValue = lineChecker.JoinedMatches;
+            return checkStatus;
+        }
+
+        private void ProcessNonTerminalNode(TreeNode lineNode, int searchLevel)
+        {
+            int lineIndex = 0;
+            while (lineIndex < lineNode.Content.Lines.Count)
+            {
+                this.ProcessSingleLineNode(lineNode, lineNode.Content.Lines[lineIndex], searchLevel);
+                lineIndex++;
             }
         }
 
@@ -50,13 +76,23 @@
             Utilities.Debug($"Processing node '{lineNode.Content.Name}' labeled as '{lineNode.Content.NodeLabel}'.", 3);
             if (this.GetLineStatus(lineNode.Content, lineNumber))
             {
-                this.SetOffsetChildrenLines(lineNode, lineNumber);
-                this.ProcessLineNodeChildren(lineNode, searchLevel);
+                this.ProcessNextLevelNodes(lineNode, lineNumber, searchLevel);
             }
             else
             {
-                new OffsetNodeProcessor(this.configField, this.lineMapping).OffsetSearch(lineNode, lineNumber, searchLevel, addToParent: true);
+                this.DoOffsetSearch(lineNode, lineNumber, searchLevel);
             }
+        }
+
+        private void DoOffsetSearch(TreeNode lineNode, int lineNumber, int searchLevel)
+        {
+            new OffsetNodeProcessor(this.configField, this.lineMapping).OffsetSearch(lineNode, lineNumber, searchLevel, addToParent: true);
+        }
+
+        private void ProcessNextLevelNodes(TreeNode lineNode, int lineNumber, int searchLevel)
+        {
+            this.SetOffsetChildrenLines(lineNode, lineNumber);
+            this.ProcessLineNodeChildren(lineNode, searchLevel);
         }
 
         private bool GetLineStatus(TreeNodeContent lineNodeContent, int lineNumber)
@@ -71,8 +107,7 @@
             int childIndex = 0;
             while (childIndex < lineNode.Children.Count)
             {
-                TreeNode childNode = lineNode.Children[childIndex];
-                this.ProcessLineNode(childNode, searchLevel + 1);
+                this.ProcessLineNode(lineNode.Children[childIndex], searchLevel + 1);
                 childIndex++;
             }
         }
@@ -107,19 +142,7 @@
 
         private bool TryMatchLineData(TreeNodeContent lineNodeContent, int lineNumber)
         {
-            var lineChecker = new LineContentChecker(this.lineMapping[lineNumber], lineNodeContent);
-            bool checkStatus = lineChecker.CheckLineContents(
-                Utilities.CreateRegexpObject(lineNodeContent.TextExpression),
-                lineNodeContent.CheckValue);
-
-            if (checkStatus)
-            {
-                lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
-            }
-
-            lineNodeContent.FoundValue = lineChecker.JoinedMatches;
-            Utilities.Debug($"Found match in line {lineNumber}: {lineNodeContent.FoundValue}", 4);
-            return checkStatus;
+            return GetLineCheckStatus(lineNodeContent, lineNumber, new LineContentChecker(this.lineMapping[lineNumber], lineNodeContent));
         }
     }
 }

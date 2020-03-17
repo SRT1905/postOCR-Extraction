@@ -44,10 +44,15 @@
 
         private void InitializeFields(WordReader reader, ConfigData configData)
         {
-            this.lineMapping = reader.Mapping;
-            this.tables = reader.TableCollection;
+            this.InitializeFieldsFromWordReader(reader);
             this.treeStructure = new SearchTree(configData);
             this.configData = configData;
+        }
+
+        private void InitializeFieldsFromWordReader(WordReader reader)
+        {
+            this.lineMapping = reader.Mapping;
+            this.tables = reader.TableCollection;
         }
 
         private void ProcessDocument()
@@ -77,12 +82,22 @@
             if (fieldNode.Content.Lines[0] != 0)
             {
                 Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
-                foreach (TreeNode childNode in fieldNode.Children)
-                {
-                    new LineNodeProcessor(this.configData[fieldNode.Content.Name], this.lineMapping)
-                        .ProcessLineNode(childNode);
-                }
+                this.ProcessFieldNodeChildren(fieldNode);
             }
+        }
+
+        private void ProcessFieldNodeChildren(TreeNode fieldNode)
+        {
+            foreach (TreeNode lineNode in fieldNode.Children)
+            {
+                this.ProcessSingleLineNode(fieldNode, lineNode);
+            }
+        }
+
+        private void ProcessSingleLineNode(TreeNode fieldNode, TreeNode lineNode)
+        {
+            new LineNodeProcessor(this.configData[fieldNode.Content.Name], this.lineMapping)
+                                    .ProcessLineNode(lineNode);
         }
 
         private void InitializeTableNodeAndGetData(TreeNode fieldNode)

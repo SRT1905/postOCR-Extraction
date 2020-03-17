@@ -45,17 +45,7 @@
                 return;
             }
 
-            if (fieldData.Expressions.Count < initialValueIndex + 1)
-            {
-                if (node.Children.Count != 0)
-                {
-                    return;
-                }
-
-                AddSearchValuesToChildlessNode(node, fieldData.Expressions, initialValueIndex - 1);
-            }
-
-            AddSearchValuesToValidNode(fieldData, node, initialValueIndex);
+            ValidateParametersAndAddValues(fieldData, node, initialValueIndex);
         }
 
         /// <summary>
@@ -83,9 +73,31 @@
             this.treeStructure = this.PopulateRoot();
         }
 
-        private static void AddSearchValuesToValidNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
+        private static void ValidateParametersAndAddValues(ConfigField fieldData, TreeNode node, int initialValueIndex)
         {
-            if (node.Content.NodeLabel == "Line" || node.Content.NodeLabel == "Field")
+            if (fieldData.Expressions.Count < initialValueIndex + 1 && node.Children.Count != 0)
+            {
+                return;
+            }
+
+            AddValuesToValidNode(fieldData, node, initialValueIndex);
+        }
+
+        private static void AddValuesToValidNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
+        {
+            if (fieldData.Expressions.Count < initialValueIndex + 1)
+            {
+                AddSearchValuesToChildlessNode(node, fieldData.Expressions, initialValueIndex - 1);
+            }
+            else
+            {
+                AddSearchValuesToDefaultNode(fieldData, node, initialValueIndex);
+            }
+        }
+
+        private static void AddSearchValuesToDefaultNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
+        {
+            if (new List<string>() { "Line", "Field" }.Contains(node.Content.NodeLabel))
             {
                 AddSearchValuesToHighLevelNode(node, fieldData.Expressions, initialValueIndex);
             }
@@ -168,8 +180,7 @@
                                                                                 .SetValueType(node.Content.ValueType)
                                                                                 .SetSoundexUsageStatus(node.Content.UseSoundex)
                                                                                 .AddLine(node.Content.Lines[0]);
-            contentBuilder = DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
-            return contentBuilder;
+            return DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
         }
 
         private static TreeNodeContentBuilder DefineNumericSearchParameters(Dictionary<string, int> searchParameters, string valueType, TreeNodeContentBuilder contentBuilder)
@@ -183,16 +194,9 @@
 
         private static void GetDataFromNodeWithNonEmptyValue(TreeNode node, Dictionary<bool, HashSet<string>> foundData)
         {
-            if (node.Content.Status)
+            if (node.Content.Status || node.Parent.Content.NodeLabel != "Field")
             {
-                foundData[true].Add(node.Content.FoundValue);
-            }
-            else
-            {
-                if (node.Parent.Content.NodeLabel != "Field")
-                {
-                    foundData[false].Add(node.Content.FoundValue);
-                }
+                foundData[node.Content.Status].Add(node.Content.FoundValue);
             }
         }
 

@@ -39,16 +39,7 @@
         {
             Utilities.Debug($"Performing offset search for {node.Content.NodeLabel} node '{node.Content.Name}, starting from line {lineNumber}", 4);
             this.InitializeFields(node, searchLevel, addToParent);
-            foreach (var valuePair in this.GetOffsetLines(lineNumber))
-            {
-                this.AddOffsetNode(
-                        this.addToParent
-                            ? this.node.Parent
-                            : this.node,
-                        Convert.ToInt32(valuePair.Key.Split('|')[0]),
-                        valuePair.Value,
-                        Convert.ToDecimal(valuePair.Key.Split('|')[1]));
-            }
+            this.PerformLineOffsetSearch(lineNumber);
         }
 
         private static void AddFoundMatches(Dictionary<string, string> foundValuesCollection, int line, LineContentChecker lineChecker)
@@ -62,6 +53,20 @@
             this.node = node;
             this.searchLevel = searchLevel;
             this.addToParent = addToParent;
+        }
+
+        private void PerformLineOffsetSearch(int lineNumber)
+        {
+            foreach (var valuePair in this.GetOffsetLines(lineNumber))
+            {
+                this.AddOffsetNode(
+                        this.addToParent
+                            ? this.node.Parent
+                            : this.node,
+                        Convert.ToInt32(valuePair.Key.Split('|')[0]),
+                        valuePair.Value,
+                        Convert.ToDecimal(valuePair.Key.Split('|')[1]));
+            }
         }
 
         private Dictionary<string, string> GetOffsetLines(int lineNumber)
@@ -89,12 +94,17 @@
         {
             if (offsetIndex >= 0 && offsetIndex < this.lineMapping.Count)
             {
-                int line = keys[offsetIndex];
-                var lineChecker = new LineContentChecker(this.lineMapping[line], this.node.Content.UseSoundex);
-                if (lineChecker.CheckLineContents(Utilities.CreateRegexpObject(this.node.Content.TextExpression), this.node.Content.CheckValue))
-                {
-                    AddFoundMatches(foundValuesCollection, line, lineChecker);
-                }
+                this.CheckOffsetLineContents(foundValuesCollection, keys, offsetIndex);
+            }
+        }
+
+        private void CheckOffsetLineContents(Dictionary<string, string> foundValuesCollection, List<int> keys, int offsetIndex)
+        {
+            int line = keys[offsetIndex];
+            var lineChecker = new LineContentChecker(this.lineMapping[line], this.node.Content.UseSoundex);
+            if (lineChecker.CheckLineContents(Utilities.CreateRegexpObject(this.node.Content.TextExpression), this.node.Content.CheckValue))
+            {
+                AddFoundMatches(foundValuesCollection, line, lineChecker);
             }
         }
 
@@ -116,14 +126,15 @@
                                                                          .SetHorizontalParagraph(position)
                                                                          .SetNodeLabel(node.Content.NodeLabel)
                                                                          .SetTextExpression(node.Content.TextExpression);
+            return node.AddChild(this.UpdateBuilderIfAddingToParent(node.Children[0].Content, contentBuilder).Build());
+        }
 
-            if (this.addToParent)
-            {
-                contentBuilder.SetNodeLabel(node.Children[0].Content.NodeLabel)
-                              .SetTextExpression(node.Children[0].Content.TextExpression);
-            }
-
-            return node.AddChild(contentBuilder.Build());
+        private TreeNodeContentBuilder UpdateBuilderIfAddingToParent(TreeNodeContent nodeContent, TreeNodeContentBuilder contentBuilder)
+        {
+            return this.addToParent
+                ? contentBuilder.SetNodeLabel(nodeContent.NodeLabel)
+                                .SetTextExpression(nodeContent.TextExpression)
+                : contentBuilder;
         }
     }
 }

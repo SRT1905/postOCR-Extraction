@@ -48,7 +48,6 @@
         {
             splittedInput[0] = $"{splittedInput[0]};{splittedInput[1]}";
             OffsetInputByOneItemToLeft(splittedInput);
-
             splittedInput.RemoveAt(splittedInput.Count - 1);
         }
 

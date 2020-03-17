@@ -31,29 +31,22 @@
         public void Process(TreeNode terminalNode, int searchLevel)
         {
             Utilities.Debug($"Processing terminal node '{terminalNode.Content.Name}'.", 3);
-            TreeNodeContent nodeContent = terminalNode.Content;
-            foreach (int lineNumber in nodeContent.Lines)
+            foreach (int lineNumber in terminalNode.Content.Lines)
             {
-                if (!this.lineMapping.ContainsKey(lineNumber))
+                if (this.lineMapping.ContainsKey(lineNumber))
                 {
-                    new OffsetNodeProcessor(this.configField, this.lineMapping)
-                        .OffsetSearch(terminalNode, lineNumber, searchLevel, addToParent: true);
-                    return;
-                }
-
-                List<ParagraphContainer> paragraphCollection = this.lineMapping[lineNumber];
-                var indexTuple = this.DefineSearchIndexesWhenProcessingValue(nodeContent, paragraphCollection);
-
-                for (int paragraphIndex = indexTuple.Item1; paragraphIndex <= indexTuple.Item2; paragraphIndex++)
-                {
-                    if (this.ProcessValueInSingleParagraph(paragraphCollection[paragraphIndex].Text, terminalNode))
+                    if (this.ProcessDataInLine(terminalNode, lineNumber))
                     {
                         return;
                     }
-                }
 
-                new OffsetNodeProcessor(this.configField, this.lineMapping)
-                    .OffsetSearch(terminalNode, lineNumber, searchLevel, addToParent: true);
+                    this.DoOffsetSearch(terminalNode, searchLevel, lineNumber);
+                }
+                else
+                {
+                    this.DoOffsetSearch(terminalNode, searchLevel, lineNumber);
+                    return;
+                }
             }
         }
 
@@ -62,8 +55,8 @@
             TreeNode tempNode = node;
             while (tempNode.Parent.Content.Name != "root")
             {
-                tempNode = tempNode.Parent;
                 tempNode.Content.Status = status;
+                tempNode = tempNode.Parent;
             }
         }
 
@@ -73,7 +66,10 @@
                 .Select(item => item.HorizontalLocation)
                 .ToList()
                 .BinarySearch(position);
-            return GetValidatedParagraphLocation(paragraphCollection, ValidateNegativeParagraphLocation(location), returnNextLargest);
+            return GetValidatedParagraphLocation(
+                paragraphCollection,
+                ValidateNegativeParagraphLocation(location),
+                returnNextLargest);
         }
 
         private static int ValidateNegativeParagraphLocation(int location) => location < 0 ? ~location : location;
@@ -87,8 +83,37 @@
         {
             Utilities.Debug($"Found successful match for terminal node '{node.Content.Name}': {result}.", 4);
             node.Content.FoundValue = result;
-            node.Content.Status = true;
-            PropagateStatusUpTree(node.Content.Status, node);
+            PropagateStatusUpTree(true, node);
+        }
+
+        private static void ValidateMatchProcessorResult(TreeNode node, MatchProcessor matchProcessor)
+        {
+            if (!string.IsNullOrEmpty(matchProcessor.Result))
+            {
+                DoProceduresOnSuccessfulTerminalMatch(node, matchProcessor.Result);
+            }
+        }
+
+        private bool ProcessDataInLine(TreeNode terminalNode, int lineNumber)
+        {
+            List<ParagraphContainer> paragraphCollection = this.lineMapping[lineNumber];
+            var indexTuple = this.DefineSearchIndexes(terminalNode.Content, paragraphCollection);
+
+            for (int paragraphIndex = indexTuple.Item1; paragraphIndex <= indexTuple.Item2; paragraphIndex++)
+            {
+                if (this.ProcessValueInSingleParagraph(paragraphCollection[paragraphIndex].Text, terminalNode))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void DoOffsetSearch(TreeNode terminalNode, int searchLevel, int lineNumber)
+        {
+            new OffsetNodeProcessor(this.configField, this.lineMapping)
+                .OffsetSearch(terminalNode, lineNumber, searchLevel, addToParent: true);
         }
 
         private bool ProcessValueInSingleParagraph(string paragraphText, TreeNode node)
@@ -97,15 +122,12 @@
                 paragraphText,
                 Utilities.CreateRegexpObject(node.Content.TextExpression),
                 node.Content.ValueType);
-            if (!string.IsNullOrEmpty(matchProcessor.Result))
-            {
-                DoProceduresOnSuccessfulTerminalMatch(node, matchProcessor.Result);
-            }
+            ValidateMatchProcessorResult(node, matchProcessor);
 
             return node.Content.Status;
         }
 
-        private Tuple<int, int> DefineSearchIndexesWhenProcessingValue(TreeNodeContent nodeContent, List<ParagraphContainer> paragraphCollection)
+        private Tuple<int, int> DefineSearchIndexes(TreeNodeContent nodeContent, List<ParagraphContainer> paragraphCollection)
         {
             int startIndex = nodeContent.SecondSearchParameter == 1
                 ? GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: true)

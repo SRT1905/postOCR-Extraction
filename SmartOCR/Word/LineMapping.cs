@@ -27,14 +27,12 @@
 
         private void AddExistingParagraphs(int toKey, List<ParagraphContainer> paragraphs)
         {
-            if (this.ContainsKey(toKey))
+            if (!this.ContainsKey(toKey))
             {
-                this[toKey] = paragraphs;
+                this.Add(toKey, new List<ParagraphContainer>());
             }
-            else
-            {
-                this.Add(toKey, paragraphs);
-            }
+
+            this[toKey] = paragraphs;
         }
 
         private void AddNewList(int toKey)

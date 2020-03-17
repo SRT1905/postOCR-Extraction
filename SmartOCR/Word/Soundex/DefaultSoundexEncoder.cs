@@ -44,6 +44,32 @@
             return this.Finalize(char.ToUpper(firstLetter), sourceChars);
         }
 
+        private static char TryAddCharToBuilder(StringBuilder sb, char charToAdd, char previousChar)
+        {
+            if (charToAdd != previousChar)
+            {
+                sb.Append(charToAdd);
+                previousChar = charToAdd;
+            }
+
+            return previousChar;
+        }
+
+        private static void AddZerosToRight(List<char> sourceChars)
+        {
+            while (sourceChars.Count < 4)
+            {
+                sourceChars.Add('0');
+            }
+        }
+
+        private static void TryReplaceSingleChar(List<char> sourceChars, int index)
+        {
+            sourceChars[index] = CharIndexes.ContainsKey(sourceChars[index])
+                                ? CharIndexes[sourceChars[index]]
+                                : sourceChars[index];
+        }
+
         private List<char> PrepareSourceChars(List<char> sourceChars)
         {
             sourceChars = this.RemoveInvalidLetters(sourceChars);
@@ -54,19 +80,16 @@
 
         private List<char> RemoveInvalidLetters(List<char> sourceChars)
         {
-            sourceChars = sourceChars.Skip(1).ToList();
-            sourceChars.RemoveAll(item => item == 'h' || item == 'w');
-            return sourceChars;
+            return sourceChars.Skip(1)
+                              .Where(singleChar => !(singleChar == 'h' || singleChar == 'w'))
+                              .ToList();
         }
 
         private List<char> ReplaceCharsByIndexes(List<char> sourceChars)
         {
             for (int i = 0; i < sourceChars.Count; i++)
             {
-                if (CharIndexes.ContainsKey(sourceChars[i]))
-                {
-                    sourceChars[i] = CharIndexes[sourceChars[i]];
-                }
+                TryReplaceSingleChar(sourceChars, i);
             }
 
             return sourceChars;
@@ -85,11 +108,7 @@
 
             foreach (char item in new string(sourceChars.ToArray()))
             {
-                if (item != previousChar)
-                {
-                    sb.Append(item);
-                    previousChar = item;
-                }
+                previousChar = TryAddCharToBuilder(sb, item, previousChar);
             }
 
             return sb.ToString().ToList();
@@ -104,10 +123,7 @@
         private string Finalize(char firstLetter, List<char> sourceChars)
         {
             sourceChars.Insert(0, firstLetter);
-            while (sourceChars.Count < 4)
-            {
-                sourceChars.Add('0');
-            }
+            AddZerosToRight(sourceChars);
 
             return new string(sourceChars.Take(4).ToArray());
         }

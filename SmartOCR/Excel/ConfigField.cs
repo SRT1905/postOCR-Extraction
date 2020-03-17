@@ -64,17 +64,7 @@
                 return;
             }
 
-            var splittedValue = input.Split(';').ToList();
-
-            JoinSplittedRegularExpression(splittedValue);
-
-            this.TextExpression = string.IsNullOrEmpty(splittedValue[0])
-                ? this.Name
-                : splittedValue[0];
-            this.ExpectedName = string.IsNullOrEmpty(splittedValue[1])
-                ? this.Name
-                : splittedValue[1];
-            this.ValidateSoundexStatus();
+            this.SplitInputAndSetProperties(input);
         }
 
         /// <summary>
@@ -104,19 +94,49 @@
         {
             while (splittedValue.Count != 2)
             {
-                splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
-                for (int i = 2; i < splittedValue.Count; i++)
-                {
-                    splittedValue[i - 1] = splittedValue[i];
-                }
+                MergeSplittedPattern(splittedValue);
+            }
+        }
 
-                splittedValue.RemoveAt(splittedValue.Count - 1);
+        private static void MergeSplittedPattern(List<string> splittedValue)
+        {
+            splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
+            OffsetInputByOneValueToLeft(splittedValue);
+            splittedValue.RemoveAt(splittedValue.Count - 1);
+        }
+
+        private static void OffsetInputByOneValueToLeft(List<string> splittedValue)
+        {
+            for (int i = 2; i < splittedValue.Count; i++)
+            {
+                splittedValue[i - 1] = splittedValue[i];
             }
         }
 
         private static string EncodeString(string value)
         {
             return new DefaultSoundexEncoder(value).EncodedValue;
+        }
+
+        private void SplitInputAndSetProperties(string input)
+        {
+            var splittedValue = input.Split(';').ToList();
+            JoinSplittedRegularExpression(splittedValue);
+            this.SetPropertiesFromSplittedValue(splittedValue);
+        }
+
+        private void SetPropertiesFromSplittedValue(List<string> splittedValue)
+        {
+            this.TextExpression = this.ValidateValueOrGetName(splittedValue[0]);
+            this.ExpectedName = this.ValidateValueOrGetName(splittedValue[1]);
+            this.ValidateSoundexStatus();
+        }
+
+        private string ValidateValueOrGetName(string value)
+        {
+            return string.IsNullOrEmpty(value)
+                ? this.Name
+                : value;
         }
 
         private void ValidateSoundexStatus()
@@ -129,12 +149,17 @@
 
         private void PopulatePropertiesWithSoundex()
         {
-            this.TextExpression = EncodeString(Utilities.CreateRegexpObject(@"soundex\((.*)\)")
-                                                                        .Match(this.TextExpression)
-                                                                        .Groups[1]
-                                                                        .Value);
+            this.TextExpression = EncodeString(this.ExtractSoundexExpression());
             this.ExpectedName = EncodeString(this.ExpectedName);
             this.UseSoundex = true;
+        }
+
+        private string ExtractSoundexExpression()
+        {
+            return Utilities.CreateRegexpObject(@"soundex\((.*)\)")
+                            .Match(this.TextExpression)
+                            .Groups[1]
+                            .Value;
         }
     }
 }

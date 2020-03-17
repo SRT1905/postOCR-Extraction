@@ -52,6 +52,11 @@
         private static void ProcessSingleValue(int rowToInput, KeyValuePair<string, string> item)
         {
             int columnIndex = FindColumnIndex(item.Key);
+            TrySetCellValue(rowToInput, item, columnIndex);
+        }
+
+        private static void TrySetCellValue(int rowToInput, KeyValuePair<string, string> item, int columnIndex)
+        {
             if (columnIndex != 0)
             {
                 outputWorksheet.Cells[rowToInput, columnIndex] = item.Value;

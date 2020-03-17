@@ -74,7 +74,7 @@
         /// <returns>String representation of date value.</returns>
         public static string DateProcessing(string value)
         {
-            return ProcessDateAsNumeric(value) ?? ProcessDateAsAlphaNumeric(value) ?? "Дата документа не распознана";
+            return ProcessDateAsNumeric(value) ?? ProcessDateAsAlphaNumeric(value) ?? "Document date is not identified";
         }
 
         /// <summary>
@@ -117,8 +117,7 @@
             }
 
             GroupCollection groups = RegexAlphaMonth.Matches(value)[0].Groups;
-            string month = ReturnNumericMonth(groups[2].Value.ToLower());
-            return TryReturnDateValue($"{month}/{groups[1].Value}/{groups[3].Value}");
+            return TryReturnDateValue($"{ReturnNumericMonth(groups[2].Value.ToLower())}/{groups[1].Value}/{groups[3].Value}");
         }
 
         private static string ProcessDateAsNumeric(string value)
@@ -174,7 +173,7 @@
         {
             return DateTime.TryParse(dateValue, out DateTime _)
                 ? dateValue
-                : $"Дата распознана как {dateValue}";
+                : $"Date is identified as {dateValue}";
         }
     }
 }

@@ -28,9 +28,9 @@
         /// </summary>
         public void Process()
         {
-            for (int i = 0; i < this.tables.Count; i++)
+            foreach (WordTable table in this.tables)
             {
-                if (this.TryGetDataFromTable(this.tables[i]))
+                if (this.TryGetDataFromTable(table))
                 {
                     return;
                 }
@@ -41,9 +41,14 @@
 
         private static bool ExtractValueFromMatch(TreeNode childNode, string itemByExpressionPosition, Regex regexObject)
         {
-            int slashCharIndex = childNode.Content.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase) + 1;
-            string nestedValueType = GetTableValueType(childNode, slashCharIndex);
-            TryToValidateMatch(childNode, new MatchProcessor(itemByExpressionPosition, regexObject, nestedValueType));
+            TryToValidateMatch(
+                childNode,
+                new MatchProcessor(
+                    itemByExpressionPosition,
+                    regexObject,
+                    GetTableValueType(
+                        childNode,
+                        childNode.Content.ValueType.IndexOf("/", StringComparison.OrdinalIgnoreCase) + 1)));
             return true;
         }
 
@@ -59,17 +64,23 @@
             if (!string.IsNullOrEmpty(matchProcessor.Result))
             {
                 Utilities.Debug($"Match, extracted from table: {matchProcessor.Result}.", 5);
-                childNode.Content.FoundValue = matchProcessor.Result;
-                childNode.Content.Status = true;
-                PropagateStatusInTree(true, childNode);
+                ValidateMatch(childNode, matchProcessor);
             }
+        }
+
+        private static void ValidateMatch(TreeNode childNode, MatchProcessor matchProcessor)
+        {
+            childNode.Content.FoundValue = matchProcessor.Result;
+            childNode.Content.Status = true;
+            PropagateStatusInTree(true, childNode);
         }
 
         private static bool ProcessSingleCell(string cellValue, Regex regexObject, string checkValue)
         {
             Match singleMatch = regexObject.Match(cellValue);
-            int index = Convert.ToInt32(singleMatch.Groups.Count > 0);
-            return new SimilarityDescription(singleMatch.Groups[index].Value, checkValue).AreStringsSimilar();
+            return new SimilarityDescription(
+                singleMatch.Groups[Convert.ToInt32(singleMatch.Groups.Count > 0)].Value,
+                checkValue).AreStringsSimilar();
         }
 
         private static void PropagateStatusInTree(bool status, TreeNode node)

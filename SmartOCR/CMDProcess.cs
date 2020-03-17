@@ -80,18 +80,13 @@
         /// </summary>
         public void ExecuteProcessing()
         {
-            if (this.enteredPathType == PathType.None || this.configFile == null)
+            if (!(this.enteredPathType == PathType.None || this.configFile == null))
+            {
+                this.GetData();
+            }
+            else
             {
                 Utilities.Debug(Properties.Resources.invalidInputMessage);
-                return;
-            }
-
-            string outputFile = this.GetOutputFilePath();
-            Utilities.Debug($"Output file location: '{outputFile}'.");
-            WaitForOutputFileDeletion(outputFile);
-            using (var entryPoint = new ParseEntryPoint(this.GetFilesFromArgs(), this.configFile, outputFile))
-            {
-                entryPoint.TryGetData();
             }
         }
 
@@ -129,14 +124,18 @@
         private static string GetConfigFileFromDirectory(string argument)
         {
             Utilities.Debug($"Looking for configuration file in folder '{argument}'.", 1);
-            string[] files = Directory.GetFiles(argument, "*.xlsx", SearchOption.TopDirectoryOnly);
-            if (files.Length != 0)
+            return GetFirstFileFromDirectory(Directory.GetFiles(argument, "*.xlsx", SearchOption.TopDirectoryOnly));
+        }
+
+        private static string GetFirstFileFromDirectory(string[] files)
+        {
+            if (files.Length == 0)
             {
-                Utilities.Debug($"Found configuration file: '{files[0]}'.", 1);
-                return files[0];
+                return null;
             }
 
-            return null;
+            Utilities.Debug($"Found configuration file: '{files[0]}'.", 1);
+            return files[0];
         }
 
         private static Func<string, bool> FilterInvalidFiles()
@@ -145,11 +144,27 @@
                            item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase);
         }
 
+        private void GetData()
+        {
+            using (var entryPoint = new ParseEntryPoint(this.GetFilesFromArgs(), this.configFile, this.GetOutputFile()))
+            {
+                entryPoint.TryGetData();
+            }
+        }
+
         private string GetOutputFilePath()
         {
             return this.enteredPathType == PathType.Directory
                 ? Path.Combine(this.enteredArguments[0], "output.xlsx")
                 : Path.Combine(Path.GetDirectoryName(this.enteredArguments[0]), "output.xlsx");
+        }
+
+        private string GetOutputFile()
+        {
+            string outputFile = this.GetOutputFilePath();
+            Utilities.Debug($"Output file location: '{outputFile}'.");
+            WaitForOutputFileDeletion(outputFile);
+            return outputFile;
         }
 
         private void InitializeFields(string[] args)
@@ -165,9 +180,14 @@
             {
                 Utilities.Debug(Properties.Resources.invalidInputMessage);
                 this.IsReadyToProcess = false;
-                return false;
+                return this.IsReadyToProcess;
             }
 
+            return this.ValidateConfigFileFromArguments(arguments);
+        }
+
+        private bool ValidateConfigFileFromArguments(string[] arguments)
+        {
             this.configFile = GetConfigFileFromArgument(arguments[0]);
             if (string.IsNullOrEmpty(this.configFile))
             {
