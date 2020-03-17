@@ -27,7 +27,6 @@
         private readonly Document document;
         private WordParagraphReader paragraphReader;
         private WordTextFrameReader frameReader;
-        private List<WordTable> tables = new List<WordTable>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordReader"/> class.
@@ -41,18 +40,7 @@
         /// <summary>
         /// Gets collection of processed Word tables.
         /// </summary>
-        public List<WordTable> TableCollection
-        {
-            get
-            {
-                return this.tables;
-            }
-
-            private set
-            {
-                this.tables = value;
-            }
-        }
+        public List<WordTable> TableCollection { get; private set; } = new List<WordTable>();
 
         /// <summary>
         /// Gets document contents grouped in separate lines.

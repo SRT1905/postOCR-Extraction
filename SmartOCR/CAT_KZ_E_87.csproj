@@ -100,6 +100,8 @@
     <Compile Include="Utilities\SimilarityDescription.cs" />
     <Compile Include="Search\TreeNode.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Word\Read\GridCollection.cs" />
+    <Compile Include="Word\Read\GridStructure.cs" />
     <Compile Include="Word\Read\ITableReader.cs" />
     <Compile Include="Word\LineMapping.cs" />
     <Compile Include="Word\ParagraphContainer.cs" />

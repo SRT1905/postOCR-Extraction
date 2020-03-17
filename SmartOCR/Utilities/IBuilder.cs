@@ -1,7 +1,7 @@
 ﻿namespace SmartOCR
 {
     /// <summary>
-    /// Defines a generalized interface for any class following Builder pattern.
+    /// Defines a generic interface for any class implementing Builder pattern.
     /// </summary>
     /// <typeparam name="T">Type of instance being built.</typeparam>
     public interface IBuilder<T>
