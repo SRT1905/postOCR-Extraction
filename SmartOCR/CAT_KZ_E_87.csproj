@@ -91,6 +91,7 @@
     <Compile Include="Utilities\SimilarityAlgorithms\JaroWrinklerAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\LevensteinAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\ISimilarityAlgorithm.cs" />
+    <Compile Include="Utilities\SimilarityAlgorithms\RatcliffObershelpAlgorithm.cs" />
     <Compile Include="Word\Parse\NodeProcessors\LineNodeProcessor.cs" />
     <Compile Include="Word\Parse\NodeProcessors\OffsetNodeProcessor.cs" />
     <Compile Include="Word\Parse\NodeProcessors\TerminalNodeProcessor.cs" />
