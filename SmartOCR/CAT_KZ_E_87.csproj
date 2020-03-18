@@ -87,6 +87,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utilities\SimilarityAlgorithms\JaroAlgorithm.cs" />
+    <Compile Include="Utilities\SimilarityAlgorithms\JaroWrinklerAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\LevensteinAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\ISimilarityAlgorithm.cs" />
     <Compile Include="Word\Parse\NodeProcessors\LineNodeProcessor.cs" />
@@ -99,7 +101,7 @@
     <Compile Include="Search\TreeNodeContentBuilder.cs" />
     <Compile Include="Utilities\MatchProcessor.cs" />
     <Compile Include="Search\SearchTree.cs" />
-    <Compile Include="Utilities\SimilarityDescription.cs" />
+    <Compile Include="Utilities\SimilarityAlgorithms\SimilarityDescription.cs" />
     <Compile Include="Search\TreeNode.cs" />
     <Compile Include="Utilities\Utilities.cs" />
     <Compile Include="Word\Read\GridCollection.cs" />
