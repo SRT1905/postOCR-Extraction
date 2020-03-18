@@ -111,5 +111,10 @@
         /// Gets or sets a value indicating whether <see cref="TextExpression"/> is referred to as Regex pattern or Soundex expression.
         /// </summary>
         public bool UseSoundex { get; set; }
+
+        /// <summary>
+        /// Gets or sets grid coordinates, where search should be made.
+        /// </summary>
+        public Tuple<int, int> GridCoordinates { get; set; }
     }
 }

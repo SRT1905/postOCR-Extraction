@@ -1,5 +1,7 @@
 ﻿namespace SmartOCR
 {
+    using System;
+
     /// <summary>
     /// Used to build an instance of <see cref="TreeNodeContent"/> class in stepwise fashion.
     /// </summary>
@@ -182,6 +184,17 @@
         public TreeNodeContentBuilder SetSoundexUsageStatus(bool value)
         {
             this.nodeContent.UseSoundex = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets grid coordinates, where search should be made.
+        /// </summary>
+        /// <param name="value">Value to set.</param>
+        /// <returns>An updated instance of <see cref="TreeNodeContentBuilder"/>.</returns>
+        public TreeNodeContentBuilder SetGridCoordinates(Tuple<int, int> value)
+        {
+            this.nodeContent.GridCoordinates = value;
             return this;
         }
     }

@@ -86,7 +86,7 @@
             if (pageIndex >= 1)
             {
                 this.Mapping = this.ReadSinglePage(pageIndex);
-                this.GridCollection.Add(pageIndex, new GridStructure(this.Mapping, 3));
+                this.TryAddGridStructure(pageIndex, this.Mapping);
             }
         }
 
@@ -212,10 +212,15 @@
             documentContent[container.VerticalLocation] = InsertRangeInCollection(documentContent[container.VerticalLocation], container);
         }
 
-        private void GetDataFromPage(int i)
+        private void TryAddGridStructure(int pageIndex, LineMapping mapping)
         {
-            var pageContent = this.ReadSinglePage(i);
-            this.GridCollection.Add(i, new GridStructure(pageContent, 3));
+            this.GridCollection.Add(pageIndex, new GridStructure(mapping, 3));
+        }
+
+        private void GetDataFromPage(int pageIndex)
+        {
+            var pageContent = this.ReadSinglePage(pageIndex);
+            this.TryAddGridStructure(pageIndex, pageContent);
             this.UpdateLineMapping(pageContent);
         }
 

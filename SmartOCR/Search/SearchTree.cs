@@ -137,15 +137,15 @@
 
         private static TreeNode InitializeNodeFromConfigField(ConfigField fieldData)
         {
-            TreeNodeContent content = new TreeNodeContentBuilder().SetName(fieldData.Name)
-                                                                  .SetTextExpression(fieldData.TextExpression)
-                                                                  .SetNodeLabel("Field")
-                                                                  .SetValueType(fieldData.ValueType)
-                                                                  .SetCheckValue(fieldData.ExpectedName)
-                                                                  .SetSoundexUsageStatus(fieldData.UseSoundex)
-                                                                  .AddLine(0)
-                                                                  .Build();
-            return new TreeNode(content);
+            return new TreeNode(new TreeNodeContentBuilder().SetName(fieldData.Name)
+                                                            .SetTextExpression(fieldData.TextExpression)
+                                                            .SetNodeLabel("Field")
+                                                            .SetValueType(fieldData.ValueType)
+                                                            .SetCheckValue(fieldData.ExpectedName)
+                                                            .SetSoundexUsageStatus(fieldData.UseSoundex)
+                                                            .AddLine(0)
+                                                            .SetGridCoordinates(fieldData.GridCoordinates)
+                                                            .Build());
         }
 
         private static void AddSearchValuesToChildlessNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
@@ -171,14 +171,16 @@
             List<ConfigExpression> valuesCollection,
             int initialValueIndex)
         {
-            TreeNodeContentBuilder contentBuilder = new TreeNodeContentBuilder().SetName(node.Content.Name)
+            TreeNodeContentBuilder contentBuilder = new TreeNodeContentBuilder(node.Content) // .SetName(node.Content.Name)
                                                                                 .SetNodeLabel(initialValueIndex + 1 == valuesCollection.Count
                                                                                                 ? "Terminal"
                                                                                                 : $"Search {initialValueIndex}")
                                                                                 .SetTextExpression(valuesCollection[initialValueIndex].RegExPattern)
-                                                                                .SetHorizontalParagraph(node.Content.HorizontalParagraph)
-                                                                                .SetValueType(node.Content.ValueType)
-                                                                                .SetSoundexUsageStatus(node.Content.UseSoundex)
+
+                                                                                // .SetHorizontalParagraph(node.Content.HorizontalParagraph)
+                                                                                // .SetValueType(node.Content.ValueType)
+                                                                                // .SetSoundexUsageStatus(node.Content.UseSoundex)
+                                                                                // .SetGridCoordinates(node.Content.GridCoordinates)
                                                                                 .AddLine(node.Content.Lines[0]);
             return DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
         }

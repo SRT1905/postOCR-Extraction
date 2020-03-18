@@ -123,9 +123,10 @@
         private TreeNode InitializeOffsetChildNode(TreeNode node, int offsetIndex, decimal position)
         {
             var contentBuilder = new TreeNodeContentBuilder(node.Content).AddLine(offsetIndex)
-                                                                         .SetHorizontalParagraph(position)
-                                                                         .SetNodeLabel(node.Content.NodeLabel)
-                                                                         .SetTextExpression(node.Content.TextExpression);
+                                                                         .SetHorizontalParagraph(position);
+
+            // .SetNodeLabel(node.Content.NodeLabel)
+            // .SetTextExpression(node.Content.TextExpression);
             return node.AddChild(this.UpdateBuilderIfAddingToParent(node.Children[0].Content, contentBuilder).Build());
         }
 

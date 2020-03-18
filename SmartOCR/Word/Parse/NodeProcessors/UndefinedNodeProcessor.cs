@@ -213,10 +213,10 @@
             this.node.Content.Lines.Add(line);
             this.node.AddChild(
                 new TreeNodeContentBuilder(this.node.Content).ResetLines()
-                .AddLine(line)
-                .SetNodeLabel("Line")
-                .SetHorizontalParagraph(horizontalLocation)
-                .Build());
+                                                             .AddLine(line)
+                                                             .SetNodeLabel("Line")
+                                                             .SetHorizontalParagraph(horizontalLocation)
+                                                             .Build());
         }
     }
 }

@@ -11,6 +11,7 @@
     public class WordParser
     {
         private ConfigData configData;
+        private GridCollection gridCollection;
         private LineMapping lineMapping;
         private List<WordTable> tables;
         private SearchTree treeStructure;
@@ -51,6 +52,7 @@
 
         private void InitializeFieldsFromWordReader(WordReader reader)
         {
+            this.gridCollection = reader.GridCollection;
             this.lineMapping = reader.Mapping;
             this.tables = reader.TableCollection;
         }
