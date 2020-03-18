@@ -68,6 +68,7 @@
         private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWS, int headerRow, int fieldColumn, string fieldName, string valueType)
         {
             ConfigField field = InitializeConfigField(fieldName, valueType, sourceWS.Cells.Item[GetFieldExpressionRow(sourceWS, headerRow), fieldColumn].Value2);
+            SetGridCoordinates(field, sourceWS.Cells.Item[GetGridCoordinatesRow(sourceWS, headerRow), fieldColumn].Value2);
             AddSearchExpressionsToField(field, sourceWS, headerRow, fieldColumn);
             PrintDebugMessage(field);
             return field;
@@ -90,6 +91,16 @@
             {
                 field.AddSearchExpression(new ConfigExpression(field.ValueType, sourceWS.Cells.Item[row, fieldColumn].Value2));
             }
+        }
+
+        private static void SetGridCoordinates(ConfigField field, string coordinatesValue)
+        {
+            field.ParseGridCoordinates(coordinatesValue);
+        }
+
+        private static int GetGridCoordinatesRow(Worksheet sourceWS, int headerRow)
+        {
+            return GetNonFieldNameIdentifierByTitle("grid coordinates", sourceWS, headerRow);
         }
 
         private static int GetSearchValuesRow(Worksheet sourceWS, int headerRow)

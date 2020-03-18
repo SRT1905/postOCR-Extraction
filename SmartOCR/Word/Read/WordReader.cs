@@ -48,6 +48,11 @@
         public LineMapping Mapping { get; private set; } = new LineMapping();
 
         /// <summary>
+        /// Gets collection of <see cref="LineMapping"/>, evenly distributed in segments, accessible by page number.
+        /// </summary>
+        public GridCollection GridCollection { get; private set; } = new GridCollection();
+
+        /// <summary>
         /// Closes Word document if it is open.
         /// </summary>
         public void Dispose()
@@ -81,6 +86,7 @@
             if (pageIndex >= 1)
             {
                 this.Mapping = this.ReadSinglePage(pageIndex);
+                this.GridCollection.Add(pageIndex, new GridStructure(this.Mapping, 3));
             }
         }
 
@@ -209,6 +215,7 @@
         private void GetDataFromPage(int i)
         {
             var pageContent = this.ReadSinglePage(i);
+            this.GridCollection.Add(i, new GridStructure(pageContent, 3));
             this.UpdateLineMapping(pageContent);
         }
 

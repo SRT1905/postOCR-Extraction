@@ -52,6 +52,11 @@
         public bool UseSoundex { get; private set; }
 
         /// <summary>
+        /// Gets a value pair, indicating grid coordinates where field search should be performed.
+        /// </summary>
+        public Tuple<int, int> GridCoordinates { get; private set; }
+
+        /// <summary>
         /// Parses Excel cell contents and gets regular expression pattern and expected field name.
         /// </summary>
         /// <param name="input">String representation of Excel cell contents.</param>
@@ -65,6 +70,21 @@
             }
 
             this.SplitInputAndSetProperties(input);
+        }
+
+        /// <summary>
+        /// Parses Excel cell contents and gets coordinates of grid structure, where search should be done.
+        /// </summary>
+        /// <param name="coordinatesValue">String representation of Excel cell contents.</param>
+        public void ParseGridCoordinates(string coordinatesValue)
+        {
+            if (string.IsNullOrEmpty(coordinatesValue))
+            {
+                this.GridCoordinates = new Tuple<int, int>(-1, -1);
+                return;
+            }
+
+            this.GridCoordinates = ParseSplittedCoordinates(coordinatesValue.Replace(" ", string.Empty).Split(','));
         }
 
         /// <summary>
@@ -88,6 +108,20 @@
         public override string ToString()
         {
             return $"Config field: {this.Name}; value type: {this.ValueType}";
+        }
+
+        private static Tuple<int, int> ParseSplittedCoordinates(string[] coordinates)
+        {
+            return new Tuple<int, int>(
+                TryParseStringAsInteger(coordinates[0]),
+                TryParseStringAsInteger(coordinates[1]));
+        }
+
+        private static int TryParseStringAsInteger(string value)
+        {
+            return int.TryParse(value, out int result)
+                ? result
+                : -1;
         }
 
         private static void JoinSplittedRegularExpression(List<string> splittedValue)
