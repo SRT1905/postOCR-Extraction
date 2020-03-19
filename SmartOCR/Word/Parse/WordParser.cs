@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.
@@ -41,6 +42,19 @@
             return this.treeStructure.GetValuesFromTree();
         }
 
+        private static bool DoesTreeNodeHasGridCoordinates(TreeNode fieldNode) => Equals(fieldNode.Content.GridCoordinates, new Tuple<int, int>(-1, -1));
+
+        private static bool ProcessTableNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
+        {
+            new TableNodeProcessor(gridStructure[fieldNode.Content.GridCoordinates].Item2, fieldNode).Process();
+            if (!fieldNode.Content.Status)
+            {
+                fieldNode.Reset();
+            }
+
+            return fieldNode.Content.Status;
+        }
+
         private void InitializeFields(WordReader reader, ConfigData data)
         {
             this.InitializeFieldsFromWordReader(reader);
@@ -67,28 +81,31 @@
         {
             if (fieldNode.Content.ValueType.Contains("Table"))
             {
-                this.InitializeTableNodeAndGetData(fieldNode);
+                Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
+                this.InitializeNodeAndGetData(fieldNode, ProcessTableNodeWithinGridSegment, this.ProcessTableNodeWithinAllGrid);
             }
             else
             {
-                this.InitializeFieldNodeAndGetData(fieldNode);
+                this.InitializeNodeAndGetData(fieldNode, this.ProcessFieldNodeWithinGridSegment, this.ProcessFieldNodeWithinAllGrid);
             }
         }
 
-        private void InitializeFieldNodeAndGetData(TreeNode fieldNode)
+        private void InitializeNodeAndGetData(TreeNode fieldNode, Func<TreeNode, GridStructure, bool> segmentSearchFunc, Action<TreeNode> postSegmentSearchAction)
         {
-            if (!Equals(fieldNode.Content.GridCoordinates, new Tuple<int, int>(-1, -1)))
+            if (!DoesTreeNodeHasGridCoordinates(fieldNode))
             {
-                foreach (var pageGridPair in this.gridCollection)
+                if (this.gridCollection.Any(pageGridPair => segmentSearchFunc(fieldNode, pageGridPair.Value)))
                 {
-                    if (this.ProcessFieldNodeWithinGridSegment(fieldNode, pageGridPair.Value))
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
 
-            this.ProcessFieldNodeWithinAllGrid(fieldNode);
+            postSegmentSearchAction(fieldNode);
+        }
+
+        private void ProcessTableNodeWithinAllGrid(TreeNode fieldNode)
+        {
+            new TableNodeProcessor(this.tables, fieldNode).Process();
         }
 
         private void ProcessFieldNodeWithinAllGrid(TreeNode fieldNode)
@@ -98,19 +115,15 @@
 
         private bool ProcessFieldNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
         {
-            new FieldNodeProcessor(this.configData[fieldNode.Content.Name], gridStructure[fieldNode.Content.GridCoordinates]).ProcessFieldNode(fieldNode);
+            new FieldNodeProcessor(
+                this.configData[fieldNode.Content.Name],
+                gridStructure[fieldNode.Content.GridCoordinates].Item1).ProcessFieldNode(fieldNode);
             if (!fieldNode.Content.Status)
             {
                 fieldNode.Reset();
             }
 
             return fieldNode.Content.Status;
-        }
-
-        private void InitializeTableNodeAndGetData(TreeNode fieldNode)
-        {
-            Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
-            new TableNodeProcessor(this.tables, fieldNode).Process();
         }
     }
 }

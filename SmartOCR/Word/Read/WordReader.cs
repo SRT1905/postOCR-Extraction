@@ -211,7 +211,7 @@
 
         private void TryAddGridStructure(int pageIndex, LineMapping mapping)
         {
-            this.GridCollection.Add(pageIndex, new GridStructure(mapping, 3));
+            this.GridCollection.Add(pageIndex, new GridStructure(mapping, this.TableCollection, 3));
         }
 
         private void GetDataFromPage(int pageIndex)

@@ -5,12 +5,13 @@
     using System.Linq;
 
     /// <summary>
-    /// Represents grid-like structure, that contains line mapping, broken into evenly distrubuted segments.
+    /// Represents grid-like structure, that contains pairs of line mapping and <see cref="WordTable"/> collection, broken into evenly distributed segments.
     /// </summary>
     public class GridStructure
     {
-        private LineMapping[][] grid;
+        private Tuple<LineMapping, List<WordTable>>[][] grid;
         private LineMapping source;
+        private List<WordTable> tables;
         private int singleSegmentRowSize;
         private decimal singleSegmentColumnSize;
 
@@ -18,12 +19,14 @@
         /// Initializes a new instance of the <see cref="GridStructure"/> class.
         /// </summary>
         /// <param name="lineMapping">A source line mapping.</param>
+        /// <param name="tableCollection">A collection of <see cref="WordTable"/>.</param>
         /// <param name="size">Max number of segments (both rows and columns).</param>
-        public GridStructure(LineMapping lineMapping, int size)
+        public GridStructure(LineMapping lineMapping, List<WordTable> tableCollection, int size)
         {
-            this.InitializeFields(lineMapping, size);
+            this.InitializeFields(lineMapping, tableCollection, size);
             this.InitializeGrid();
             this.PopulateGrid();
+            this.AddTablesToGrid();
         }
 
         /// <summary>
@@ -32,22 +35,30 @@
         public int Size { get; private set; }
 
         /// <summary>
-        /// Gets line mapping in specified grid segment.
+        /// Gets line mapping in specified grid gridSegment.
         /// </summary>
         /// <param name="gridRow">Row index.</param>
         /// <param name="gridColumn">Column index.</param>
-        /// <returns>An <see cref="LineMapping"/> instance.</returns>
-        public LineMapping this[int gridRow, int gridColumn] =>
+        /// <returns>A pair of <see cref="LineMapping"/> instance and <see cref="WordTable"/> collection.</returns>
+        public Tuple<LineMapping, List<WordTable>> this[int gridRow, int gridColumn] =>
             this.AreIndexersValid(gridRow, gridColumn)
                 ? this.grid[gridRow][gridColumn]
                 : null;
 
         /// <summary>
-        /// Gets line mapping in specified grid segment.
+        /// Gets line mapping in specified grid gridSegment.
         /// </summary>
         /// <param name="gridCoordinates">A tuple, containing grid coordinates.</param>
-        /// <returns>An <see cref="LineMapping"/> instance.</returns>
-        public LineMapping this[Tuple<int, int> gridCoordinates] => this[gridCoordinates.Item1, gridCoordinates.Item2];
+        /// <returns>A pair of <see cref="LineMapping"/> instance and <see cref="WordTable"/> collection.</returns>
+        public Tuple<LineMapping, List<WordTable>> this[Tuple<int, int> gridCoordinates] => this[gridCoordinates.Item1, gridCoordinates.Item2];
+
+        private static bool DoesGridSegmentContainsTableAnchor(LineMapping gridSegment, ParagraphContainer anchor)
+        {
+            return gridSegment.Any(
+                lineContent => lineContent.Value
+                    .Any(paragraphContainer => paragraphContainer.HorizontalLocation == anchor.HorizontalLocation &&
+                                               paragraphContainer.VerticalLocation == anchor.VerticalLocation));
+        }
 
         private bool AreIndexersValid(int gridRow, int gridColumn)
         {
@@ -55,10 +66,11 @@
                    gridColumn >= 0 && gridRow < this.Size;
         }
 
-        private void InitializeFields(LineMapping lineMapping, int size)
+        private void InitializeFields(LineMapping lineMapping, List<WordTable> tableCollection, int size)
         {
             this.source = lineMapping;
             this.Size = size;
+            this.tables = tableCollection;
             this.InitializeSegmentDimensions();
         }
 
@@ -70,7 +82,7 @@
 
         private void InitializeGrid()
         {
-            this.grid = new LineMapping[this.Size][];
+            this.grid = new Tuple<LineMapping, List<WordTable>>[this.Size][];
             for (int gridRow = 0; gridRow < this.Size; gridRow++)
             {
                 this.InitializeGridRow(gridRow);
@@ -79,7 +91,7 @@
 
         private void InitializeGridRow(int gridRow)
         {
-            this.grid[gridRow] = new LineMapping[this.Size];
+            this.grid[gridRow] = new Tuple<LineMapping, List<WordTable>>[this.Size];
             this.AddEmptyMappingsToGridRow(gridRow);
         }
 
@@ -87,7 +99,7 @@
         {
             for (int gridColumn = 0; gridColumn < this.Size; gridColumn++)
             {
-                this.grid[gridRow][gridColumn] = new LineMapping();
+                this.grid[gridRow][gridColumn] = new Tuple<LineMapping, List<WordTable>>(new LineMapping(), new List<WordTable>());
             }
         }
 
@@ -96,6 +108,32 @@
             for (int gridRow = 0; gridRow < this.Size; gridRow++)
             {
                 this.PopulateGridRow(gridRow);
+            }
+        }
+
+        private void AddTablesToGrid()
+        {
+            foreach (var table in this.tables)
+            {
+                this.AddSingleTableToGrid(table);
+            }
+        }
+
+        private void AddSingleTableToGrid(WordTable table)
+        {
+            for (int i = 0; i < this.Size; i++)
+            {
+                for (int j = 0; j < this.Size; j++)
+                {
+                    var segment = this.grid[i][j];
+                    if (!DoesGridSegmentContainsTableAnchor(segment.Item1, table.Anchor))
+                    {
+                        continue;
+                    }
+
+                    segment.Item2.Add(table);
+                    return;
+                }
             }
         }
 
@@ -126,7 +164,7 @@
             for (int gridColumn = 0; gridColumn < this.Size; gridColumn++)
             {
                 this.AddParagraphsAndSort(
-                    this.grid[gridRow][gridColumn],
+                    this.grid[gridRow][gridColumn].Item1,
                     lineCount,
                     splittedParagraphCollection[gridColumn]);
             }
