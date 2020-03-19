@@ -47,6 +47,19 @@
             }
         }
 
+        /// <summary>
+        /// Gets line mapping in specified grid segment.
+        /// </summary>
+        /// <param name="gridCoordinates">A tuple, containing grid coordinates.</param>
+        /// <returns>An <see cref="LineMapping"/> instance.</returns>
+        public LineMapping this[Tuple<int, int> gridCoordinates]
+        {
+            get
+            {
+                return this[gridCoordinates.Item1, gridCoordinates.Item2];
+            }
+        }
+
         private bool AreIndexersValid(int gridRow, int gridColumn)
         {
             return gridRow >= 0 && gridRow < this.Size &&

@@ -73,50 +73,46 @@
             }
             else
             {
-                this.InitializeLineNodeAndGetData(fieldNode);
+                this.InitializeFieldNodeAndGetData(fieldNode);
             }
         }
 
-        private void InitializeLineNodeAndGetData(TreeNode fieldNode)
+        private void InitializeFieldNodeAndGetData(TreeNode fieldNode)
         {
-            fieldNode = this.InitializeFieldNode(fieldNode);
-
-            if (fieldNode.Content.Lines[0] != 0)
+            if (fieldNode.Content.GridCoordinates != new Tuple<int, int>(-1, -1))
             {
-                Utilities.Debug($"Performing search for field node '{fieldNode.Content.Name}' data.", 2);
-                this.ProcessFieldNodeChildren(fieldNode);
+                foreach (var pageGridPair in this.gridCollection)
+                {
+                    if (this.ProcessFieldNodeWithinGridSegment(fieldNode, pageGridPair.Value))
+                    {
+                        return;
+                    }
+                }
             }
+
+            this.ProcessFieldNodeWithinAllGrid(fieldNode);
         }
 
-        private void ProcessFieldNodeChildren(TreeNode fieldNode)
+        private void ProcessFieldNodeWithinAllGrid(TreeNode fieldNode)
         {
-            foreach (TreeNode lineNode in fieldNode.Children)
+            new FieldNodeProcessor(this.configData[fieldNode.Content.Name], this.lineMapping).ProcessFieldNode(fieldNode);
+        }
+
+        private bool ProcessFieldNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
+        {
+            new FieldNodeProcessor(this.configData[fieldNode.Content.Name], gridStructure[fieldNode.Content.GridCoordinates]).ProcessFieldNode(fieldNode);
+            if (!fieldNode.Content.Status)
             {
-                this.ProcessSingleLineNode(fieldNode, lineNode);
+                fieldNode.Reset();
             }
-        }
 
-        private void ProcessSingleLineNode(TreeNode fieldNode, TreeNode lineNode)
-        {
-            new LineNodeProcessor(this.configData[fieldNode.Content.Name], this.lineMapping)
-                                    .ProcessLineNode(lineNode);
+            return fieldNode.Content.Status;
         }
 
         private void InitializeTableNodeAndGetData(TreeNode fieldNode)
         {
             Utilities.Debug($"Performing search for table node '{fieldNode.Content.Name}' data.", 2);
             new TableNodeProcessor(this.tables, fieldNode).Process();
-        }
-
-        private TreeNode InitializeFieldNode(TreeNode fieldNode)
-        {
-            if (fieldNode.Content.Lines[0] == 0)
-            {
-                Utilities.Debug($"Initializing field node '{fieldNode.Content.Name}' data.", 2);
-                fieldNode = new UndefinedNodeProcessor(fieldNode, this.lineMapping, this.configData).GetProcessedNode();
-            }
-
-            return fieldNode;
         }
     }
 }

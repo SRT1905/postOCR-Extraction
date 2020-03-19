@@ -115,5 +115,16 @@
 
             return base.ToString();
         }
+
+        /// <summary>
+        /// Removes children from node and resets search status and found value.
+        /// </summary>
+        public void Reset()
+        {
+            this.Children.Clear();
+            this.Content.Lines.Clear();
+            this.Content.Lines.Add(0);
+            this.Content.Status = false;
+        }
     }
 }

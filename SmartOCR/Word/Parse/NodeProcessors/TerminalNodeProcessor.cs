@@ -53,7 +53,7 @@
         private static void PropagateStatusUpTree(bool status, TreeNode node)
         {
             TreeNode tempNode = node;
-            while (tempNode.Parent.Content.Name != "root")
+            while (tempNode.Content.Name != "root")
             {
                 tempNode.Content.Status = status;
                 tempNode = tempNode.Parent;

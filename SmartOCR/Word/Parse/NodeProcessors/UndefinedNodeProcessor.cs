@@ -10,19 +10,19 @@
     /// </summary>
     public class UndefinedNodeProcessor
     {
-        private TreeNode node;
+        private ConfigField configField;
         private LineMapping lineMapping;
-        private ConfigData configData;
+        private TreeNode node;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UndefinedNodeProcessor"/> class.
         /// </summary>
         /// <param name="fieldNode">An empty field node.</param>
         /// <param name="lineMapping">A mapping between document line and paragraphs on line.</param>
-        /// <param name="configData">A collection of config fields.</param>
-        public UndefinedNodeProcessor(TreeNode fieldNode, LineMapping lineMapping, ConfigData configData)
+        /// <param name="configField">Config field description.</param>
+        public UndefinedNodeProcessor(TreeNode fieldNode, LineMapping lineMapping, ConfigField configField)
         {
-            this.InitializeFields(fieldNode, lineMapping, configData);
+            this.InitializeFields(fieldNode, lineMapping, configField);
             this.GetDataFromUndefinedNode();
         }
 
@@ -55,11 +55,11 @@
                                                             .ToArray();
         }
 
-        private void InitializeFields(TreeNode node, LineMapping lineMapping, ConfigData configData)
+        private void InitializeFields(TreeNode node, LineMapping lineMapping, ConfigField configData)
         {
             this.node = node;
             this.lineMapping = lineMapping;
-            this.configData = configData;
+            this.configField = configData;
         }
 
         private void GetDataFromUndefinedNode()
@@ -175,7 +175,7 @@
         {
             this.ClearNodeChildrenAndLines();
             this.AddChildrenToFieldNode(collectedData);
-            SearchTree.AddSearchValues(this.configData[this.node.Content.Name], this.node);
+            SearchTree.AddSearchValues(this.configField, this.node);
         }
 
         private void ClearNodeChildrenAndLines()
