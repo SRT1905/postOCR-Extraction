@@ -1,7 +1,6 @@
 ﻿namespace SmartOCR
 {
     using System;
-    using System.Collections.Generic;
 
     /// <summary>
     /// Used to contain similarity properties between two strings.
@@ -28,21 +27,13 @@
         public SimilarityDescription(string foundString, string checkString)
         {
             ValidateInput(foundString, checkString);
-            this.InitializeFields(foundString, checkString, new LevensteinAlgorithm());
+            this.InitializeFields(foundString, checkString);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimilarityDescription"/> class.
-        /// Instance is initialized with strings to be compared.
+        /// Sets algorithm that is used to calculate string similarity for all instances, initialized after setting this property.
         /// </summary>
-        /// <param name="foundString">String, found within Word document.</param>
-        /// <param name="checkString">String to compare with one, found within Word document.</param>
-        /// <param name="algorithm">A instance, implementing <see cref="ISimilarityAlgorithm"/> interface.</param>
-        public SimilarityDescription(string foundString, string checkString, ISimilarityAlgorithm algorithm)
-        {
-            ValidateInput(foundString, checkString);
-            this.InitializeFields(foundString, checkString, algorithm);
-        }
+        public static ISimilarityAlgorithm SimilarityAlgorithm { private get; set; } = new LevensteinAlgorithm();
 
         /// <summary>
         /// Gets percentage of closeness between two strings.
@@ -87,12 +78,12 @@
             }
         }
 
-        private void InitializeFields(string foundString, string checkString, ISimilarityAlgorithm algorithm)
+        private void InitializeFields(string foundString, string checkString)
         {
             if (foundString.Length - StringLengthOffset <= checkString.Length &&
                 foundString.Length + StringLengthOffset >= checkString.Length)
             {
-                this.Ratio = algorithm.GetStringSimilarity(foundString, checkString);
+                this.Ratio = SimilarityAlgorithm.GetStringSimilarity(foundString, checkString);
                 this.Source = checkString;
                 this.Value = foundString;
             }
