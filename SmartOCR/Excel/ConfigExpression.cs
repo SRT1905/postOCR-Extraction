@@ -61,8 +61,8 @@
 
         private static string[] DefineNumericParameterTitles(string valueType)
         {
-            string[] tableParameterTitles = new string[2] { "row", "column" };
-            string[] parameterTitles = new string[2] { "line_offset", "horizontal_status" };
+            string[] tableParameterTitles = { "row", "column" };
+            string[] parameterTitles = { "line_offset", "horizontal_status" };
 
             return valueType.Contains("Table")
                 ? tableParameterTitles
@@ -105,12 +105,9 @@
 
         private List<string> ParseInput(string input)
         {
-            if (input == null)
-            {
-                return new List<string>() { null, "0", "0" };
-            }
-
-            return this.DefineExpressionParameters(input);
+            return input == null
+                ? new List<string>() { null, "0", "0" }
+                : this.DefineExpressionParameters(input);
         }
 
         private List<string> DefineExpressionParameters(string input)
@@ -123,10 +120,8 @@
         private List<string> ValidateNumericParameters(List<string> splittedInput)
         {
             AddZerosToEnd(splittedInput);
-
             this.RegExPattern = splittedInput[0];
             TrySetDefaultNumericValues(splittedInput);
-
             return splittedInput;
         }
     }

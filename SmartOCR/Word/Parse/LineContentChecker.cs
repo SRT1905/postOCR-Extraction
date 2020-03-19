@@ -10,11 +10,11 @@
     /// </summary>
     public class LineContentChecker
     {
-        private readonly List<ParagraphContainer> paragraphs = new List<ParagraphContainer>();
+        private readonly List<ParagraphContainer> paragraphs;
         private readonly int searchStatus;
         private readonly bool useSoundex;
         private int finishIndex;
-        private int startIndex = 0;
+        private int startIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LineContentChecker"/> class.
@@ -36,7 +36,6 @@
         /// </summary>
         /// <param name="paragraphs">Collection of paragraphs.</param>
         /// <param name="nodeContent">An instance of <see cref="TreeNodeContent"/>, containing info about soundex usage, location and search status.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Invalid <paramref name="searchStatus"/> value is provided.</exception>
         public LineContentChecker(List<ParagraphContainer> paragraphs, TreeNodeContent nodeContent)
             : this(paragraphs, nodeContent.UseSoundex)
         {
@@ -47,14 +46,14 @@
         }
 
         /// <summary>
-        /// Gets or sets all matches in paragraph.
+        /// Gets all matches in paragraph.
         /// </summary>
-        public string JoinedMatches { get; set; }
+        public string JoinedMatches { get; private set; }
 
         /// <summary>
-        /// Gets or sets position of first/last paragraph to test and matched paragraph location.
+        /// Gets position of first/last paragraph to test and matched paragraph location.
         /// </summary>
-        public decimal ParagraphHorizontalLocation { get; set; }
+        public decimal ParagraphHorizontalLocation { get; private set; }
 
         /// <summary>
         /// Tests paragraphs for matching with regular expression and performs similarity check with passed value.
@@ -67,17 +66,19 @@
             for (int location = this.startIndex; location <= this.finishIndex; location++)
             {
                 string paragraphContent = this.GetTextToCheckByItsLocation(location);
-                if (regExObject.IsMatch(paragraphContent))
+                if (!regExObject.IsMatch(paragraphContent))
                 {
-                    if (string.IsNullOrEmpty(checkValue))
-                    {
-                        return this.ProcessMatchWithoutCheck(regExObject, location, paragraphContent);
-                    }
+                    continue;
+                }
 
-                    if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
-                    {
-                        return true;
-                    }
+                if (string.IsNullOrEmpty(checkValue))
+                {
+                    return this.ProcessMatchWithoutCheck(regExObject, location, paragraphContent);
+                }
+
+                if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
+                {
+                    return true;
                 }
             }
 
@@ -93,7 +94,7 @@
         /// <returns>Collection of found matches.</returns>
         private static List<string> GetMatchesFromParagraph(Regex regexObject, string textToCheck)
         {
-            MatchCollection matches = regexObject.Matches(textToCheck);
+            var matches = regexObject.Matches(textToCheck);
             var foundValues = new List<string>();
             for (int i = 0; i < matches.Count; i++)
             {
@@ -132,8 +133,8 @@
         /// <returns>Collection of <see cref="SimilarityDescription"/> objects, containing matches and similarity ratios.</returns>
         private static List<SimilarityDescription> GetMatchesFromParagraph(Regex regexObject, string textToCheck, string checkValue)
         {
-            MatchCollection matches = regexObject.Matches(textToCheck);
-            List<SimilarityDescription> foundValues = new List<SimilarityDescription>();
+            var matches = regexObject.Matches(textToCheck);
+            var foundValues = new List<SimilarityDescription>();
             foreach (Match match in matches)
             {
                 GetValuesFromParagraphSingleMatch(match, foundValues, checkValue);
@@ -156,7 +157,7 @@
 
         private static void ProcessSingleMatchWithCheck(List<SimilarityDescription> foundValues, string checkValue, Match singleMatch)
         {
-            SimilarityDescription description = new SimilarityDescription(singleMatch.Value, checkValue);
+            var description = new SimilarityDescription(singleMatch.Value, checkValue);
             if (description.AreStringsSimilar())
             {
                 foundValues.Add(description);
@@ -173,7 +174,7 @@
 
         private static void TryAddSimilarityDescription(List<SimilarityDescription> foundValues, string checkValue, Group singleGroup)
         {
-            SimilarityDescription description = new SimilarityDescription(singleGroup.Value, checkValue);
+            var description = new SimilarityDescription(singleGroup.Value, checkValue);
             if (description.AreStringsSimilar())
             {
                 foundValues.Add(description);
@@ -199,8 +200,8 @@
         private string GetTextToCheckByItsLocation(int location)
         {
             return this.useSoundex
-                                ? this.paragraphs[location].Soundex
-                                : this.paragraphs[location].Text;
+                ? this.paragraphs[location].Soundex
+                : this.paragraphs[location].Text;
         }
 
         /// <summary>
@@ -234,11 +235,13 @@
 
         private void CombineMatchesAndSetFoundLocation(int location, List<SimilarityDescription> foundMatches)
         {
-            if (foundMatches.Count != 0)
+            if (foundMatches.Count == 0)
             {
-                this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
-                this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
+                return;
             }
+
+            this.JoinedMatches = string.Join("|", foundMatches.Select(item => item.Value));
+            this.ParagraphHorizontalLocation = this.paragraphs[location].HorizontalLocation;
         }
 
         private List<SimilarityDescription> GetMatchesWithCheckValue(Regex regExObject, int location, string checkValue)
@@ -268,8 +271,6 @@
                     break;
                 case -1:
                     this.finishIndex = this.GetParagraphByLocation(false);
-                    break;
-                default:
                     break;
             }
         }

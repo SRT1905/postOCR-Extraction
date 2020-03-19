@@ -85,7 +85,7 @@
 
         private void DoOffsetSearch(TreeNode lineNode, int lineNumber, int searchLevel)
         {
-            new OffsetNodeProcessor(this.configField, this.lineMapping).OffsetSearch(lineNode, lineNumber, searchLevel, addToParent: true);
+            new OffsetNodeProcessor(this.configField, this.lineMapping).OffsetSearch(lineNode, lineNumber, searchLevel, addToParentStatus: true);
         }
 
         private void ProcessNextLevelNodes(TreeNode lineNode, int lineNumber, int searchLevel)
@@ -96,9 +96,7 @@
 
         private bool GetLineStatus(TreeNodeContent lineNodeContent, int lineNumber)
         {
-            return this.lineMapping.ContainsKey(lineNumber)
-                ? this.TryMatchLineData(lineNodeContent, lineNumber)
-                : false;
+            return this.lineMapping.ContainsKey(lineNumber) && this.TryMatchLineData(lineNodeContent, lineNumber);
         }
 
         private void ProcessLineNodeChildren(TreeNode lineNode, int searchLevel)
@@ -132,11 +130,13 @@
 
         private void TryAddLineToChildContent(TreeNodeContent childContent, List<int> keys, int lineIndex)
         {
-            if (lineIndex >= 0 && lineIndex < this.lineMapping.Count)
+            if (lineIndex < 0 || lineIndex >= this.lineMapping.Count)
             {
-                childContent.Lines.Clear();
-                childContent.Lines.Add(keys[lineIndex]);
+                return;
             }
+
+            childContent.Lines.Clear();
+            childContent.Lines.Add(keys[lineIndex]);
         }
 
         private bool TryMatchLineData(TreeNodeContent lineNodeContent, int lineNumber)

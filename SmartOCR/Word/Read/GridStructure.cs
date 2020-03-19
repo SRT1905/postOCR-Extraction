@@ -37,28 +37,17 @@
         /// <param name="gridRow">Row index.</param>
         /// <param name="gridColumn">Column index.</param>
         /// <returns>An <see cref="LineMapping"/> instance.</returns>
-        public LineMapping this[int gridRow, int gridColumn]
-        {
-            get
-            {
-                return this.AreIndexersValid(gridRow, gridColumn)
-                    ? this.grid[gridRow][gridColumn]
-                    : null;
-            }
-        }
+        public LineMapping this[int gridRow, int gridColumn] =>
+            this.AreIndexersValid(gridRow, gridColumn)
+                ? this.grid[gridRow][gridColumn]
+                : null;
 
         /// <summary>
         /// Gets line mapping in specified grid segment.
         /// </summary>
         /// <param name="gridCoordinates">A tuple, containing grid coordinates.</param>
         /// <returns>An <see cref="LineMapping"/> instance.</returns>
-        public LineMapping this[Tuple<int, int> gridCoordinates]
-        {
-            get
-            {
-                return this[gridCoordinates.Item1, gridCoordinates.Item2];
-            }
-        }
+        public LineMapping this[Tuple<int, int> gridCoordinates] => this[gridCoordinates.Item1, gridCoordinates.Item2];
 
         private bool AreIndexersValid(int gridRow, int gridColumn)
         {
@@ -163,7 +152,7 @@
 
         private List<ParagraphContainer>[] DistributeSourceParagraphs(List<ParagraphContainer> sourceParagraphs, List<ParagraphContainer>[] splittedParagraphs)
         {
-            foreach (ParagraphContainer item in sourceParagraphs)
+            foreach (var item in sourceParagraphs)
             {
                 splittedParagraphs[this.GetGridColumnForParagraph(item)].Add(item);
             }

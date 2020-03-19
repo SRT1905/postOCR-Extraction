@@ -52,7 +52,7 @@
 
         private static void PropagateStatusUpTree(bool status, TreeNode node)
         {
-            TreeNode tempNode = node;
+            var tempNode = node;
             while (tempNode.Content.Name != "root")
             {
                 tempNode.Content.Status = status;
@@ -94,10 +94,22 @@
             }
         }
 
+        private static Tuple<int, int> DefineSearchIndexes(TreeNodeContent nodeContent, List<ParagraphContainer> paragraphCollection)
+        {
+            int startIndex = nodeContent.SecondSearchParameter == 1
+                ? GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, true)
+                : 0;
+            int finishIndex = nodeContent.SecondSearchParameter == -1
+                ? GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, false)
+                : paragraphCollection.Count - 1;
+
+            return Tuple.Create(startIndex, finishIndex);
+        }
+
         private bool ProcessDataInLine(TreeNode terminalNode, int lineNumber)
         {
             List<ParagraphContainer> paragraphCollection = this.lineMapping[lineNumber];
-            var indexTuple = this.DefineSearchIndexes(terminalNode.Content, paragraphCollection);
+            var indexTuple = DefineSearchIndexes(terminalNode.Content, paragraphCollection);
 
             for (int paragraphIndex = indexTuple.Item1; paragraphIndex <= indexTuple.Item2; paragraphIndex++)
             {
@@ -113,30 +125,18 @@
         private void DoOffsetSearch(TreeNode terminalNode, int searchLevel, int lineNumber)
         {
             new OffsetNodeProcessor(this.configField, this.lineMapping)
-                .OffsetSearch(terminalNode, lineNumber, searchLevel, addToParent: true);
+                .OffsetSearch(terminalNode, lineNumber, searchLevel, addToParentStatus: true);
         }
 
         private bool ProcessValueInSingleParagraph(string paragraphText, TreeNode node)
         {
-            MatchProcessor matchProcessor = new MatchProcessor(
+            var matchProcessor = new MatchProcessor(
                 paragraphText,
                 Utilities.CreateRegexpObject(node.Content.TextExpression),
                 node.Content.ValueType);
             ValidateMatchProcessorResult(node, matchProcessor);
 
             return node.Content.Status;
-        }
-
-        private Tuple<int, int> DefineSearchIndexes(TreeNodeContent nodeContent, List<ParagraphContainer> paragraphCollection)
-        {
-            int startIndex = nodeContent.SecondSearchParameter == 1
-                ? GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: true)
-                : 0;
-            int finishIndex = nodeContent.SecondSearchParameter == -1
-                ? GetParagraphByLocation(paragraphCollection, nodeContent.HorizontalParagraph, returnNextLargest: false)
-                : paragraphCollection.Count - 1;
-
-            return Tuple.Create(startIndex, finishIndex);
         }
     }
 }

@@ -41,7 +41,6 @@
         {
             var tables = new List<WordTable>(this.document.Tables.Count);
             this.CollectTablesFromFrames(tables);
-
             return tables;
         }
 
@@ -78,9 +77,9 @@
 
         private static void PopulateParagraphMapping(List<TextFrame> frameCollection, ParagraphMapping documentContent)
         {
-            for (int i = 0; i < frameCollection.Count; i++)
+            foreach (var frame in frameCollection)
             {
-                AddDataFromSingleFrame(documentContent, frameCollection[i]);
+                AddDataFromSingleFrame(documentContent, frame);
             }
         }
 
@@ -92,9 +91,9 @@
         private static void AddDataFromSingleFrame(ParagraphMapping documentContent, TextFrame textFrame)
         {
             List<ParagraphContainer> paragraphContainers = GetParagraphsFromTextFrame(textFrame);
-            for (int paragraphIndex = 0; paragraphIndex < paragraphContainers.Count; paragraphIndex++)
+            foreach (var paragraph in paragraphContainers)
             {
-                AddParagraphToContents(documentContent, paragraphContainers[paragraphIndex]);
+                AddParagraphToContents(documentContent, paragraph);
             }
         }
 
@@ -142,9 +141,9 @@
         {
             var frames = this.GetValidTextFrames();
 
-            for (int frameIndex = 0; frameIndex < frames.Count; frameIndex++)
+            foreach (var frame in frames)
             {
-                GetTablesFromSingleFrame(tables, frames[frameIndex]);
+                GetTablesFromSingleFrame(tables, frame);
             }
         }
 

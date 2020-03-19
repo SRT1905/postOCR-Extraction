@@ -49,7 +49,7 @@
 
         private static int[][] InitializeCostsArray(string shortString, string longString)
         {
-            int[][] costs = new int[longString.Length + 1][];
+            var costs = new int[longString.Length + 1][];
             for (int i = 0; i < costs.Length; i++)
             {
                 costs[i] = new int[shortString.Length + 1];

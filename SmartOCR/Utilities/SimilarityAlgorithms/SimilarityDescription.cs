@@ -51,7 +51,7 @@
         public string Value { get; private set; }
 
         /// <summary>
-        /// Checks whether calculated similiarity ratio is sufficient enough to call two strings similar.
+        /// Checks whether calculated similarity ratio is sufficient enough to call two strings similar.
         /// </summary>
         /// <returns>true/false.</returns>
         public bool AreStringsSimilar()
@@ -80,13 +80,15 @@
 
         private void InitializeFields(string foundString, string checkString)
         {
-            if (foundString.Length - StringLengthOffset <= checkString.Length &&
-                foundString.Length + StringLengthOffset >= checkString.Length)
+            if (foundString.Length - StringLengthOffset > checkString.Length ||
+                foundString.Length + StringLengthOffset < checkString.Length)
             {
-                this.Ratio = SimilarityAlgorithm.GetStringSimilarity(foundString, checkString);
-                this.Source = checkString;
-                this.Value = foundString;
+                return;
             }
+
+            this.Ratio = SimilarityAlgorithm.GetStringSimilarity(foundString, checkString);
+            this.Source = checkString;
+            this.Value = foundString;
         }
     }
 }

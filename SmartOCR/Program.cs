@@ -48,12 +48,14 @@
 
         private static void ProcessArguments(string[] args)
         {
-            var cmdProcessor = new CMDProcess(args);
-            if (cmdProcessor.IsReadyToProcess)
+            var cmdProcessor = new CmdProcess(args);
+            if (!cmdProcessor.IsReadyToProcess)
             {
-                cmdProcessor.ExecuteProcessing();
-                Utilities.Debug($"Processing done!");
+                return;
             }
+
+            cmdProcessor.ExecuteProcessing();
+            Utilities.Debug($"Processing done!");
         }
 
         private static void SetDebugLevel(string argument)

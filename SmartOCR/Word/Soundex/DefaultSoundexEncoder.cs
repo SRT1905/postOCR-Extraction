@@ -40,18 +40,19 @@
         {
             List<char> sourceChars = word.ToList();
             char firstLetter = sourceChars[0];
-            sourceChars = this.PrepareSourceChars(sourceChars);
-            return this.Finalize(char.ToUpper(firstLetter), sourceChars);
+            sourceChars = PrepareSourceChars(sourceChars);
+            return Finalize(char.ToUpper(firstLetter), sourceChars);
         }
 
         private static char TryAddCharToBuilder(StringBuilder sb, char charToAdd, char previousChar)
         {
-            if (charToAdd != previousChar)
+            if (charToAdd == previousChar)
             {
-                sb.Append(charToAdd);
-                previousChar = charToAdd;
+                return previousChar;
             }
 
+            sb.Append(charToAdd);
+            previousChar = charToAdd;
             return previousChar;
         }
 
@@ -70,22 +71,22 @@
                                 : sourceChars[index];
         }
 
-        private List<char> PrepareSourceChars(List<char> sourceChars)
+        private static List<char> PrepareSourceChars(List<char> sourceChars)
         {
-            sourceChars = this.RemoveInvalidLetters(sourceChars);
-            sourceChars = this.DoIndexProcedures(sourceChars);
-            sourceChars = this.RemoveVowels(sourceChars);
+            sourceChars = RemoveInvalidLetters(sourceChars);
+            sourceChars = DoIndexProcedures(sourceChars);
+            sourceChars = RemoveVowels(sourceChars);
             return sourceChars;
         }
 
-        private List<char> RemoveInvalidLetters(List<char> sourceChars)
+        private static List<char> RemoveInvalidLetters(List<char> sourceChars)
         {
             return sourceChars.Skip(1)
                               .Where(singleChar => !(singleChar == 'h' || singleChar == 'w'))
                               .ToList();
         }
 
-        private List<char> ReplaceCharsByIndexes(List<char> sourceChars)
+        private static List<char> ReplaceCharsByIndexes(List<char> sourceChars)
         {
             for (int i = 0; i < sourceChars.Count; i++)
             {
@@ -95,32 +96,26 @@
             return sourceChars;
         }
 
-        private List<char> RemoveVowels(List<char> sourceChars)
+        private static List<char> RemoveVowels(List<char> sourceChars)
         {
             sourceChars.RemoveAll(item => Vowels.Contains(item));
             return sourceChars;
         }
 
-        private List<char> TrimRepeatingIndexes(List<char> sourceChars)
+        private static List<char> TrimRepeatingIndexes(List<char> sourceChars)
         {
-            char previousChar = char.MinValue;
             var sb = new StringBuilder();
-
-            foreach (char item in new string(sourceChars.ToArray()))
-            {
-                previousChar = TryAddCharToBuilder(sb, item, previousChar);
-            }
-
+            new string(sourceChars.ToArray()).Aggregate(char.MinValue, (current, item) => TryAddCharToBuilder(sb, item, current));
             return sb.ToString().ToList();
         }
 
-        private List<char> DoIndexProcedures(List<char> sourceChars)
+        private static List<char> DoIndexProcedures(List<char> sourceChars)
         {
-            sourceChars = this.ReplaceCharsByIndexes(sourceChars);
-            return this.TrimRepeatingIndexes(sourceChars);
+            sourceChars = ReplaceCharsByIndexes(sourceChars);
+            return TrimRepeatingIndexes(sourceChars);
         }
 
-        private string Finalize(char firstLetter, List<char> sourceChars)
+        private static string Finalize(char firstLetter, List<char> sourceChars)
         {
             sourceChars.Insert(0, firstLetter);
             AddZerosToRight(sourceChars);

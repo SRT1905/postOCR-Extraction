@@ -24,11 +24,11 @@
                 return;
             }
 
-            this.Result = this.ProcessValue(textToCheck, regExObject, valueType);
+            this.Result = ProcessValue(textToCheck, regExObject, valueType);
         }
 
         /// <summary>
-        /// Gets match, processed as distinct datatype value.
+        /// Gets match, processed as distinct data type value.
         /// </summary>
         public string Result { get; }
 
@@ -43,7 +43,7 @@
                 ? matches[0].Groups[1].Value
                 : matches[0].Value;
             result = Utilities.DateProcessing(result);
-            return DateTime.TryParse(result, out DateTime _)
+            return DateTime.TryParse(result, out _)
                 ? result
                 : string.Empty;
         }
@@ -56,7 +56,7 @@
         private static string ProcessNumber(MatchCollection matches)
         {
             var processedNumber = Utilities.NumberProcessing(matches[0].Value);
-            return double.TryParse(processedNumber, out double result)
+            return double.TryParse(processedNumber, out var result)
                 ? result.ToString(CultureInfo.CurrentCulture)
                 : string.Empty;
         }
@@ -76,27 +76,27 @@
         /// <summary>
         /// Calls for specific type processing for possible match between text and regular expression.
         /// </summary>
+        /// <param name="textToCheck">String to check.</param>
         /// <param name="regexObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
         /// <param name="valueType">Data type of found matches.</param>
-        /// <returns>String representation of casted match.</returns>
-        private string ProcessValue(string textToCheck, Regex regexObject, string valueType)
+        /// <returns>String representation of cast match.</returns>
+        private static string ProcessValue(string textToCheck, Regex regexObject, string valueType)
         {
-            if (regexObject.IsMatch(textToCheck))
+            if (!regexObject.IsMatch(textToCheck))
             {
-                switch (valueType)
-                {
-                    case "String":
-                        return ProcessString(regexObject.Matches(textToCheck));
+                return string.Empty;
+            }
 
-                    case "Number":
-                        return ProcessNumber(regexObject.Matches(textToCheck));
+            switch (valueType)
+            {
+                case "String":
+                    return ProcessString(regexObject.Matches(textToCheck));
 
-                    case "Date":
-                        return ProcessDate(regexObject.Matches(textToCheck));
+                case "Number":
+                    return ProcessNumber(regexObject.Matches(textToCheck));
 
-                    default:
-                        break;
-                }
+                case "Date":
+                    return ProcessDate(regexObject.Matches(textToCheck));
             }
 
             return string.Empty;

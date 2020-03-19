@@ -9,7 +9,6 @@
     public class WordTable
     {
         private readonly string[][] cells;
-        private readonly ParagraphContainer anchor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordTable"/> class.
@@ -23,41 +22,23 @@
             }
 
             this.cells = InitializeCells(wordTable);
-            this.anchor = this.GetFirstCellDescription(wordTable);
+            this.Anchor = this.GetFirstCellDescription(wordTable);
         }
 
         /// <summary>
         /// Gets paragraph description of top-left table cell.
         /// </summary>
-        public ParagraphContainer Anchor
-        {
-            get
-            {
-                return this.anchor;
-            }
-        }
+        public ParagraphContainer Anchor { get; }
 
         /// <summary>
         /// Gets count of rows in table.
         /// </summary>
-        public int RowCount
-        {
-            get
-            {
-                return this.cells.Length;
-            }
-        }
+        public int RowCount => this.cells.Length;
 
         /// <summary>
         /// Gets count of columns in table.
         /// </summary>
-        public int ColumnCount
-        {
-            get
-            {
-                return this.cells[0].Length;
-            }
-        }
+        public int ColumnCount => this.cells[0].Length;
 
         /// <summary>
         /// Returns a string value that represents a cell in a table.
@@ -65,15 +46,10 @@
         /// <param name="row">The number of the row in the table to return. May be negative - then row is taken from table end.</param>
         /// <param name="column">The number of the cell in the table to return. May be negative - then cell is taken from row end.</param>
         /// <returns>A cell value.</returns>
-        public string this[int row, int column]
-        {
-            get
-            {
-                return this.ValidateIndexers(ref row, ref column)
-                    ? this.cells[row][column]
-                    : null;
-            }
-        }
+        public string this[int row, int column] =>
+            this.ValidateIndexers(ref row, ref column)
+                ? this.cells[row][column]
+                : null;
 
         private static string[][] InitializeCells(Table wordTable)
         {
@@ -92,7 +68,7 @@
 
         private static string[][] InitializeRows(Table wordTable)
         {
-            string[][] tableCells = new string[wordTable.Rows.Count][];
+            var tableCells = new string[wordTable.Rows.Count][];
             for (int i = 0; i < wordTable.Rows.Count; i++)
             {
                 tableCells[i] = new string[wordTable.Columns.Count];
@@ -103,17 +79,16 @@
 
         private static string RemoveInvalidChars(string checkString)
         {
-            string[] separators = new string[] { "\r", "\a", "\t", "\f" };
-            string[] temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var separators = new[] { "\r", "\a", "\t", "\f" };
+            var temp = checkString.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(string.Empty, temp).Replace("\v", " ");
         }
 
         private static int ValidateSingleIndexer(int indexer, int marginValue)
         {
-            indexer = indexer < 0
+            return indexer < 0
                 ? marginValue + indexer
                 : indexer;
-            return indexer;
         }
 
         private ParagraphContainer GetFirstCellDescription(Table wordTable)

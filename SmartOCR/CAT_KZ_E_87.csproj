@@ -76,12 +76,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CMDProcess.cs" />
+    <Compile Include="CmdProcess.cs" />
     <Compile Include="Excel\ConfigData.cs" />
     <Compile Include="Excel\ConfigExpression.cs" />
     <Compile Include="Excel\ConfigField.cs" />
     <Compile Include="Excel\ConfigParser.cs" />
     <Compile Include="ParseEntryPoint.cs" />
+    <Compile Include="PathType.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -27,13 +27,7 @@
         /// </summary>
         /// <param name="index">Zero-based index of element to get.</param>
         /// <returns>Single config field.</returns>
-        public ConfigField this[int index]
-        {
-            get
-            {
-                return this.Fields[index];
-            }
-        }
+        public ConfigField this[int index] => this.Fields[index];
 
         /// <summary>
         /// Gets config field by the specified string index.
@@ -44,7 +38,7 @@
         {
             get
             {
-                return this.Fields.Where(singleField => singleField.Name == name).First();
+                return this.Fields.First(singleField => singleField.Name == name);
             }
         }
 
@@ -58,11 +52,6 @@
             {
                 this.Fields.Add(field);
             }
-
-            // else
-            // {
-            //     throw new ArgumentNullException(nameof(field), Properties.Resources.nullConfigField);
-            // }
         }
     }
 }

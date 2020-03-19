@@ -41,17 +41,12 @@
         /// <returns>An instance of Excel application.</returns>
         public static Application GetExcelApplication()
         {
-            if (instance == null)
+            return instance ?? (instance = new Application
             {
-                instance = new Application
-                {
-                    Visible = false,
-                    DisplayAlerts = false,
-                    ScreenUpdating = false,
-                };
-            }
-
-            return instance;
+                Visible = false,
+                DisplayAlerts = false,
+                ScreenUpdating = false,
+            });
         }
 
         /// <summary>
@@ -59,13 +54,9 @@
         /// </summary>
         public static void ExitExcelApplication()
         {
-            Application app = GetExcelApplication();
+            var app = GetExcelApplication();
             app.Quit();
-            if (app != null)
-            {
-                Marshal.ReleaseComObject(app);
-            }
-
+            Marshal.ReleaseComObject(app);
             GC.Collect();
         }
 
@@ -76,7 +67,7 @@
         /// <returns>Workbook representation.</returns>
         public static Workbook OpenExcelWorkbook(string path)
         {
-            Application app = GetExcelApplication();
+            var app = GetExcelApplication();
             return TryGetWorkbook(app.Workbooks, path);
         }
 
@@ -106,7 +97,7 @@
             {
                 return workbooks[path];
             }
-            catch (System.Runtime.InteropServices.COMException)
+            catch (COMException)
             {
                 return workbooks.Open(path);
             }

@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 
     /// <summary>
     /// Class represents description of TreeNode search parameters.
@@ -32,7 +31,7 @@
                 throw new ArgumentNullException(nameof(content));
             }
 
-            foreach (PropertyInfo property in typeof(TreeNodeContent).GetProperties().Where(p => p.CanWrite))
+            foreach (var property in typeof(TreeNodeContent).GetProperties().Where(p => p.CanWrite))
             {
                 property.SetValue(this, property.GetValue(content, null), null);
             }

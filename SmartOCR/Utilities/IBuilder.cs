@@ -4,7 +4,7 @@
     /// Defines a generic interface for any class implementing Builder pattern.
     /// </summary>
     /// <typeparam name="T">Type of instance being built.</typeparam>
-    public interface IBuilder<T>
+    public interface IBuilder<out T>
         where T : class
     {
         /// <summary>

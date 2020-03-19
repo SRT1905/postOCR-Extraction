@@ -24,18 +24,7 @@
         /// <summary>
         /// Gets single reference to Excel workbook with config data.
         /// </summary>
-        public static Workbook ConfigWorkbook
-        {
-            get
-            {
-                return configWorkbook ?? GetInternalConfigWorkbook();
-            }
-
-            private set
-            {
-                configWorkbook = value;
-            }
-        }
+        public static Workbook ConfigWorkbook => configWorkbook ?? GetInternalConfigWorkbook();
 
         /// <summary>
         /// Gets config data from first worksheet on <see cref="ConfigWorkbook"/>.
@@ -49,47 +38,42 @@
         /// <summary>
         /// Gets definition of single config field and its search expressions.
         /// </summary>
-        /// <param name="sourceWS">An Excel worksheet with config data.</param>
+        /// <param name="sourceWs">An Excel worksheet with config data.</param>
         /// <param name="headerRow">Index of row on worksheet with field names.</param>
         /// <param name="fieldColumn">Index of column where field definition is contained.</param>
         /// <returns>An instance of <see cref="ConfigField"/> that describes search field and its expressions.</returns>
-        private static ConfigField GetFieldDefinition(Worksheet sourceWS, int headerRow, int fieldColumn)
+        private static ConfigField GetFieldDefinition(Worksheet sourceWs, int headerRow, int fieldColumn)
         {
-            string fieldName = sourceWS.Cells.Item[headerRow, fieldColumn].Value2;
+            string fieldName = sourceWs.Cells.Item[headerRow, fieldColumn].Value2;
             if (string.IsNullOrEmpty(fieldName))
             {
                 return null;
             }
 
             Utilities.Debug($"Found field '{fieldName}'.", 2);
-            return InitializeAndPopulateConfigField(sourceWS, headerRow, fieldColumn, fieldName, sourceWS.Cells.Item[GetValueTypeRow(sourceWS, headerRow), fieldColumn].Value2);
+            return InitializeAndPopulateConfigField(sourceWs, headerRow, fieldColumn, fieldName, sourceWs.Cells.Item[GetValueTypeRow(sourceWs, headerRow), fieldColumn].Value2);
         }
 
-        private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWS, int headerRow, int fieldColumn, string fieldName, string valueType)
+        private static ConfigField InitializeAndPopulateConfigField(Worksheet sourceWs, int headerRow, int fieldColumn, string fieldName, string valueType)
         {
-            ConfigField field = InitializeConfigField(fieldName, valueType, sourceWS.Cells.Item[GetFieldExpressionRow(sourceWS, headerRow), fieldColumn].Value2);
-            SetGridCoordinates(field, sourceWS.Cells.Item[GetGridCoordinatesRow(sourceWS, headerRow), fieldColumn].Value2);
-            AddSearchExpressionsToField(field, sourceWS, headerRow, fieldColumn);
+            ConfigField field = InitializeConfigField(fieldName, valueType, sourceWs.Cells.Item[GetFieldExpressionRow(sourceWs, headerRow), fieldColumn].Value2);
+            SetGridCoordinates(field, sourceWs.Cells.Item[GetGridCoordinatesRow(sourceWs, headerRow), fieldColumn].Value2);
+            AddSearchExpressionsToField(field, sourceWs, headerRow, fieldColumn);
             PrintDebugMessage(field);
             return field;
         }
 
         private static void PrintDebugMessage(ConfigField field)
         {
-            string message = string.Format(
-                "Value type: {0}, {1} expression: {2}, Count of search expressions: {3}",
-                field.ValueType,
-                field.UseSoundex ? "Soundex" : "Regular",
-                field.TextExpression,
-                field.Expressions.Count);
+            string message = $"Value type: {field.ValueType}, {(field.UseSoundex ? "Soundex" : "Regular")} expression: {field.TextExpression}, Count of search expressions: {field.Expressions.Count}";
             Utilities.Debug(message, 3);
         }
 
-        private static void AddSearchExpressionsToField(ConfigField field, Worksheet sourceWS, int headerRow, int fieldColumn)
+        private static void AddSearchExpressionsToField(ConfigField field, Worksheet sourceWs, int headerRow, int fieldColumn)
         {
-            for (int row = GetSearchValuesRow(sourceWS, headerRow); row <= sourceWS.Cells.Item[sourceWS.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row; row++)
+            for (int row = GetSearchValuesRow(sourceWs, headerRow); row <= sourceWs.Cells.Item[sourceWs.Rows.Count, fieldColumn].End[XlDirection.xlUp].Row; row++)
             {
-                field.AddSearchExpression(new ConfigExpression(field.ValueType, sourceWS.Cells.Item[row, fieldColumn].Value2));
+                field.AddSearchExpression(new ConfigExpression(field.ValueType, sourceWs.Cells.Item[row, fieldColumn].Value2));
             }
         }
 
@@ -98,31 +82,31 @@
             field.ParseGridCoordinates(coordinatesValue);
         }
 
-        private static int GetGridCoordinatesRow(Worksheet sourceWS, int headerRow)
+        private static int GetGridCoordinatesRow(Worksheet sourceWs, int headerRow)
         {
-            return GetNonFieldNameIdentifierByTitle("grid coordinates", sourceWS, headerRow);
+            return GetNonFieldNameIdentifierByTitle("grid coordinates", sourceWs, headerRow);
         }
 
-        private static int GetSearchValuesRow(Worksheet sourceWS, int headerRow)
+        private static int GetSearchValuesRow(Worksheet sourceWs, int headerRow)
         {
-            return GetNonFieldNameIdentifierByTitle("search values", sourceWS, headerRow);
+            return GetNonFieldNameIdentifierByTitle("search values", sourceWs, headerRow);
         }
 
-        private static int GetFieldExpressionRow(Worksheet sourceWS, int headerRow)
+        private static int GetFieldExpressionRow(Worksheet sourceWs, int headerRow)
         {
-            return GetNonFieldNameIdentifierByTitle("field expression", sourceWS, headerRow);
+            return GetNonFieldNameIdentifierByTitle("field expression", sourceWs, headerRow);
         }
 
-        private static int GetValueTypeRow(Worksheet sourceWS, int headerRow)
+        private static int GetValueTypeRow(Worksheet sourceWs, int headerRow)
         {
-            return GetNonFieldNameIdentifierByTitle("value type", sourceWS, headerRow);
+            return GetNonFieldNameIdentifierByTitle("value type", sourceWs, headerRow);
         }
 
-        private static int GetNonFieldNameIdentifierByTitle(string title, Worksheet sourceWS, int headerRow)
+        private static int GetNonFieldNameIdentifierByTitle(string title, Worksheet sourceWs, int headerRow)
         {
-            for (int i = headerRow; i <= sourceWS.Cells.Item[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
+            for (int i = headerRow; i <= sourceWs.Cells.Item[sourceWs.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
             {
-                if (sourceWS.Cells.Item[i, 1].Value2.ToLower().StartsWith(title))
+                if (sourceWs.Cells.Item[i, 1].Value2.ToLower().StartsWith(title))
                 {
                     return i;
                 }
@@ -138,11 +122,11 @@
             return field;
         }
 
-        private static ConfigData AddConfigFields(ConfigData data, Worksheet sourceWS, int headerRow)
+        private static ConfigData AddConfigFields(ConfigData data, Worksheet sourceWs, int headerRow)
         {
-            for (int fieldIndex = 2; fieldIndex <= sourceWS.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
+            for (int fieldIndex = 2; fieldIndex <= sourceWs.UsedRange.Rows[headerRow].Columns.Count; fieldIndex++)
             {
-                data.AddField(GetFieldDefinition(sourceWS, headerRow, fieldIndex));
+                data.AddField(GetFieldDefinition(sourceWs, headerRow, fieldIndex));
             }
 
             return data;
@@ -156,9 +140,9 @@
             return configWorkbook;
         }
 
-        private static bool DoesCellHasIdentifier(Worksheet sourceWS, int headerRow)
+        private static bool DoesCellHasIdentifier(Worksheet sourceWs, int headerRow)
         {
-            return (bool)sourceWS.Cells
+            return (bool)sourceWs.Cells
                                  .Item[headerRow, 1]
                                  .Value2
                                  .ToLower()
@@ -170,17 +154,19 @@
             return ExcelApplication.OpenExcelWorkbook(path);
         }
 
-        private ConfigData GetConfigData(Worksheet sourceWS)
+        private ConfigData GetConfigData(Worksheet sourceWs)
         {
             Utilities.Debug("Getting config data from first worksheet.");
-            ConfigData data = new ConfigData();
-            for (int headerRow = 1; headerRow <= sourceWS.UsedRange.Columns[1].Rows.Count; headerRow++)
+            var data = new ConfigData();
+            for (int headerRow = 1; headerRow <= sourceWs.UsedRange.Columns[1].Rows.Count; headerRow++)
             {
-                if (DoesCellHasIdentifier(sourceWS, headerRow))
+                if (!DoesCellHasIdentifier(sourceWs, headerRow))
                 {
-                    Utilities.Debug($"Found 'Field name' identifier at row {headerRow}.", 1);
-                    return AddConfigFields(data, sourceWS, headerRow);
+                    continue;
                 }
+
+                Utilities.Debug($"Found 'Field name' identifier at row {headerRow}.", 1);
+                return AddConfigFields(data, sourceWs, headerRow);
             }
 
             return data;

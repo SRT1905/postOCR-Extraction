@@ -1,8 +1,6 @@
 ﻿namespace SmartOCR
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
     using Microsoft.Office.Interop.Excel;
 
     /// <summary>
@@ -27,12 +25,7 @@
         public static Workbook GetOutputWorkbook()
         {
             Utilities.Debug($"Getting output workbook.");
-            if (instance == null)
-            {
-                instance = CreateOutputWorkbook();
-            }
-
-            return instance;
+            return instance ?? (instance = CreateOutputWorkbook());
         }
 
         /// <summary>
@@ -81,31 +74,30 @@
         /// <returns><see cref="Workbook"/> instance added to <see cref="Workbooks"/> collection.</returns>
         private static Workbook CreateOutputWorkbook()
         {
-            Worksheet sourceWS = GetOutputWorksheet(ConfigParser.ConfigWorkbook);
-
-            return sourceWS == null
+            var sourceWs = GetOutputWorksheet(ConfigParser.ConfigWorkbook);
+            return sourceWs == null
                 ? null
-                : DefineOutputWorksheet(ExcelApplication.AddEmptyWorkbook(), sourceWS);
+                : DefineOutputWorksheet(ExcelApplication.AddEmptyWorkbook(), sourceWs);
         }
 
-        private static Workbook DefineOutputWorksheet(Workbook newWB, Worksheet sourceWS)
+        private static Workbook DefineOutputWorksheet(Workbook newWb, Worksheet sourceWs)
         {
-            InitializeOutputWorksheet(newWB, sourceWS);
-            CopyHeaderBetweenWorkbooks(newWB, sourceWS);
-            return newWB;
+            InitializeOutputWorksheet(newWb, sourceWs);
+            CopyHeaderBetweenWorkbooks(newWb, sourceWs);
+            return newWb;
         }
 
-        private static void InitializeOutputWorksheet(Workbook newWB, Worksheet sourceWS)
+        private static void InitializeOutputWorksheet(Workbook newWb, Worksheet sourceWs)
         {
-            outputWorksheet = newWB.Worksheets.Add(After: newWB.Worksheets[newWB.Worksheets.Count]);
-            outputWorksheet.Name = sourceWS.Name;
+            outputWorksheet = newWb.Worksheets.Add(After: newWb.Worksheets[newWb.Worksheets.Count]);
+            outputWorksheet.Name = sourceWs.Name;
         }
 
-        private static int GetIdentifyingRow(Worksheet sourceWS)
+        private static int GetIdentifyingRow(Worksheet sourceWs)
         {
-            for (int i = 1; i <= sourceWS.Cells[sourceWS.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
+            for (int i = 1; i <= sourceWs.Cells[sourceWs.Rows.Count, 1].End[XlDirection.xlUp].Row; i++)
             {
-                if (sourceWS.Cells[i, 1].Value2
+                if (sourceWs.Cells[i, 1].Value2
                     .ToString()
                     .ToLower()
                     .Contains("field name"))
@@ -117,11 +109,11 @@
             return 1;
         }
 
-        private static void CopyHeaderBetweenWorkbooks(Workbook newWB, Worksheet sourceWS)
+        private static void CopyHeaderBetweenWorkbooks(Workbook newWb, Worksheet sourceWs)
         {
-            Range headerRange = sourceWS.UsedRange.Offset[GetIdentifyingRow(sourceWS) - 1, 1].Resize[1, sourceWS.UsedRange.Columns.Count - 1];
+            Range headerRange = sourceWs.UsedRange.Offset[GetIdentifyingRow(sourceWs) - 1, 1].Resize[1, sourceWs.UsedRange.Columns.Count - 1];
             headerRange.Copy((Range)outputWorksheet.Cells.Item[1, 1]);
-            newWB.Worksheets[1].Delete();
+            newWb.Worksheets[1].Delete();
         }
 
         /// <summary>

@@ -40,7 +40,7 @@
         /// <summary>
         /// Gets collection of processed Word tables.
         /// </summary>
-        public List<WordTable> TableCollection { get; private set; } = new List<WordTable>();
+        public List<WordTable> TableCollection { get; } = new List<WordTable>();
 
         /// <summary>
         /// Gets document contents grouped in separate lines.
@@ -50,7 +50,7 @@
         /// <summary>
         /// Gets collection of <see cref="LineMapping"/>, evenly distributed in segments, accessible by page number.
         /// </summary>
-        public GridCollection GridCollection { get; private set; } = new GridCollection();
+        public GridCollection GridCollection { get; } = new GridCollection();
 
         /// <summary>
         /// Closes Word document if it is open.
@@ -83,11 +83,13 @@
         /// <param name="pageIndex">Index of page to read, starting from 1.</param>
         public void ReadDocument(int pageIndex)
         {
-            if (pageIndex >= 1)
+            if (pageIndex < 1)
             {
-                this.Mapping = this.ReadSinglePage(pageIndex);
-                this.TryAddGridStructure(pageIndex, this.Mapping);
+                return;
             }
+
+            this.Mapping = this.ReadSinglePage(pageIndex);
+            this.TryAddGridStructure(pageIndex, this.Mapping);
         }
 
         private static void AddDataFromCollectedParagraphs(ParagraphMapping documentContent, LineMapping lineMapping, int index)
@@ -101,12 +103,9 @@
 
         private static ParagraphMapping MergeParagraphs(ParagraphMapping defaultParagraphMapping, ParagraphMapping frameParagraphMapping)
         {
-            foreach (var item in frameParagraphMapping)
+            foreach (var paragraph in frameParagraphMapping.SelectMany(item => item.Value))
             {
-                foreach (ParagraphContainer paragraph in item.Value)
-                {
-                    UpdateContentsWithParagraphs(defaultParagraphMapping, paragraph);
-                }
+                UpdateContentsWithParagraphs(defaultParagraphMapping, paragraph);
             }
 
             return defaultParagraphMapping;
@@ -135,15 +134,13 @@
         /// <returns>An instance of <see cref="SortedDictionary{TKey, TValue}"/> where paragraphs are mapped to line.</returns>
         private static LineMapping GroupParagraphsByLine(ParagraphMapping documentContent)
         {
-            LineMapping lineMapping = new LineMapping();
-
+            var lineMapping = new LineMapping();
             if (documentContent.Count == 0)
             {
                 return lineMapping;
             }
 
             lineMapping.Add(1, documentContent.Values.First());
-
             for (int index = 1; index < documentContent.Count; index++)
             {
                 AddDataFromCollectedParagraphs(documentContent, lineMapping, index);
@@ -175,15 +172,15 @@
         private static void ShiftContentKeys(LineMapping pageContent)
         {
             List<int> originalKeys = pageContent.Keys.ToList();
-            for (int i = 0; i < originalKeys.Count; i++)
+            foreach (var key in originalKeys)
             {
-                pageContent.RenameKey(originalKeys[i], originalKeys[i] + 1);
+                pageContent.RenameKey(key, key + 1);
             }
         }
 
         private static LineMapping SortParagraphs(LineMapping newDocumentContent)
         {
-            foreach (KeyValuePair<int, List<ParagraphContainer>> item in newDocumentContent)
+            foreach (var item in newDocumentContent)
             {
                 item.Value.Sort();
             }
@@ -234,7 +231,7 @@
             Utilities.Debug($"Getting contents from page {pageIndex}.", 2);
 
             this.InitializeReaders(pageIndex);
-            ParagraphMapping documentContent = this.GetDataFromReaders(pageIndex);
+            var documentContent = this.GetDataFromReaders(pageIndex);
 
             Utilities.Debug($"Distributing data from page {pageIndex}.", 2);
 
@@ -245,7 +242,7 @@
 
         private void UpdateTableCollection()
         {
-            foreach (ITableReader item in new ITableReader[2] { this.paragraphReader, this.frameReader })
+            foreach (var item in new ITableReader[] { this.paragraphReader, this.frameReader })
             {
                 this.TableCollection.AddRange(item.GetWordTables());
             }

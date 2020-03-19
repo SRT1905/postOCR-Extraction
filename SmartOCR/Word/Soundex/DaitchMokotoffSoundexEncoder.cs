@@ -1,9 +1,6 @@
 ﻿namespace SmartOCR
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// Encodes string using Daitch-Mokotoff soundex algorithm.

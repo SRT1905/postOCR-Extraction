@@ -6,30 +6,9 @@
     using System.Linq;
 
     /// <summary>
-    /// Specifies the type of entered command propmt arguments.
-    /// </summary>
-    public enum PathType : int
-    {
-        /// <summary>
-        /// Represents invalid path type.
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Represents path as a directory.
-        /// </summary>
-        Directory,
-
-        /// <summary>
-        /// Represents path as a file.
-        /// </summary>
-        File,
-    }
-
-    /// <summary>
     /// CMDProcess is used to process data from command prompt: define document type and files to parse.
     /// </summary>
-    public class CMDProcess
+    public class CmdProcess
     {
         /// <summary>
         /// Collection of entered command prompt arguments.
@@ -47,11 +26,11 @@
         private string configFile;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CMDProcess"/> class.
+        /// Initializes a new instance of the <see cref="CmdProcess"/> class.
         /// Instance identifies type of entered paths and files by those paths.
         /// </summary>
         /// <param name="args">Array of command prompt arguments.</param>
-        public CMDProcess(string[] args)
+        public CmdProcess(string[] args)
         {
             try
             {
@@ -112,13 +91,13 @@
                 return GetConfigFileFromDirectory(argument);
             }
 
-            if (File.Exists(argument))
+            if (!File.Exists(argument))
             {
-                Utilities.Debug($"Found configuration file: '{argument}'.", 1);
-                return argument;
+                return null;
             }
 
-            return null;
+            Utilities.Debug($"Found configuration file: '{argument}'.", 1);
+            return argument;
         }
 
         private static string GetConfigFileFromDirectory(string argument)
@@ -140,8 +119,9 @@
 
         private static Func<string, bool> FilterInvalidFiles()
         {
-            return item => !Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) &&
-                           item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase);
+            return item => item != null &&
+                (!Path.GetFileName(item).StartsWith("~", StringComparison.InvariantCultureIgnoreCase) &&
+                item.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase));
         }
 
         private void GetData()
@@ -156,7 +136,7 @@
         {
             return this.enteredPathType == PathType.Directory
                 ? Path.Combine(this.enteredArguments[0], "output.xlsx")
-                : Path.Combine(Path.GetDirectoryName(this.enteredArguments[0]), "output.xlsx");
+                : Path.Combine(Path.GetDirectoryName(this.enteredArguments[0]) ?? throw new InvalidOperationException(), "output.xlsx");
         }
 
         private string GetOutputFile()
@@ -176,27 +156,27 @@
 
         private bool IsFirstArgumentValid(string[] arguments)
         {
-            if (arguments == null)
+            if (arguments != null)
             {
-                Utilities.Debug(Properties.Resources.invalidInputMessage);
-                this.IsReadyToProcess = false;
-                return this.IsReadyToProcess;
+                return this.ValidateConfigFileFromArguments(arguments);
             }
 
-            return this.ValidateConfigFileFromArguments(arguments);
+            Utilities.Debug(Properties.Resources.invalidInputMessage);
+            this.IsReadyToProcess = false;
+            return this.IsReadyToProcess;
         }
 
         private bool ValidateConfigFileFromArguments(string[] arguments)
         {
             this.configFile = GetConfigFileFromArgument(arguments[0]);
-            if (string.IsNullOrEmpty(this.configFile))
+            if (!string.IsNullOrEmpty(this.configFile))
             {
-                Utilities.Debug(Properties.Resources.noConfigFileFound);
-                this.IsReadyToProcess = false;
-                return false;
+                return true;
             }
 
-            return true;
+            Utilities.Debug(Properties.Resources.noConfigFileFound);
+            this.IsReadyToProcess = false;
+            return false;
         }
 
         private List<string> GetFilesFromArgs()

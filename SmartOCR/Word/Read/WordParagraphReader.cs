@@ -5,7 +5,7 @@
     using Microsoft.Office.Interop.Word;
 
     /// <summary>
-    /// Used to collect data from Word paragraphs.
+    /// Used to collect data from Word paragraphCollection.
     /// </summary>
     public class WordParagraphReader : ITableReader
     {
@@ -23,7 +23,7 @@
         /// Initializes a new instance of the <see cref="WordParagraphReader"/> class.
         /// </summary>
         /// <param name="document">A Word document.</param>
-        /// <param name="pageIndex">Page index, from which paragraphs are read.</param>
+        /// <param name="pageIndex">Page index, from which paragraphCollection are read.</param>
         public WordParagraphReader(Document document, int pageIndex)
         {
             this.document = document;
@@ -32,20 +32,20 @@
         }
 
         /// <summary>
-        /// Returns mapping between paragraph horizontal location and collection of paragraphs at location.
+        /// Returns mapping between paragraph horizontal location and collection of paragraphCollection at location.
         /// </summary>
-        /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
+        /// <returns>A mapping between paragraph horizontal location and collection of paragraphCollection at location.</returns>
         public ParagraphMapping GetParagraphMapping()
         {
-            Utilities.Debug($"Getting paragraphs from page {this.pageIndex}.", 3);
+            Utilities.Debug($"Getting paragraphCollection from page {this.pageIndex}.", 3);
             return this.paragraphs ?? this.ReadDocument();
         }
 
         /// <summary>
-        /// Returns mapping between paragraph horizontal location and collection of paragraphs at location.
+        /// Returns mapping between paragraph horizontal location and collection of paragraphCollection at location.
         /// </summary>
         /// <param name="newPageIndex">New page index.</param>
-        /// <returns>A mapping between paragraph horizontal location and collection of paragraphs at location.</returns>
+        /// <returns>A mapping between paragraph horizontal location and collection of paragraphCollection at location.</returns>
         public ParagraphMapping GetParagraphMapping(int newPageIndex)
         {
             this.pageIndex = newPageIndex;
@@ -56,7 +56,7 @@
         /// <inheritdoc/>
         public List<WordTable> GetWordTables()
         {
-            List<WordTable> tables = new List<WordTable>();
+            var tables = new List<WordTable>();
 
             for (int i = 1; i <= this.document.Tables.Count; i++)
             {
@@ -79,12 +79,12 @@
             return Enumerable.Range(start, finish).ToList();
         }
 
-        private void AddParagraphToContents(List<ParagraphContainer> paragraphs, int paragraphIndex)
+        private void AddParagraphToContents(List<ParagraphContainer> paragraphCollection, int paragraphIndex)
         {
-            decimal location = paragraphs[paragraphIndex].VerticalLocation;
+            decimal location = paragraphCollection[paragraphIndex].VerticalLocation;
             this.TryAddNewLocation(location);
 
-            this.paragraphs[location].Add(paragraphs[paragraphIndex]);
+            this.paragraphs[location].Add(paragraphCollection[paragraphIndex]);
         }
 
         private void TryAddNewLocation(decimal location)
@@ -106,10 +106,10 @@
         private ParagraphMapping ReadDocument()
         {
             this.paragraphs = new ParagraphMapping();
-            List<ParagraphContainer> paragraphs = this.GetParagraphsOnPage();
-            for (int paragraphIndex = 0; paragraphIndex < paragraphs.Count; paragraphIndex++)
+            List<ParagraphContainer> pageParagraphs = this.GetParagraphsOnPage();
+            for (int paragraphIndex = 0; paragraphIndex < pageParagraphs.Count; paragraphIndex++)
             {
-                this.AddParagraphToContents(paragraphs, paragraphIndex);
+                this.AddParagraphToContents(pageParagraphs, paragraphIndex);
             }
 
             return this.paragraphs;

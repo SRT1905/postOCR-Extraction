@@ -1,6 +1,7 @@
 ﻿namespace SmartOCR
 {
     using System;
+    using System.Linq;
 
     /// <summary>
     /// Contains methods to calculate string similarity measure using Jaro similarity.
@@ -31,9 +32,9 @@
         private static double GetSimilarityFromValidStrings(string leftString, string rightString)
         {
             // Hash for matches
-            int[] hashLeft = new int[leftString.Length];
-            int[] hashRight = new int[rightString.Length];
-            int matchCount = GetMatchCount(leftString, rightString, hashLeft, hashRight);
+            var hashLeft = new int[leftString.Length];
+            var hashRight = new int[rightString.Length];
+            var matchCount = GetMatchCount(leftString, rightString, hashLeft, hashRight);
             return matchCount == 0
                 ? 0.0
                 : CalculateSimilarityRatio(
@@ -47,18 +48,12 @@
         {
             return (((double)matchCount / leftStringLength)
                 + ((double)matchCount / rightStringLength)
-                + (((double)matchCount - transpositions) / ((double)matchCount))) / 3.0;
+                + ((matchCount - transpositions) / matchCount)) / 3.0;
         }
 
         private static int GetMatchCount(string leftString, string rightString, int[] hashLeft, int[] hashRight)
         {
-            int matchCount = 0;
-            for (int i = 0; i < leftString.Length; i++)
-            {
-                matchCount += GetCountOfMatchesWithSingleChar(leftString, rightString, hashLeft, hashRight, i);
-            }
-
-            return matchCount;
+            return leftString.Select((t, charIndex) => GetCountOfMatchesWithSingleChar(leftString, rightString, hashLeft, hashRight, charIndex)).Sum();
         }
 
         private static int GetCountOfMatchesWithSingleChar(string leftString, string rightString, int[] hashLeft, int[] hashRight, int charIndex)

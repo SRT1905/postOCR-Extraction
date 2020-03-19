@@ -25,12 +25,12 @@
         /// <summary>
         /// Path to output file (default location equals assembly location).
         /// </summary>
-        private string outputLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), OutputFileName);
+        private string outputLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidOperationException(), OutputFileName);
 
         /// <summary>
         /// Instance of output Excel workbook.
         /// </summary>
-        private Workbook outputWB;
+        private Workbook outputWb;
 
         /// <summary>
         /// Collection of files to process.
@@ -79,15 +79,12 @@
         /// <summary>
         /// Tries to get data, described in config data, from provided files.
         /// </summary>
-        /// <returns>Indicator that processing was successful.</returns>
-        public bool TryGetData()
+        public void TryGetData()
         {
             if (this.validFiles.Count != 0)
             {
                 this.GetDataFromFiles();
             }
-
-            return this.validFiles.Count != 0;
         }
 
         private static WordReader OpenAndReadDocument(string item)
@@ -106,7 +103,7 @@
         {
             this.validFiles = this.GetValidFiles(files);
             this.configData = new ConfigParser(configFile).ParseConfig();
-            this.outputWB = ExcelOutputWorkbook.GetOutputWorkbook();
+            this.outputWb = ExcelOutputWorkbook.GetOutputWorkbook();
         }
 
         /// <summary>
@@ -116,7 +113,7 @@
         {
             this.configData = null;
             this.outputLocation = null;
-            this.outputWB = null;
+            this.outputWb = null;
             this.validFiles = null;
         }
 
@@ -130,7 +127,7 @@
                 this.GetDataFromSingleFile(i);
             }
 
-            this.outputWB.SaveAs(this.outputLocation);
+            this.outputWb.SaveAs(this.outputLocation);
             Utilities.Debug($"Excel output workbook is saved at location '{this.outputLocation}'.");
         }
 
@@ -150,7 +147,7 @@
         {
             Utilities.Debug($"Processing file: '{wordFilePath}'.");
             WordParser wordParser;
-            using (WordReader reader = OpenAndReadDocument(wordFilePath))
+            using (var reader = OpenAndReadDocument(wordFilePath))
             {
                 wordParser = new WordParser(reader, this.configData);
             }

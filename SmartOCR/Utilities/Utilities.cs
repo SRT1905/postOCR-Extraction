@@ -6,7 +6,7 @@
     using System.Text.RegularExpressions;
 
     /// <summary>
-    /// Provides static methods used accross namespace.
+    /// Provides static methods used across namespace.
     /// </summary>
     public static class Utilities
     {
@@ -57,14 +57,18 @@
         /// <param name="debugLevel">Used to indicate call level.</param>
         public static void Debug(string message, int debugLevel = 0)
         {
-            if (Utilities.EnableDebug)
+            if (!Utilities.EnableDebug)
             {
-                if (debugLevel <= Utilities.DebugLevel || Utilities.DebugLevel == -1)
-                {
-                    Console.Write($"# {new string(' ', debugLevel)}");
-                    Console.WriteLine(message);
-                }
+                return;
             }
+
+            if (debugLevel > Utilities.DebugLevel && Utilities.DebugLevel != -1)
+            {
+                return;
+            }
+
+            Console.Write($@"# {new string(' ', debugLevel)}");
+            Console.WriteLine(message);
         }
 
         /// <summary>
@@ -116,22 +120,21 @@
                 return null;
             }
 
-            GroupCollection groups = RegexAlphaMonth.Matches(value)[0].Groups;
+            var groups = RegexAlphaMonth.Matches(value)[0].Groups;
             return TryReturnDateValue($"{ReturnNumericMonth(groups[2].Value.ToLower())}/{groups[1].Value}/{groups[3].Value}");
         }
 
         private static string ProcessDateAsNumeric(string value)
         {
-            if (RegexNumDate.IsMatch(value))
+            if (!RegexNumDate.IsMatch(value))
             {
-                MatchCollection matches = RegexNumDate.Matches(value);
-                if (matches.Count >= 3)
-                {
-                    return TryReturnDateValue($"{matches[1].Value}/{matches[0].Value}/{matches[2].Value}");
-                }
+                return null;
             }
 
-            return null;
+            var matches = RegexNumDate.Matches(value);
+            return matches.Count >= 3
+                ? TryReturnDateValue($"{matches[1].Value}/{matches[0].Value}/{matches[2].Value}")
+                : null;
         }
 
         private static string ProcessSeparatorsInNumber(string value)
@@ -139,19 +142,14 @@
             value = value.Contains(",") && value.Contains(".")
                 ? value.Replace(",", string.Empty)
                 : value.Replace(",", RegionalDecimalSeparator);
-
-            value = value.Replace(".", RegionalDecimalSeparator);
-            return value;
+            return value.Replace(".", RegionalDecimalSeparator);
         }
 
         private static string ReturnNumericMonth(string value)
         {
-            foreach (var item in MonthMapping)
+            foreach (var item in MonthMapping.Where(item => value.Contains(item.Key)))
             {
-                if (value.Contains(item.Key))
-                {
-                    return item.Value;
-                }
+                return item.Value;
             }
 
             return "00";
@@ -171,7 +169,7 @@
 
         private static string TryReturnDateValue(string dateValue)
         {
-            return DateTime.TryParse(dateValue, out DateTime _)
+            return DateTime.TryParse(dateValue, out _)
                 ? dateValue
                 : $"Date is identified as {dateValue}";
         }

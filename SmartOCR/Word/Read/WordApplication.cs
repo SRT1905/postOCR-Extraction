@@ -35,11 +35,7 @@
         {
             Application app = GetWordApplication();
             app.Quit(WdSaveOptions.wdDoNotSaveChanges);
-            if (app != null)
-            {
-                Runtime.InteropServices.Marshal.ReleaseComObject(app);
-            }
-
+            Runtime.InteropServices.Marshal.ReleaseComObject(app);
             GC.Collect();
         }
 
@@ -49,17 +45,12 @@
         /// <returns>Word application.</returns>
         public static Application GetWordApplication()
         {
-            if (instance == null)
+            return instance ?? (instance = new Application
             {
-                instance = new Application
-                {
-                    Visible = false,
-                    DisplayAlerts = WdAlertLevel.wdAlertsNone,
-                    ScreenUpdating = false,
-                };
-            }
-
-            return instance;
+                Visible = false,
+                DisplayAlerts = WdAlertLevel.wdAlertsNone,
+                ScreenUpdating = false,
+            });
         }
 
         /// <summary>

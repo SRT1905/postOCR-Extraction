@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     /// <summary>
@@ -28,12 +29,9 @@
         /// </summary>
         public void Process()
         {
-            foreach (WordTable table in this.tables)
+            if (this.tables.Any(this.TryGetDataFromTable))
             {
-                if (this.TryGetDataFromTable(table))
-                {
-                    return;
-                }
+                return;
             }
 
             Utilities.Debug($"No matches were found for table node {this.tableNode.Content.Name}", 3);
@@ -61,11 +59,13 @@
 
         private static void TryToValidateMatch(TreeNode childNode, MatchProcessor matchProcessor)
         {
-            if (!string.IsNullOrEmpty(matchProcessor.Result))
+            if (string.IsNullOrEmpty(matchProcessor.Result))
             {
-                Utilities.Debug($"Match, extracted from table: {matchProcessor.Result}.", 5);
-                ValidateMatch(childNode, matchProcessor);
+                return;
             }
+
+            Utilities.Debug($"Match, extracted from table: {matchProcessor.Result}.", 5);
+            ValidateMatch(childNode, matchProcessor);
         }
 
         private static void ValidateMatch(TreeNode childNode, MatchProcessor matchProcessor)
@@ -77,7 +77,7 @@
 
         private static bool ProcessSingleCell(string cellValue, Regex regexObject, string checkValue)
         {
-            Match singleMatch = regexObject.Match(cellValue);
+            var singleMatch = regexObject.Match(cellValue);
             return new SimilarityDescription(
                 singleMatch.Groups[Convert.ToInt32(singleMatch.Groups.Count > 0)].Value,
                 checkValue).AreStringsSimilar();
@@ -85,7 +85,7 @@
 
         private static void PropagateStatusInTree(bool status, TreeNode node)
         {
-            TreeNode tempNode = node;
+            var tempNode = node;
             while (tempNode.Content.Name != "root")
             {
                 tempNode = tempNode.Parent;
@@ -104,11 +104,13 @@
             {
                 for (int j = 0; j < table.ColumnCount; j++)
                 {
-                    if (table[i, j] != null && ProcessSingleCell(table[i, j], regexObject, checkValue))
+                    if (table[i, j] == null || !ProcessSingleCell(table[i, j], regexObject, checkValue))
                     {
-                        Utilities.Debug($"Found match for table node {this.tableNode.Content.Name}. Table anchor: '{table.Anchor}', cell: '{table[i, j]}'.", 3);
-                        return true;
+                        continue;
                     }
+
+                    Utilities.Debug($"Found match for table node {this.tableNode.Content.Name}. Table anchor: '{table.Anchor}', cell: '{table[i, j]}'.", 3);
+                    return true;
                 }
             }
 
@@ -117,24 +119,20 @@
 
         private bool TryGetDataFromTable(WordTable table)
         {
-            return this.TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue)
-                ? this.ProcessNodeData(table)
-                : false;
+            return this.TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue) && this.ProcessNodeData(table);
         }
 
         private bool ProcessNodeData(WordTable table)
         {
-            TreeNode childNode = this.GetTerminalNode();
+            var childNode = this.GetTerminalNode();
             string itemByExpressionPosition = GetCellByNodeContent(table, childNode);
             Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.TextExpression);
-            return regexObject.IsMatch(itemByExpressionPosition)
-                ? ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject)
-                : false;
+            return regexObject.IsMatch(itemByExpressionPosition) && ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject);
         }
 
         private TreeNode GetTerminalNode()
         {
-            TreeNode childNode = this.tableNode.Children[0];
+            var childNode = this.tableNode.Children[0];
             while (childNode.Content.NodeLabel != "Terminal" && childNode.Children.Count != 0)
             {
                 childNode = childNode.Children[0];

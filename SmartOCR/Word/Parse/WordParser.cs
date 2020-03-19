@@ -2,8 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.RegularExpressions;
 
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.
@@ -43,11 +41,11 @@
             return this.treeStructure.GetValuesFromTree();
         }
 
-        private void InitializeFields(WordReader reader, ConfigData configData)
+        private void InitializeFields(WordReader reader, ConfigData data)
         {
             this.InitializeFieldsFromWordReader(reader);
-            this.treeStructure = new SearchTree(configData);
-            this.configData = configData;
+            this.treeStructure = new SearchTree(data);
+            this.configData = data;
         }
 
         private void InitializeFieldsFromWordReader(WordReader reader)
@@ -59,9 +57,9 @@
 
         private void ProcessDocument()
         {
-            for (int fieldIndex = 0; fieldIndex < this.treeStructure.Children.Count; fieldIndex++)
+            foreach (var fieldNode in this.treeStructure.Children)
             {
-                this.InitializeNodeAndGetDataByValueType(this.treeStructure.Children[fieldIndex]);
+                this.InitializeNodeAndGetDataByValueType(fieldNode);
             }
         }
 
@@ -79,7 +77,7 @@
 
         private void InitializeFieldNodeAndGetData(TreeNode fieldNode)
         {
-            if (fieldNode.Content.GridCoordinates != new Tuple<int, int>(-1, -1))
+            if (!Equals(fieldNode.Content.GridCoordinates, new Tuple<int, int>(-1, -1)))
             {
                 foreach (var pageGridPair in this.gridCollection)
                 {

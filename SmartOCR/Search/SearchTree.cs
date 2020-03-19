@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Represents collection of <see cref="TreeNode"/> instances that are used to search information in document.
@@ -23,13 +24,7 @@
         /// <summary>
         /// Gets collection of field nodes.
         /// </summary>
-        public List<TreeNode> Children
-        {
-            get
-            {
-                return this.treeStructure.Children;
-            }
-        }
+        public List<TreeNode> Children => this.treeStructure.Children;
 
         /// <summary>
         /// Adds instances of <see cref="TreeNode"/> class to <paramref name="node"/> that defined by search expressions in <paramref name="fieldData"/>, starting from <paramref name="initialValueIndex"/>.
@@ -56,7 +51,7 @@
         {
             Utilities.Debug($"Collecting found data from search tree.", 2);
             var finalValues = new Dictionary<string, string>();
-            foreach (ConfigField field in this.configData.Fields)
+            foreach (var field in this.configData.Fields)
             {
                 this.GetValuesForSingleField(finalValues, field);
             }
@@ -97,7 +92,7 @@
 
         private static void AddSearchValuesToDefaultNode(ConfigField fieldData, TreeNode node, int initialValueIndex)
         {
-            if (new List<string>() { "Line", "Field" }.Contains(node.Content.NodeLabel))
+            if (new List<string> { "Line", "Field" }.Contains(node.Content.NodeLabel))
             {
                 AddSearchValuesToHighLevelNode(node, fieldData.Expressions, initialValueIndex);
             }
@@ -117,15 +112,15 @@
 
         private static void AddSearchValuesToHighLevelNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
         {
-            for (int i = 0; i < node.Children.Count; i++)
+            foreach (var childNode in node.Children)
             {
-                AddSearchValuesToSingleNode(node.Children[i], valuesCollection, initialValueIndex);
+                AddSearchValuesToSingleNode(childNode, valuesCollection, initialValueIndex);
             }
         }
 
         private static TreeNode AddFieldNode(TreeNode rootNode, ConfigField fieldData)
         {
-            TreeNode node = InitializeNodeFromConfigField(fieldData);
+            var node = InitializeNodeFromConfigField(fieldData);
             node.AddChild(
                 new TreeNode(
                     new TreeNodeContentBuilder(node.Content).SetNodeLabel("Line")
@@ -157,7 +152,7 @@
 
         private static void AddSearchValuesToSingleNode(TreeNode node, List<ConfigExpression> valuesCollection, int initialValueIndex)
         {
-            TreeNode singleParagraphNode = node;
+            var singleParagraphNode = node;
             for (int valueIndex = initialValueIndex; valueIndex < valuesCollection.Count; valueIndex++)
             {
                 singleParagraphNode = singleParagraphNode.AddChild(
@@ -176,11 +171,6 @@
                                                                                                 ? "Terminal"
                                                                                                 : $"Search {initialValueIndex}")
                                                                                 .SetTextExpression(valuesCollection[initialValueIndex].RegExPattern)
-
-                                                                                // .SetHorizontalParagraph(node.Content.HorizontalParagraph)
-                                                                                // .SetValueType(node.Content.ValueType)
-                                                                                // .SetSoundexUsageStatus(node.Content.UseSoundex)
-                                                                                // .SetGridCoordinates(node.Content.GridCoordinates)
                                                                                 .AddLine(node.Content.Lines[0]);
             return DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
         }
@@ -222,13 +212,10 @@
         private List<string> GetChildrenByFieldName(string fieldName)
         {
             var childrenCollection = new List<string>();
-            foreach (TreeNode fieldNode in this.treeStructure.Children)
+            foreach (var fieldNode in this.treeStructure.Children.Where(fieldNode => fieldNode.Content.Name == fieldName))
             {
-                if (fieldNode.Content.Name == fieldName)
-                {
-                    this.GetNodeChildren(fieldNode, childrenCollection);
-                    break;
-                }
+                this.GetNodeChildren(fieldNode, childrenCollection);
+                break;
             }
 
             return childrenCollection;
@@ -248,9 +235,9 @@
                 return;
             }
 
-            foreach (TreeNode child in node.Children)
+            foreach (var childNode in node.Children)
             {
-                this.GetDataFromNode(child, foundData);
+                this.GetDataFromNode(childNode, foundData);
             }
 
             if (!string.IsNullOrEmpty(node.Content.FoundValue))
@@ -266,13 +253,10 @@
                 { true, new HashSet<string>() },
                 { false, new HashSet<string>() },
             };
-            foreach (TreeNode node in this.treeStructure.Children)
+            foreach (var node in this.treeStructure.Children.Where(node => node.Content.Name == fieldName))
             {
-                if (node.Content.Name == fieldName)
-                {
-                    this.GetDataFromNode(node, foundData);
-                    return foundData[foundData[true].Count != 0];
-                }
+                this.GetDataFromNode(node, foundData);
+                return foundData[foundData[true].Count != 0];
             }
 
             return new HashSet<string>();
@@ -290,9 +274,9 @@
                 return;
             }
 
-            foreach (TreeNode child in node.Children)
+            foreach (var childNode in node.Children)
             {
-                this.GetNodeChildren(child, childrenCollection);
+                this.GetNodeChildren(childNode, childrenCollection);
             }
         }
     }

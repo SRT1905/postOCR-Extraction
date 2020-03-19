@@ -29,9 +29,9 @@
         }
 
         /// <summary>
-        /// Gets or sets information about search status of specific config field.
+        /// Gets information about search status of specific config field.
         /// </summary>
-        public TreeNodeContent Content { get; set; }
+        public TreeNodeContent Content { get; }
 
         /// <summary>
         /// Gets collection of <see cref="TreeNode"/> instance with deeper search status.
@@ -39,9 +39,9 @@
         public List<TreeNode> Children { get; }
 
         /// <summary>
-        /// Gets or sets a higher level instance of <see cref="TreeNode"/> class.
+        /// Gets a higher level instance of <see cref="TreeNode"/> class.
         /// </summary>
-        public TreeNode Parent { get; set; }
+        public TreeNode Parent { get; private set; }
 
         /// <summary>
         /// Creates an empty tree structure with a single root node.
@@ -94,7 +94,7 @@
                 content.ValueType = this.Content.ValueType;
             }
 
-            TreeNode node = new TreeNode(content)
+            var node = new TreeNode(content)
             {
                 Parent = this,
             };
@@ -108,12 +108,9 @@
         /// <returns>String representation of <see cref="TreeNode"/>instance.</returns>
         public override string ToString()
         {
-            if (this.Content != null)
-            {
-                return $"{this.Content.Name}: {this.Content.NodeLabel} node";
-            }
-
-            return base.ToString();
+            return this.Content != null
+                ? $"{this.Content.Name}: {this.Content.NodeLabel} node"
+                : base.ToString();
         }
 
         /// <summary>

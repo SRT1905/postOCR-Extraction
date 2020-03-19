@@ -31,14 +31,14 @@
         /// <summary>
         /// Perform offset search starting from provided line.
         /// </summary>
-        /// <param name="node">An instance of <see cref="TreeNode"/> class, in respect to which offset search is made.</param>
+        /// <param name="initialNode">An instance of <see cref="TreeNode"/> class, in respect to which offset search is made.</param>
         /// <param name="lineNumber">A starting search line.</param>
-        /// <param name="searchLevel">Current search depth level.</param>
-        /// <param name="addToParent">Indicates whether found offset node should be added to provided node parent or to provided node itself.</param>
-        public void OffsetSearch(TreeNode node, int lineNumber, int searchLevel, bool addToParent = false)
+        /// <param name="initialSearchLevel">Current search depth level.</param>
+        /// <param name="addToParentStatus">Indicates whether found offset initialNode should be added to provided initialNode parent or to provided initialNode itself.</param>
+        public void OffsetSearch(TreeNode initialNode, int lineNumber, int initialSearchLevel, bool addToParentStatus = false)
         {
-            Utilities.Debug($"Performing offset search for {node.Content.NodeLabel} node '{node.Content.Name}, starting from line {lineNumber}", 4);
-            this.InitializeFields(node, searchLevel, addToParent);
+            Utilities.Debug($"Performing offset search for {initialNode.Content.NodeLabel} initialNode '{initialNode.Content.Name}, starting from line {lineNumber}", 4);
+            this.InitializeFields(initialNode, initialSearchLevel, addToParentStatus);
             this.PerformLineOffsetSearch(lineNumber);
         }
 
@@ -48,11 +48,11 @@
             foundValuesCollection.Add(string.Join("|", line, lineChecker.ParagraphHorizontalLocation), lineChecker.JoinedMatches);
         }
 
-        private void InitializeFields(TreeNode node, int searchLevel, bool addToParent)
+        private void InitializeFields(TreeNode initialNode, int initialSearchLevel, bool addToParentStatus)
         {
-            this.node = node;
-            this.searchLevel = searchLevel;
-            this.addToParent = addToParent;
+            this.node = initialNode;
+            this.searchLevel = initialSearchLevel;
+            this.addToParent = addToParentStatus;
         }
 
         private void PerformLineOffsetSearch(int lineNumber)
@@ -73,7 +73,7 @@
         {
             var foundValuesCollection = new Dictionary<string, string>();
 
-            List<int> keys = this.lineMapping.Keys.ToList();
+            var keys = this.lineMapping.Keys.ToList();
             for (int searchOffset = 1; searchOffset <= SimilaritySearchThreshold; searchOffset++)
             {
                 this.GetLinesBySpecificOffset(foundValuesCollection, keys, keys.IndexOf(lineNumber), searchOffset);
@@ -108,26 +108,23 @@
             }
         }
 
-        private void AddOffsetNode(TreeNode node, int offsetIndex, string foundValue, decimal position)
+        private void AddOffsetNode(TreeNode offsetNode, int offsetIndex, string foundValue, decimal position)
         {
-            if (node.Content.Lines.Count(item => item == offsetIndex) >= 2)
+            if (offsetNode.Content.Lines.Count(item => item == offsetIndex) >= 2)
             {
                 return;
             }
 
-            TreeNode childNode = this.InitializeOffsetChildNode(node, offsetIndex, position);
+            var childNode = this.InitializeOffsetChildNode(offsetNode, offsetIndex, position);
             childNode.Content.FoundValue = foundValue;
             SearchTree.AddSearchValues(this.configField, childNode, this.searchLevel);
         }
 
-        private TreeNode InitializeOffsetChildNode(TreeNode node, int offsetIndex, decimal position)
+        private TreeNode InitializeOffsetChildNode(TreeNode childNode, int offsetIndex, decimal position)
         {
-            var contentBuilder = new TreeNodeContentBuilder(node.Content).AddLine(offsetIndex)
-                                                                         .SetHorizontalParagraph(position);
-
-            // .SetNodeLabel(node.Content.NodeLabel)
-            // .SetTextExpression(node.Content.TextExpression);
-            return node.AddChild(this.UpdateBuilderIfAddingToParent(node.Children[0].Content, contentBuilder).Build());
+            var contentBuilder = new TreeNodeContentBuilder(childNode.Content).AddLine(offsetIndex)
+                                                                              .SetHorizontalParagraph(position);
+            return childNode.AddChild(this.UpdateBuilderIfAddingToParent(childNode.Children[0].Content, contentBuilder).Build());
         }
 
         private TreeNodeContentBuilder UpdateBuilderIfAddingToParent(TreeNodeContent nodeContent, TreeNodeContentBuilder contentBuilder)

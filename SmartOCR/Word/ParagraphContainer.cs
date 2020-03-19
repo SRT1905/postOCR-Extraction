@@ -20,9 +20,9 @@
                 throw new ArgumentNullException(nameof(range));
             }
 
-            this.HorizontalLocation = this.ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
-            this.VerticalLocation = this.ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
-            this.Text = this.RemoveInvalidChars(range.Text);
+            this.HorizontalLocation = ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
+            this.VerticalLocation = ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
+            this.Text = RemoveInvalidChars(range.Text);
             this.Soundex = new DefaultSoundexEncoder(this.Text).EncodedValue;
         }
 
@@ -50,7 +50,7 @@
 
         public static bool operator ==(ParagraphContainer left, ParagraphContainer right)
         {
-            return left is null ? right is null : left.Equals(right);
+            return left?.Equals(right) ?? right is null;
         }
 
         public static bool operator !=(ParagraphContainer left, ParagraphContainer right)
@@ -60,7 +60,7 @@
 
         public static bool operator <(ParagraphContainer left, ParagraphContainer right)
         {
-            return left is null ? right is object : left.CompareTo(right) < 0;
+            return left is null ? !(right is null) : left.CompareTo(right) < 0;
         }
 
         public static bool operator <=(ParagraphContainer left, ParagraphContainer right)
@@ -70,7 +70,7 @@
 
         public static bool operator >(ParagraphContainer left, ParagraphContainer right)
         {
-            return left is object && left.CompareTo(right) > 0;
+            return !(left is null) && left.CompareTo(right) > 0;
         }
 
         public static bool operator >=(ParagraphContainer left, ParagraphContainer right)
@@ -81,12 +81,9 @@
         /// <inheritdoc/>
         public int CompareTo(ParagraphContainer that)
         {
-            if (that == null)
-            {
-                return 1;
-            }
-
-            return this.HorizontalLocation.CompareTo(that.HorizontalLocation);
+            return that == null
+                ? 1
+                : this.HorizontalLocation.CompareTo(that.HorizontalLocation);
         }
 
         /// <inheritdoc/>
@@ -98,11 +95,7 @@
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            return ReferenceEquals(this, obj)
-                ? true
-                : obj is null
-                    ? false
-                    : this.CompareTo((ParagraphContainer)obj) == 0;
+            return ReferenceEquals(this, obj) || (!(obj is null) && this.CompareTo((ParagraphContainer)obj) == 0);
         }
 
         /// <inheritdoc/>
@@ -116,9 +109,9 @@
         /// </summary>
         /// <param name="checkString">Text to process.</param>
         /// <returns>Paragraph text, cleansed of invalid characters.</returns>
-        private string RemoveInvalidChars(string checkString)
+        private static string RemoveInvalidChars(string checkString)
         {
-            string[] temp = checkString.Split(new string[] { "\r", "\a", "\t", "\f" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] temp = checkString.Split(new[] { "\r", "\a", "\t", "\f" }, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(string.Empty, temp).Replace("\v", " ");
         }
 
@@ -128,7 +121,7 @@
         /// <param name="range">Representation of single Word document paragraph.</param>
         /// <param name="information"><see cref="WdInformation"/> object that represents type of returned location.</param>
         /// <returns>Position of paragraph within document page.</returns>
-        private decimal ValidateLocation(Range range, WdInformation information)
+        private static decimal ValidateLocation(Range range, WdInformation information)
         {
             decimal temp = (decimal)range.Words[1].Information[information];
             return decimal.Round(temp, 1);

@@ -6,7 +6,7 @@
     using System.Text.RegularExpressions;
 
     /// <summary>
-    /// Used to initialize field node with high-level search information.
+    /// Used to initialize field undefinedNode with high-level search information.
     /// </summary>
     public class UndefinedNodeProcessor
     {
@@ -17,7 +17,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="UndefinedNodeProcessor"/> class.
         /// </summary>
-        /// <param name="fieldNode">An empty field node.</param>
+        /// <param name="fieldNode">An empty field undefinedNode.</param>
         /// <param name="lineMapping">A mapping between document line and paragraphs on line.</param>
         /// <param name="configField">Config field description.</param>
         public UndefinedNodeProcessor(TreeNode fieldNode, LineMapping lineMapping, ConfigField configField)
@@ -29,7 +29,7 @@
         /// <summary>
         /// Returns a <see cref="TreeNode"/> instance that has child line nodes.
         /// </summary>
-        /// <returns>A field node instance.</returns>
+        /// <returns>A field undefinedNode instance.</returns>
         public TreeNode GetProcessedNode()
         {
             return this.node;
@@ -55,10 +55,10 @@
                                                             .ToArray();
         }
 
-        private void InitializeFields(TreeNode node, LineMapping lineMapping, ConfigField configData)
+        private void InitializeFields(TreeNode undefinedNode, LineMapping mapping, ConfigField configData)
         {
-            this.node = node;
-            this.lineMapping = lineMapping;
+            this.node = undefinedNode;
+            this.lineMapping = mapping;
             this.configField = configData;
         }
 
@@ -74,7 +74,7 @@
         private Dictionary<string, SimilarityDescription> ProcessUndefinedNode()
         {
             Utilities.Debug($"Gathering initial matches for field '{this.node.Content.Name}'.", 3);
-            Dictionary<string, SimilarityDescription> collectedData = new Dictionary<string, SimilarityDescription>();
+            var collectedData = new Dictionary<string, SimilarityDescription>();
 
             foreach (var lineContents in this.lineMapping)
             {
@@ -89,9 +89,9 @@
             Dictionary<string, SimilarityDescription> collectedData,
             KeyValuePair<int, List<ParagraphContainer>> lineContents)
         {
-            for (int containerIndex = 0; containerIndex < lineContents.Value.Count; containerIndex++)
+            foreach (var paragraph in lineContents.Value)
             {
-                this.ProcessParagraphForUndefinedNode(collectedData, lineContents, lineContents.Value[containerIndex]);
+                this.ProcessParagraphForUndefinedNode(collectedData, lineContents, paragraph);
             }
         }
 
@@ -103,7 +103,7 @@
             List<SimilarityDescription> matchedDescriptions = this.GetSimilarityDescriptionCollection(container);
             foreach (SimilarityDescription description in matchedDescriptions)
             {
-                Utilities.Debug($"Found initial match at line {lineContents.Key} in paragrpaph '{container}'.", 4);
+                Utilities.Debug($"Found initial match at line {lineContents.Key} in paragraph '{container}'.", 4);
                 Utilities.Debug($"{description}.", 5);
                 collectedData.Add(
                     CreateSimilarityDictionaryKey(lineContents, container, matchedDescriptions.IndexOf(description)),
