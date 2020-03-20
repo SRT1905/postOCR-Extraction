@@ -32,7 +32,7 @@
         private static int GetLengthOfCommonPrefix(string leftString, string rightString)
         {
             int prefix = 0;
-            for (int i = 0; i < Math.Max(4, Math.Min(leftString.Length, rightString.Length)); i++)
+            for (int i = 0; i < Math.Min(leftString.Length, rightString.Length); i++)
             {
                 if (leftString[i] == rightString[i])
                 {
@@ -40,11 +40,11 @@
                 }
                 else
                 {
-                    return prefix;
+                    break;
                 }
             }
 
-            return prefix;
+            return Math.Min(4, prefix);
         }
     }
 }
