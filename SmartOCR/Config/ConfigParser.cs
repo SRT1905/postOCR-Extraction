@@ -135,7 +135,7 @@
         private static Workbook GetInternalConfigWorkbook()
         {
             string tempPath = Path.GetTempFileName();
-            File.WriteAllBytes(tempPath, ConfigContainer.config);
+            File.WriteAllBytes(tempPath, SmartOCR.Resources.ConfigContainer.config);
             configWorkbook = ExcelApplication.OpenExcelWorkbook(tempPath);
             return configWorkbook;
         }

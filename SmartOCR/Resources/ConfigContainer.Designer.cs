@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SmartOCR {
+namespace SmartOCR.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace SmartOCR {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SmartOCR.ConfigContainer", typeof(ConfigContainer).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SmartOCR.Resources.ConfigContainer", typeof(ConfigContainer).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
