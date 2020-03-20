@@ -88,6 +88,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utilities\DeepCopyExtension.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\JaroAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\JaroWrinklerAlgorithm.cs" />
     <Compile Include="Utilities\SimilarityAlgorithms\LevensteinAlgorithm.cs" />
