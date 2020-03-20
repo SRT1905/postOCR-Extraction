@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.SimilarityAlgorithms
 {
     using System;
     using System.Linq;

@@ -1,7 +1,8 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Word.Read
 {
     using System.Collections.Generic;
     using Microsoft.Office.Interop.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to collect data from Word text frames.

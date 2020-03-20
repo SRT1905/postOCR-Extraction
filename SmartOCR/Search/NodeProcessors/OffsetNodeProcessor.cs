@@ -1,8 +1,12 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.NodeProcessors
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Config;
+    using SmartOCR.Parse;
+    using SmartOCR.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to perform offset search in area, defined by current state of <see cref="TreeNode"/> instance.

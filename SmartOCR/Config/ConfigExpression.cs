@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Config
 {
     using System;
     using System.Collections.Generic;

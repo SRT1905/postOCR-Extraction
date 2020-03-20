@@ -1,7 +1,8 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Main
 {
     using System;
     using System.Linq;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Entry point.

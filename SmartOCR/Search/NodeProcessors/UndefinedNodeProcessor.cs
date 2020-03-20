@@ -1,9 +1,12 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.NodeProcessors
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using SmartOCR.Config;
+    using SmartOCR.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to initialize field undefinedNode with high-level search information.

@@ -1,9 +1,11 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Parse
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using SmartOCR.Search;
+    using SmartOCR.Word;
 
     /// <summary>
     /// Used to test document line contents for matching with regular expression.

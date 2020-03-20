@@ -1,7 +1,7 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Soundex
 {
     /// <summary>
-    /// Used to encode strings respresentation so that they can be matched despite minor differences in spelling.
+    /// Used to encode strings representation so that they can be matched despite minor differences in spelling.
     /// </summary>
     public abstract class Soundex
     {

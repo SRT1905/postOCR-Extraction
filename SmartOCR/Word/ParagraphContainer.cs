@@ -1,7 +1,8 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Word
 {
     using System;
     using Microsoft.Office.Interop.Word;
+    using SmartOCR.Soundex;
 
     /// <summary>
     /// Container class that is used to store data from single Word document paragraph.

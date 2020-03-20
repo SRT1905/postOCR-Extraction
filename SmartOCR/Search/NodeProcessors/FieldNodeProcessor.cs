@@ -1,5 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.NodeProcessors
 {
+    using SmartOCR.Config;
+    using SmartOCR.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
+
     /// <summary>
     /// Used to search values, specified by configuration field.
     /// </summary>

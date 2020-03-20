@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
     using System.Collections.Generic;

@@ -1,7 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Config
 {
     using System.IO;
     using Microsoft.Office.Interop.Excel;
+    using SmartOCR.Excel;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Performs collection and parsing of config data from config Excel workbook.
@@ -135,7 +137,7 @@
         private static Workbook GetInternalConfigWorkbook()
         {
             string tempPath = Path.GetTempFileName();
-            File.WriteAllBytes(tempPath, SmartOCR.Resources.ConfigContainer.config);
+            File.WriteAllBytes(tempPath, Resources.ConfigContainer.config);
             configWorkbook = ExcelApplication.OpenExcelWorkbook(tempPath);
             return configWorkbook;
         }

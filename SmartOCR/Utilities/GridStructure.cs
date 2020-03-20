@@ -1,8 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Utilities
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Word;
 
     /// <summary>
     /// Represents grid-like structure, that contains pairs of line mapping and <see cref="WordTable"/> collection, broken into evenly distributed segments.

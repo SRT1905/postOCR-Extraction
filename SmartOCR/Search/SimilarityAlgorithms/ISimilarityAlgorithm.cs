@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.SimilarityAlgorithms
 {
     /// <summary>
     /// Defines an interface for all classes that calculate similarity measures between two strings.

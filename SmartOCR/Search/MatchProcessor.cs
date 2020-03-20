@@ -1,8 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
     using System.Globalization;
     using System.Text.RegularExpressions;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to process regular expression match as distinct data type value.

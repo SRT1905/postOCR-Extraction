@@ -1,7 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Excel
 {
     using System.Collections.Generic;
     using Microsoft.Office.Interop.Excel;
+    using SmartOCR.Config;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to create and populate output Excel workbook that would contain data collected from search tree.

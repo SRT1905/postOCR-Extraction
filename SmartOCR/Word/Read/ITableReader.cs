@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Word.Read
 {
     using System.Collections.Generic;
 

@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Utilities
 {
     /// <summary>
     /// Defines a generic interface for any class implementing Builder pattern.

@@ -1,9 +1,11 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Word.Read
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.Office.Interop.Word;
+    using SmartOCR.Utilities;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Performs collection and grouping of document contents.

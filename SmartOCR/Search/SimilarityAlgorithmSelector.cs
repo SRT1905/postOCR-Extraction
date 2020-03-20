@@ -1,8 +1,9 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Search.SimilarityAlgorithms;
 
     /// <summary>
     /// Used to access similarity algorithms from current assembly.

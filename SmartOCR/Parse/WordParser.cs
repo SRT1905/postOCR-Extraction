@@ -1,8 +1,15 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Parse
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Config;
+    using SmartOCR.Search;
+    using SmartOCR.Search.NodeProcessors;
+    using SmartOCR.Utilities;
+    using SmartOCR.Word;
+    using SmartOCR.Word.Read;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to find data, specified by configuration fields, in Word document.

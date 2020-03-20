@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Soundex
 {
     using System.Collections.Generic;
     using System.Linq;

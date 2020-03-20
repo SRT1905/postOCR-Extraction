@@ -1,8 +1,11 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Config
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Soundex;
+    using SmartOCR.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Describes single search field defined in Excel config file.

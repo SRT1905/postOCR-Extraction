@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Word
 {
     using System;
     using Microsoft.Office.Interop.Word;

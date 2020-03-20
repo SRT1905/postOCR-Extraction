@@ -1,6 +1,7 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
+    using SmartOCR.Utilities;
 
     /// <summary>
     /// Used to build an instance of <see cref="TreeNodeContent"/> class in stepwise fashion.

@@ -1,8 +1,10 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Config;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Represents collection of <see cref="TreeNode"/> instances that are used to search information in document.

@@ -1,9 +1,10 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Main
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// CMDProcess is used to process data from command prompt: define document type and files to parse.

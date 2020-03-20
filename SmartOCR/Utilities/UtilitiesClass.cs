@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@
     /// <summary>
     /// Provides static methods used across namespace.
     /// </summary>
-    public static class Utilities
+    public static class UtilitiesClass
     {
         private static readonly Dictionary<string, string> MonthMapping = new Dictionary<string, string>()
         {
@@ -57,12 +57,12 @@
         /// <param name="debugLevel">Used to indicate call level.</param>
         public static void Debug(string message, int debugLevel = 0)
         {
-            if (!Utilities.EnableDebug)
+            if (!EnableDebug)
             {
                 return;
             }
 
-            if (debugLevel > Utilities.DebugLevel && Utilities.DebugLevel != -1)
+            if (debugLevel > DebugLevel && DebugLevel != -1)
             {
                 return;
             }

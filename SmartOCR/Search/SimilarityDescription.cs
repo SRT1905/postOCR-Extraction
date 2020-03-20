@@ -1,6 +1,7 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search
 {
     using System;
+    using SmartOCR.Search.SimilarityAlgorithms;
 
     /// <summary>
     /// Used to contain similarity properties between two strings.

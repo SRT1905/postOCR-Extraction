@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Main
 {
     /// <summary>
     /// Specifies the type of entered command prompt arguments.

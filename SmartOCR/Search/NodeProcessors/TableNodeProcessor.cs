@@ -1,9 +1,11 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Search.NodeProcessors
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using SmartOCR.Word;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Used to search values, specified by configuration fields, in Word tables.

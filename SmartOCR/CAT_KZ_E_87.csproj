@@ -53,7 +53,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SmartOCR.Program</StartupObject>
+    <StartupObject>SmartOCR.Main.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
@@ -100,20 +100,20 @@
     <Compile Include="Search\SimilarityAlgorithms\LevensteinAlgorithm.cs" />
     <Compile Include="Search\SimilarityAlgorithms\ISimilarityAlgorithm.cs" />
     <Compile Include="Search\SimilarityAlgorithms\RatcliffObershelpAlgorithm.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\FieldNodeProcessor.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\LineNodeProcessor.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\OffsetNodeProcessor.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\TerminalNodeProcessor.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\UndefinedNodeProcessor.cs" />
+    <Compile Include="Search\NodeProcessors\FieldNodeProcessor.cs" />
+    <Compile Include="Search\NodeProcessors\LineNodeProcessor.cs" />
+    <Compile Include="Search\NodeProcessors\OffsetNodeProcessor.cs" />
+    <Compile Include="Search\NodeProcessors\TerminalNodeProcessor.cs" />
+    <Compile Include="Search\NodeProcessors\UndefinedNodeProcessor.cs" />
     <Compile Include="Utilities\IBuilder.cs" />
-    <Compile Include="Search\TreeStructure\NodeProcessors\TableNodeProcessor.cs" />
-    <Compile Include="Search\TreeStructure\TreeNodeContent.cs" />
-    <Compile Include="Search\TreeStructure\TreeNodeContentBuilder.cs" />
+    <Compile Include="Search\NodeProcessors\TableNodeProcessor.cs" />
+    <Compile Include="Search\TreeNodeContent.cs" />
+    <Compile Include="Search\TreeNodeContentBuilder.cs" />
     <Compile Include="Search\MatchProcessor.cs" />
     <Compile Include="Search\SearchTree.cs" />
     <Compile Include="Search\SimilarityDescription.cs" />
-    <Compile Include="Search\TreeStructure\TreeNode.cs" />
-    <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Search\TreeNode.cs" />
+    <Compile Include="Utilities\UtilitiesClass.cs" />
     <Compile Include="Utilities\GridCollection.cs" />
     <Compile Include="Utilities\GridStructure.cs" />
     <Compile Include="Word\Read\ITableReader.cs" />

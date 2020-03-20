@@ -1,4 +1,4 @@
-﻿namespace SmartOCR
+﻿namespace SmartOCR.Main
 {
     using System;
     using System.Collections.Generic;
@@ -6,6 +6,11 @@
     using System.Linq;
     using System.Reflection;
     using Microsoft.Office.Interop.Excel;
+    using SmartOCR.Config;
+    using SmartOCR.Excel;
+    using SmartOCR.Parse;
+    using SmartOCR.Word.Read;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Represents an entry point for processing input from command prompt or start form.
