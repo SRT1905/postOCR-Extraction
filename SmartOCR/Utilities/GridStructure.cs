@@ -156,18 +156,18 @@
 
         private void AddSingleLineDataToGrid(int gridRow, int lineCount)
         {
-            var splittedParagraphCollection = this.SplitParagraphCollection(this.source[lineCount]);
-            this.PopulateColumnsInGridRow(gridRow, lineCount, splittedParagraphCollection);
+            var splitParagraphCollection = this.SplitParagraphCollection(this.source[lineCount]);
+            this.PopulateColumnsInGridRow(gridRow, lineCount, splitParagraphCollection);
         }
 
-        private void PopulateColumnsInGridRow(int gridRow, int lineCount, List<ParagraphContainer>[] splittedParagraphCollection)
+        private void PopulateColumnsInGridRow(int gridRow, int lineCount, List<ParagraphContainer>[] splitParagraphCollection)
         {
             for (int gridColumn = 0; gridColumn < this.Size; gridColumn++)
             {
                 this.AddParagraphsAndSort(
                     this.grid[gridRow][gridColumn].Item1,
                     lineCount,
-                    splittedParagraphCollection[gridColumn]);
+                    splitParagraphCollection[gridColumn]);
             }
         }
 
@@ -186,32 +186,32 @@
 
         private List<ParagraphContainer>[] SplitParagraphCollection(List<ParagraphContainer> paragraphs)
         {
-            return this.DistributeSourceParagraphs(paragraphs, this.InitializeSplittedParagraphs());
+            return this.DistributeSourceParagraphs(paragraphs, this.InitializeSplitParagraphs());
         }
 
-        private List<ParagraphContainer>[] DistributeSourceParagraphs(List<ParagraphContainer> sourceParagraphs, List<ParagraphContainer>[] splittedParagraphs)
+        private List<ParagraphContainer>[] DistributeSourceParagraphs(List<ParagraphContainer> sourceParagraphs, List<ParagraphContainer>[] splitParagraphs)
         {
             foreach (var item in sourceParagraphs)
             {
-                splittedParagraphs[this.GetGridColumnForParagraph(item)].Add(item);
+                splitParagraphs[this.GetGridColumnForParagraph(item)].Add(item);
             }
 
-            return splittedParagraphs;
+            return splitParagraphs;
         }
 
-        private List<ParagraphContainer>[] InitializeSplittedParagraphs()
+        private List<ParagraphContainer>[] InitializeSplitParagraphs()
         {
-            return this.InitializeSplittedParagraphsWithEmptyLists(new List<ParagraphContainer>[this.Size]);
+            return this.InitializeSplitParagraphsWithEmptyLists(new List<ParagraphContainer>[this.Size]);
         }
 
-        private List<ParagraphContainer>[] InitializeSplittedParagraphsWithEmptyLists(List<ParagraphContainer>[] splittedParagraphs)
+        private List<ParagraphContainer>[] InitializeSplitParagraphsWithEmptyLists(List<ParagraphContainer>[] splitParagraphs)
         {
             for (int i = 0; i < this.Size; i++)
             {
-                splittedParagraphs[i] = new List<ParagraphContainer>();
+                splitParagraphs[i] = new List<ParagraphContainer>();
             }
 
-            return splittedParagraphs;
+            return splitParagraphs;
         }
 
         private int GetGridColumnForParagraph(ParagraphContainer item)

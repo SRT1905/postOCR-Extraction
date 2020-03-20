@@ -36,26 +36,26 @@
         /// </summary>
         public Dictionary<string, int> SearchParameters { get; private set; }
 
-        private static void TryToMergeSplittedPattern(List<string> splittedInput)
+        private static void TryToMergeSplitPattern(List<string> splitInput)
         {
-            while (!(int.TryParse(splittedInput[1], out _) || string.IsNullOrEmpty(splittedInput[1])))
+            while (!(int.TryParse(splitInput[1], out _) || string.IsNullOrEmpty(splitInput[1])))
             {
-                MergeSplittedPattern(splittedInput);
+                MergeSplitPattern(splitInput);
             }
         }
 
-        private static void MergeSplittedPattern(List<string> splittedInput)
+        private static void MergeSplitPattern(List<string> splitInput)
         {
-            splittedInput[0] = $"{splittedInput[0]};{splittedInput[1]}";
-            OffsetInputByOneItemToLeft(splittedInput);
-            splittedInput.RemoveAt(splittedInput.Count - 1);
+            splitInput[0] = $"{splitInput[0]};{splitInput[1]}";
+            OffsetInputByOneItemToLeft(splitInput);
+            splitInput.RemoveAt(splitInput.Count - 1);
         }
 
-        private static void OffsetInputByOneItemToLeft(List<string> splittedInput)
+        private static void OffsetInputByOneItemToLeft(List<string> splitInput)
         {
-            for (int i = 2; i < splittedInput.Count; i++)
+            for (int i = 2; i < splitInput.Count; i++)
             {
-                splittedInput[i - 1] = splittedInput[i];
+                splitInput[i - 1] = splitInput[i];
             }
         }
 
@@ -78,21 +78,21 @@
             };
         }
 
-        private static void AddZerosToEnd(List<string> splittedInput)
+        private static void AddZerosToEnd(List<string> splitInput)
         {
-            while (splittedInput.Count < 3)
+            while (splitInput.Count < 3)
             {
-                splittedInput.Add("0");
+                splitInput.Add("0");
             }
         }
 
-        private static void TrySetDefaultNumericValues(List<string> splittedInput)
+        private static void TrySetDefaultNumericValues(List<string> splitInput)
         {
-            for (int i = 1; i < splittedInput.Count; i++)
+            for (int i = 1; i < splitInput.Count; i++)
             {
-                if (string.IsNullOrEmpty(splittedInput[i]))
+                if (string.IsNullOrEmpty(splitInput[i]))
                 {
-                    splittedInput[i] = "0";
+                    splitInput[i] = "0";
                 }
             }
         }
@@ -112,17 +112,17 @@
 
         private List<string> DefineExpressionParameters(string input)
         {
-            List<string> splittedInput = input.Split(';').ToList();
-            TryToMergeSplittedPattern(splittedInput);
-            return this.ValidateNumericParameters(splittedInput);
+            List<string> splitInput = input.Split(';').ToList();
+            TryToMergeSplitPattern(splitInput);
+            return this.ValidateNumericParameters(splitInput);
         }
 
-        private List<string> ValidateNumericParameters(List<string> splittedInput)
+        private List<string> ValidateNumericParameters(List<string> splitInput)
         {
-            AddZerosToEnd(splittedInput);
-            this.RegExPattern = splittedInput[0];
-            TrySetDefaultNumericValues(splittedInput);
-            return splittedInput;
+            AddZerosToEnd(splitInput);
+            this.RegExPattern = splitInput[0];
+            TrySetDefaultNumericValues(splitInput);
+            return splitInput;
         }
     }
 }

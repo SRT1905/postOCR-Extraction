@@ -87,7 +87,7 @@
                 return;
             }
 
-            this.GridCoordinates = ParseSplittedCoordinates(coordinatesValue.Replace(" ", string.Empty).Split(','));
+            this.GridCoordinates = ParseSplitCoordinates(coordinatesValue.Replace(" ", string.Empty).Split(','));
         }
 
         /// <summary>
@@ -113,7 +113,7 @@
             return $"Config field: {this.Name}; value type: {this.ValueType}";
         }
 
-        private static Tuple<int, int> ParseSplittedCoordinates(string[] coordinates)
+        private static Tuple<int, int> ParseSplitCoordinates(string[] coordinates)
         {
             return new Tuple<int, int>(
                 TryParseStringAsInteger(coordinates[0]),
@@ -127,26 +127,26 @@
                 : -1;
         }
 
-        private static void JoinSplittedRegularExpression(List<string> splittedValue)
+        private static void JoinSplitRegularExpression(List<string> splitValue)
         {
-            while (splittedValue.Count != 2)
+            while (splitValue.Count != 2)
             {
-                MergeSplittedPattern(splittedValue);
+                MergeSplitPattern(splitValue);
             }
         }
 
-        private static void MergeSplittedPattern(List<string> splittedValue)
+        private static void MergeSplitPattern(List<string> splitValue)
         {
-            splittedValue[0] = $"{splittedValue[0]};{splittedValue[1]}";
-            OffsetInputByOneValueToLeft(splittedValue);
-            splittedValue.RemoveAt(splittedValue.Count - 1);
+            splitValue[0] = $"{splitValue[0]};{splitValue[1]}";
+            OffsetInputByOneValueToLeft(splitValue);
+            splitValue.RemoveAt(splitValue.Count - 1);
         }
 
-        private static void OffsetInputByOneValueToLeft(List<string> splittedValue)
+        private static void OffsetInputByOneValueToLeft(List<string> splitValue)
         {
-            for (int i = 2; i < splittedValue.Count; i++)
+            for (int i = 2; i < splitValue.Count; i++)
             {
-                splittedValue[i - 1] = splittedValue[i];
+                splitValue[i - 1] = splitValue[i];
             }
         }
 
@@ -157,15 +157,15 @@
 
         private void SplitInputAndSetProperties(string input)
         {
-            var splittedValue = input.Split(';').ToList();
-            JoinSplittedRegularExpression(splittedValue);
-            this.SetPropertiesFromSplittedValue(splittedValue);
+            var splitValue = input.Split(';').ToList();
+            JoinSplitRegularExpression(splitValue);
+            this.SetPropertiesFromSplitValue(splitValue);
         }
 
-        private void SetPropertiesFromSplittedValue(List<string> splittedValue)
+        private void SetPropertiesFromSplitValue(List<string> splitValue)
         {
-            this.TextExpression = this.ValidateValueOrGetName(splittedValue[0]);
-            this.ExpectedName = this.ValidateValueOrGetName(splittedValue[1]);
+            this.TextExpression = this.ValidateValueOrGetName(splitValue[0]);
+            this.ExpectedName = this.ValidateValueOrGetName(splitValue[1]);
             this.ValidateSoundexStatus();
         }
 
