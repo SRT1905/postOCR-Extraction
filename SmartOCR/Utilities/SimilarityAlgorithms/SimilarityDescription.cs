@@ -33,7 +33,7 @@
         /// <summary>
         /// Sets algorithm that is used to calculate string similarity for all instances, initialized after setting this property.
         /// </summary>
-        public static ISimilarityAlgorithm SimilarityAlgorithm { private get; set; } = new LevensteinAlgorithm();
+        public static ISimilarityAlgorithm SimilarityAlgorithm { private get; set; } = SimilarityAlgorithmSelector.GetAlgorithm("LevensteinAlgorithm");
 
         /// <summary>
         /// Gets percentage of closeness between two strings.
