@@ -3,6 +3,8 @@
     using System.IO;
     using Microsoft.Office.Interop.Excel;
     using SmartOCR.Excel;
+    using SmartOCR.Search;
+    using SmartOCR.Search.SimilarityAlgorithms;
     using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
@@ -34,7 +36,33 @@
         /// <returns>An instance of <see cref="ConfigData"/>.</returns>
         public ConfigData ParseConfig()
         {
+            SetSimilarityAlgorithm(configWorkbook.Worksheets[1]);
             return this.GetConfigData(configWorkbook.Worksheets[1]);
+        }
+
+        private static void SetSimilarityAlgorithm(Worksheet sourceWs)
+        {
+            for (var row = 1; row <= sourceWs.UsedRange.Rows.Count; row++)
+            {
+                string algorithmName = sourceWs.UsedRange.Cells.Item[row, 1].Value2;
+                if (!algorithmName.ToLower().StartsWith("similarity algorithm"))
+                {
+                    continue;
+                }
+
+                ISimilarityAlgorithm algorithm =
+                    SimilarityAlgorithmSelector.GetAlgorithm(sourceWs.UsedRange.Cells.Item[row, 2].Value2);
+                if (algorithm == null)
+                {
+                    continue;
+                }
+
+                Utilities.Debug($"String similarity algorithm is {sourceWs.UsedRange.Cells.Item[row, 2].Value2}.");
+                SimilarityDescription.SimilarityAlgorithm = algorithm;
+                return;
+            }
+
+            Utilities.Debug($"Default string similarity algorithm is used.", 2);
         }
 
         /// <summary>

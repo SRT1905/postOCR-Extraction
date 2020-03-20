@@ -6,7 +6,7 @@
     /// <summary>
     /// Used to contain similarity properties between two strings.
     /// </summary>
-    public class SimilarityDescription // TODO: find approach to calling specific similarity algorithm
+    public class SimilarityDescription
     {
         /// <summary>
         /// Lower bound of valid similarity ratio.
