@@ -27,12 +27,12 @@
         /// <returns>And encoded Soundex value.</returns>
         public string EncodeValue(string value)
         {
-            var splitValue = Regex.Split(value, "(\\W+)");
+            var splitValue = Regex.Split(value, "([^а-яёa-z0-9_]+)", RegexOptions.IgnoreCase);
             for (var index = 0; index < splitValue.Length; index++)
             {
-                if (Regex.IsMatch(splitValue[index], "\\w"))
+                if (Regex.IsMatch(splitValue[index], "[а-яёa-z0-9_]", RegexOptions.IgnoreCase))
                 {
-                    splitValue[index] = this.EncodeSingleWord(splitValue[index].ToLower());
+                    splitValue[index] = this.EncodeSingleWord(splitValue[index].ToUpper());
                 }
             }
 

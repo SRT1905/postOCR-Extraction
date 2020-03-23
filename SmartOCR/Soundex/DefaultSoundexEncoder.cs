@@ -10,18 +10,18 @@
     {
         private static readonly Dictionary<char, char> CharIndexes = new Dictionary<char, char>()
         {
-            { 'b', '1' }, { 'f', '1' }, { 'p', '1' }, { 'v', '1' },
-            { 'c', '2' }, { 'g', '2' }, { 'j', '2' }, { 'k', '2' },
-            { 'q', '2' }, { 's', '2' }, { 'x', '2' }, { 'z', '2' },
-            { 'd', '3' }, { 't', '3' },
-            { 'l', '4' },
-            { 'm', '5' }, { 'n', '5' },
-            { 'r', '6' },
+            { 'B', '1' }, { 'F', '1' }, { 'P', '1' }, { 'V', '1' },
+            { 'C', '2' }, { 'G', '2' }, { 'J', '2' }, { 'K', '2' },
+            { 'Q', '2' }, { 'S', '2' }, { 'X', '2' }, { 'Z', '2' },
+            { 'D', '3' }, { 'T', '3' },
+            { 'L', '4' },
+            { 'M', '5' }, { 'N', '5' },
+            { 'R', '6' },
         };
 
         private static readonly HashSet<char> Vowels = new HashSet<char>()
         {
-            'a', 'e', 'i', 'o', 'u', 'y',
+            'A', 'E', 'I', 'O', 'U', 'Y',
         };
 
         /// <summary>
@@ -69,7 +69,7 @@
         private static List<char> RemoveInvalidLetters(List<char> sourceChars)
         {
             return sourceChars.Skip(1)
-                              .Where(singleChar => !(singleChar == 'h' || singleChar == 'w'))
+                              .Where(singleChar => !(singleChar == 'H' || singleChar == 'W'))
                               .ToList();
         }
 

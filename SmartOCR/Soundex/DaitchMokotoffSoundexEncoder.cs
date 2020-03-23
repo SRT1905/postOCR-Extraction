@@ -16,7 +16,7 @@
         /// Symbol '|' is used to separate possible codes for combination.
         /// </summary>
         private static readonly Dictionary<string, string[]> CodingChart =
-            new Dictionary<string, string[]>()
+            new Dictionary<string, string[]>
             {
                 ["A"] = new[] { "0", "_", "_" },
                 ["AI"] = new[] { "0", "1", "_" },
@@ -167,12 +167,20 @@
             };
 
         private static readonly Dictionary<char, string[]> CombinationsByFirstLetter =
-            new Dictionary<char, string[]>()
+            new Dictionary<char, string[]>
         {
             ['A'] = new[] { "AI", "AJ", "AU", "AY", "A" },
             ['B'] = new[] { "B" },
-            ['C'] = new[] { "CHS", "CSZ", "CZS", "CH", "CK", "CS", "CZ", "C" },
-            ['D'] = new[] { "DRS", "DRZ", "DSH", "DSZ", "DZH", "DZS", "DS", "DT", "DZ", "D" },
+            ['C'] = new[]
+            {
+                "CHS", "CSZ", "CZS", "CH",
+                "CK", "CS", "CZ", "C",
+            },
+            ['D'] = new[]
+            {
+                "DRS", "DRZ", "DSH", "DSZ",
+                "DZH", "DZS", "DS", "DT", "DZ", "D",
+            },
             ['E'] = new[] { "EI", "EJ", "EU", "EY", "E" },
             ['F'] = new[] { "FB", "F" },
             ['G'] = new[] { "G", },
@@ -213,9 +221,23 @@
             },
         };
 
-        private static readonly HashSet<char> CharsToRemove = new HashSet<char>()
+        private static readonly HashSet<char> CharsToRemove = new HashSet<char>
         {
             'A', 'E', 'I', 'J', 'O', 'U', 'Y',
+        };
+
+        private static readonly Dictionary<string, string> TransliterationDictionary
+            = new Dictionary<string, string>
+        {
+                ["А"] = "A", ["Б"] = "B", ["В"] = "V", ["Г"] = "G",
+                ["Д"] = "D", ["Е"] = "E", ["Ё"] = "JO", ["Ж"] = "ZH",
+                ["З"] = "Z", ["И"] = "I", ["Й"] = "J", ["К"] = "K",
+                ["Л"] = "L", ["М"] = "M", ["Н"] = "N", ["О"] = "O",
+                ["П"] = "P", ["Р"] = "R", ["С"] = "S", ["Т"] = "T",
+                ["У"] = "U", ["Ф"] = "F", ["Х"] = "H", ["Ц"] = "Z",
+                ["Ч"] = "CH", ["Ш"] = "SH", ["Щ"] = "SCH", ["Ъ"] = string.Empty,
+                ["Ы"] = "Y", ["Ь"] = string.Empty, ["Э"] = "E", ["Ю"] = "JU",
+                ["Я"] = "JA",
         };
 
         /// <summary>
@@ -229,31 +251,53 @@
         }
 
         /// <inheritdoc/>
-        protected override string EncodeSingleWord(string word) // TODO: test Daitch-Mokotoff Soundex implementation
+        protected override string EncodeSingleWord(string word)
         {
             if (string.IsNullOrEmpty(word))
             {
                 return new string('0', 6);
             }
 
-            var result = new List<char>();
+            word = TransliterateWord(word);
+            var result = new List<string>
+            {
+                string.Empty,
+            };
+            LoopThroughString(word, result);
+
+            // Filter out consecutive letters and '_' placeholders.
+            return GetFilteredAndPaddedResult(result);
+        }
+
+        private static void LoopThroughString(string word, List<string> result)
+        {
             var position = 0;
             while (position < word.Length)
             {
                 // Iterate through combinations by first letter, check for possible substrings.
                 position = UpdatePosition(word, position, result);
             }
-
-            // Filter out consecutive letters and '_' placeholders.
-            return GetFilteredAndPaddedResult(result);
         }
 
-        private static string GetFilteredAndPaddedResult(List<char> result)
+        private static string TransliterateWord(string word)
         {
-            return new string(TrimRepeatingIndexes(result).Where(item => item != '_').ToArray()).PadRight(6, '0');
+            return TransliterationDictionary.Aggregate(word, (current, translitPair) => current.Replace(translitPair.Key, translitPair.Value));
         }
 
-        private static int UpdatePosition(string word, int position, List<char> result)
+        private static string GetFilteredAndPaddedResult(List<string> result)
+        {
+            for (var index = 0; index < result.Count; index++)
+            {
+                var cleanedUpValue = new string(TrimRepeatingIndexes(result[index].ToCharArray().ToList()).Where(item => item != '_').ToArray());
+                result[index] = cleanedUpValue.Length < 6
+                    ? cleanedUpValue.PadRight(6, '0')
+                    : cleanedUpValue.Substring(0, 6);
+            }
+
+            return result.Count == 0 ? string.Empty : result[0];
+        }
+
+        private static int UpdatePosition(string word, int position, List<string> result)
         {
             foreach (var combination in CombinationsByFirstLetter[word[position]])
             {
@@ -263,28 +307,48 @@
                     continue;
                 }
 
-                position = newPosition;
-                break;
+                return newPosition;
             }
 
             return position;
         }
 
-        private static int GetPositionFromSingleCombination(string word, int position, List<char> result, string combination)
+        private static int GetPositionFromSingleCombination(string word, int position, List<string> result, string combination)
         {
-            if (!new string(word.Skip(position).ToArray()).StartsWith(combination))
+            if (!word.Substring(position)
+                     .StartsWith(combination))
             {
                 // Go to next combination.
                 return position;
             }
 
-            foreach (var splitCode in GetCombinationCode(word, position, combination).Split('|'))
+            string code = GetCombinationCode(word, position, combination);
+            if (code.Contains("|"))
             {
-                result.AddRange(splitCode.ToCharArray());
+                ResolveAmbiguousCode(result, code);
+            }
+            else
+            {
+                for (var index = 0; index < result.Count; index++)
+                {
+                    result[index] = string.Concat(result[index], code);
+                }
             }
 
-            position += combination.Length;
-            return position;
+            return position + combination.Length;
+        }
+
+        private static void ResolveAmbiguousCode(List<string> result, string code)
+        {
+            var splitCode = code.Split('|');
+            string[] copy = new string[result.Count];
+            for (var index = 0; index < result.Count; index++)
+            {
+                result[index] = string.Concat(result[index], splitCode[0]);
+                copy[index] = string.Concat(result[index], splitCode[1]);
+            }
+
+            result.AddRange(copy);
         }
 
         private static string GetCombinationCode(string word, int position, string combination)
