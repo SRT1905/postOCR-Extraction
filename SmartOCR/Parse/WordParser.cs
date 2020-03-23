@@ -43,7 +43,7 @@
         /// <returns>A mapping between field name and found value.</returns>
         public Dictionary<string, string> ParseDocument()
         {
-            Utilities.Debug($"Parsing document.", 1);
+            Utilities.Debug("Parsing document.", 1);
             this.treeStructure.PopulateTree();
             this.ProcessDocument();
             return this.treeStructure.GetValuesFromTree();

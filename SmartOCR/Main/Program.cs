@@ -56,7 +56,7 @@
             }
 
             cmdProcessor.ExecuteProcessing();
-            Utilities.Debug($"Processing done!");
+            Utilities.Debug("Processing done!");
         }
 
         private static void SetDebugLevel(string argument)

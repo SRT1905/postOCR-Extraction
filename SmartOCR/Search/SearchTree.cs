@@ -51,7 +51,7 @@
         /// <returns>A mapping between field names and found values.</returns>
         public Dictionary<string, string> GetValuesFromTree()
         {
-            Utilities.Debug($"Collecting found data from search tree.", 2);
+            Utilities.Debug("Collecting found data from search tree.", 2);
             var finalValues = new Dictionary<string, string>();
             foreach (var field in this.configData.Fields)
             {
@@ -66,7 +66,7 @@
         /// </summary>
         public void PopulateTree()
         {
-            Utilities.Debug($"Populating search tree with config data.", 2);
+            Utilities.Debug("Populating search tree with config data.", 2);
             this.treeStructure = this.PopulateRoot();
         }
 

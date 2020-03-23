@@ -2,7 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// Encodes string using default Soundex encoding algorithm.
@@ -42,18 +41,6 @@
             char firstLetter = sourceChars[0];
             sourceChars = PrepareSourceChars(sourceChars);
             return Finalize(char.ToUpper(firstLetter), sourceChars);
-        }
-
-        private static char TryAddCharToBuilder(StringBuilder sb, char charToAdd, char previousChar)
-        {
-            if (charToAdd == previousChar)
-            {
-                return previousChar;
-            }
-
-            sb.Append(charToAdd);
-            previousChar = charToAdd;
-            return previousChar;
         }
 
         private static void AddZerosToRight(List<char> sourceChars)
@@ -100,13 +87,6 @@
         {
             sourceChars.RemoveAll(item => Vowels.Contains(item));
             return sourceChars;
-        }
-
-        private static List<char> TrimRepeatingIndexes(List<char> sourceChars)
-        {
-            var sb = new StringBuilder();
-            new string(sourceChars.ToArray()).Aggregate(char.MinValue, (current, item) => TryAddCharToBuilder(sb, item, current));
-            return sb.ToString().ToList();
         }
 
         private static List<char> DoIndexProcedures(List<char> sourceChars)

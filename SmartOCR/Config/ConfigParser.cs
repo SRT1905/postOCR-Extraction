@@ -62,7 +62,7 @@
                 return;
             }
 
-            Utilities.Debug($"Default string similarity algorithm is used.", 2);
+            Utilities.Debug("Default string similarity algorithm is used.", 2);
         }
 
         /// <summary>

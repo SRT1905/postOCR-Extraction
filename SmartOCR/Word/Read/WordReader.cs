@@ -70,7 +70,7 @@
         /// </summary>
         public void ReadDocument()
         {
-            Utilities.Debug($"Reading document contents.", 1);
+            Utilities.Debug("Reading document contents.", 1);
             int numberOfPages = this.document.Range().Information[WdInformation.wdNumberOfPagesInDocument];
 
             for (int pageIndex = 1; pageIndex <= numberOfPages; pageIndex++)
@@ -286,7 +286,7 @@
                 return;
             }
 
-            Utilities.Debug($"Merging collected data from current page with data from previous pages.", 2);
+            Utilities.Debug("Merging collected data from current page with data from previous pages.", 2);
             this.UpdateLineMappingByEndLine(pageContent);
         }
 

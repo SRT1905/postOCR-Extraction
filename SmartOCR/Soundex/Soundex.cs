@@ -1,5 +1,10 @@
 ﻿namespace SmartOCR.Soundex
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// Used to encode strings representation so that they can be matched despite minor differences in spelling.
     /// </summary>
@@ -22,14 +27,28 @@
         /// <returns>And encoded Soundex value.</returns>
         public string EncodeValue(string value)
         {
-            string[] splittedValue = value.Split(' ');
-
-            for (int i = 0; i < splittedValue.Length; i++)
+            var splitValue = Regex.Split(value, "(\\W+)");
+            for (var index = 0; index < splitValue.Length; index++)
             {
-                splittedValue[i] = this.EncodeSingleWord(splittedValue[i].ToLower());
+                if (Regex.IsMatch(splitValue[index], "\\w"))
+                {
+                    splitValue[index] = this.EncodeSingleWord(splitValue[index].ToLower());
+                }
             }
 
-            return string.Join(" ", splittedValue);
+            return string.Join(string.Empty, splitValue);
+        }
+
+        /// <summary>
+        /// Removes consecutive characters from List.
+        /// </summary>
+        /// <param name="sourceChars">A source char list.</param>
+        /// <returns>A list of chars with trimmed consecutive letters.</returns>
+        protected static List<char> TrimRepeatingIndexes(List<char> sourceChars)
+        {
+            var sb = new StringBuilder();
+            new string(sourceChars.ToArray()).Aggregate(char.MinValue, (current, item) => TryAddCharToBuilder(sb, item, current));
+            return sb.ToString().ToList();
         }
 
         /// <summary>
@@ -38,5 +57,17 @@
         /// <param name="word">A word to encode.</param>
         /// <returns>An encoded string.</returns>
         protected abstract string EncodeSingleWord(string word);
+
+        private static char TryAddCharToBuilder(StringBuilder sb, char charToAdd, char previousChar)
+        {
+            if (charToAdd == previousChar)
+            {
+                return previousChar;
+            }
+
+            sb.Append(charToAdd);
+            previousChar = charToAdd;
+            return previousChar;
+        }
     }
 }
