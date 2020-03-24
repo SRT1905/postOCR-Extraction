@@ -172,7 +172,8 @@
                                                                                 .SetNodeLabel(initialValueIndex + 1 == valuesCollection.Count
                                                                                                 ? "Terminal"
                                                                                                 : $"Search {initialValueIndex}")
-                                                                                .SetTextExpression(valuesCollection[initialValueIndex].RegExPattern)
+                                                                                .SetTextExpression(valuesCollection[initialValueIndex].TextExpression)
+                                                                                .SetSoundexUsageStatus(valuesCollection[initialValueIndex].UseSoundex)
                                                                                 .AddLine(node.Content.Lines[0]);
             return DefineNumericSearchParameters(valuesCollection[initialValueIndex].SearchParameters, node.Content.ValueType, contentBuilder);
         }

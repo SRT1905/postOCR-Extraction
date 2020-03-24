@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using SmartOCR.Soundex;
+    using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
     /// Describes single search expression defined in Excel config file.
@@ -27,9 +29,14 @@
         }
 
         /// <summary>
-        /// Gets regular expression pattern.
+        /// Gets text pattern (Soundex or Regex).
         /// </summary>
-        public string RegExPattern { get; private set; }
+        public string TextExpression { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the value of <see cref="TextExpression"/> is Soundex expression.
+        /// </summary>
+        public bool UseSoundex { get; private set; }
 
         /// <summary>
         /// Gets mapping between search parameter name and its value.
@@ -61,20 +68,17 @@
 
         private static string[] DefineNumericParameterTitles(string valueType)
         {
-            string[] tableParameterTitles = { "row", "column" };
-            string[] parameterTitles = { "line_offset", "horizontal_status" };
-
             return valueType.Contains("Table")
-                ? tableParameterTitles
-                : parameterTitles;
+                ? new[] { "row", "column" }
+                : new[] { "line_offset", "horizontal_status" };
         }
 
         private static Dictionary<string, int> MapParametersWithValues(List<string> parsedInput, string[] parameterTitles)
         {
-            return new Dictionary<string, int>()
+            return new Dictionary<string, int>
             {
-                { parameterTitles[0], int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
-                { parameterTitles[1], int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo) },
+                [parameterTitles[0]] = int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo),
+                [parameterTitles[1]] = int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo),
             };
         }
 
@@ -95,6 +99,12 @@
                     splitInput[i] = "0";
                 }
             }
+        }
+
+        private static string EncodeString(string value)
+        {
+            // return new DefaultSoundexEncoder(value).EncodedValue;
+            return new DaitchMokotoffSoundexEncoder(value).EncodedValue;
         }
 
         private void InitializeSearchParameters(string valueType, List<string> parsedInput)
@@ -120,9 +130,32 @@
         private List<string> ValidateNumericParameters(List<string> splitInput)
         {
             AddZerosToEnd(splitInput);
-            this.RegExPattern = splitInput[0];
+            this.TextExpression = splitInput[0];
+            this.ValidateSoundexStatus();
             TrySetDefaultNumericValues(splitInput);
             return splitInput;
+        }
+
+        private void ValidateSoundexStatus()
+        {
+            if (this.TextExpression.StartsWith("soundex"))
+            {
+                this.PopulatePropertiesWithSoundex();
+            }
+        }
+
+        private void PopulatePropertiesWithSoundex()
+        {
+            this.TextExpression = EncodeString(this.ExtractSoundexExpression());
+            this.UseSoundex = true;
+        }
+
+        private string ExtractSoundexExpression()
+        {
+            return Utilities.CreateRegexpObject(@"soundex\((.*)\)")
+                            .Match(this.TextExpression)
+                            .Groups[1]
+                            .Value;
         }
     }
 }
