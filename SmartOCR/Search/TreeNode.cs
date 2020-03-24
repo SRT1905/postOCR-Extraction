@@ -6,6 +6,7 @@
     /// <summary>
     /// Used to contain information about search status of specific config field.
     /// </summary>
+    [Serializable]
     public class TreeNode
     {
         /// <summary>
@@ -39,9 +40,9 @@
         public List<TreeNode> Children { get; }
 
         /// <summary>
-        /// Gets a higher level instance of <see cref="TreeNode"/> class.
+        /// Gets or sets a higher level instance of <see cref="TreeNode"/> class.
         /// </summary>
-        public TreeNode Parent { get; private set; }
+        public TreeNode Parent { get; set; }
 
         /// <summary>
         /// Creates an empty tree structure with a single root node.
@@ -111,17 +112,6 @@
             return this.Content != null
                 ? $"{this.Content.Name}: {this.Content.NodeLabel} node"
                 : base.ToString();
-        }
-
-        /// <summary>
-        /// Removes children from node and resets search status and found value.
-        /// </summary>
-        public void Reset()
-        {
-            this.Children.Clear();
-            this.Content.Lines.Clear();
-            this.Content.Lines.Add(0);
-            this.Content.Status = false;
         }
     }
 }

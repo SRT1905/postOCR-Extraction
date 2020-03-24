@@ -53,10 +53,11 @@
 
         private static bool ProcessTableNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
         {
+            var nodeCopy = fieldNode.DeepCopy();
             new TableNodeProcessor(gridStructure[fieldNode.Content.GridCoordinates].Item2, fieldNode).Process();
             if (!fieldNode.Content.Status)
             {
-                fieldNode.Reset();
+                fieldNode = nodeCopy;
             }
 
             return fieldNode.Content.Status;
@@ -122,12 +123,13 @@
 
         private bool ProcessFieldNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
         {
+            var nodeCopy = fieldNode.DeepCopy();
             new FieldNodeProcessor(
                 this.configData[fieldNode.Content.Name],
                 gridStructure[fieldNode.Content.GridCoordinates].Item1).ProcessFieldNode(fieldNode);
             if (!fieldNode.Content.Status)
             {
-                fieldNode.Reset();
+                fieldNode = nodeCopy;
             }
 
             return fieldNode.Content.Status;

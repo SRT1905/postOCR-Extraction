@@ -7,6 +7,7 @@
     /// <summary>
     /// Class represents description of TreeNode search parameters.
     /// </summary>
+    [Serializable]
     public class TreeNodeContent
     {
         /// <summary>
