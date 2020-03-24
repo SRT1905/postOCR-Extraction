@@ -81,8 +81,9 @@
         {
             var singleMatch = regexObject.Match(cellValue);
             return new SimilarityDescription(
-                singleMatch.Groups[Convert.ToInt32(singleMatch.Groups.Count > 0)].Value,
-                checkValue).AreStringsSimilar();
+                singleMatch.Groups[Convert.ToInt32(singleMatch.Groups.Count > 1)].Value,
+                checkValue)
+                .AreStringsSimilar();
         }
 
         private static void PropagateStatusInTree(bool status, TreeNode node)
@@ -95,18 +96,21 @@
             }
         }
 
-        private static string GetCellByNodeContent(WordTable table, TreeNode childNode)
+        private static ParagraphContainer GetCellByNodeContent(WordTable table, TreeNode childNode)
         {
             return table[childNode.Content.FirstSearchParameter, childNode.Content.SecondSearchParameter];
         }
 
-        private bool TryToFindMatchInTable(WordTable table, Regex regexObject, string checkValue)
+        private bool TryToFindMatchInTable(WordTable table)
         {
+            var regexObject = Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression);
+            var checkValue = this.tableNode.Content.CheckValue;
+
             for (int i = 0; i < table.RowCount; i++)
             {
                 for (int j = 0; j < table.ColumnCount; j++)
                 {
-                    if (table[i, j] == null || !ProcessSingleCell(table[i, j], regexObject, checkValue))
+                    if (table[i, j] == null || !ProcessSingleCell(this.tableNode.Content.UseSoundex ? table[i, j].Soundex : table[i, j].Text, regexObject, checkValue))
                     {
                         continue;
                     }
@@ -121,15 +125,17 @@
 
         private bool TryGetDataFromTable(WordTable table)
         {
-            return this.TryToFindMatchInTable(table, Utilities.CreateRegexpObject(this.tableNode.Content.TextExpression), this.tableNode.Content.CheckValue) && this.ProcessNodeData(table);
+            return this.TryToFindMatchInTable(table) &&
+                   this.ProcessNodeData(table);
         }
 
         private bool ProcessNodeData(WordTable table)
         {
             var childNode = this.GetTerminalNode();
-            string itemByExpressionPosition = GetCellByNodeContent(table, childNode);
+            ParagraphContainer itemByExpressionPosition = GetCellByNodeContent(table, childNode);
             Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.TextExpression);
-            return regexObject.IsMatch(itemByExpressionPosition) && ExtractValueFromMatch(childNode, itemByExpressionPosition, regexObject);
+            return regexObject.IsMatch(itemByExpressionPosition.Text) &&
+                   ExtractValueFromMatch(childNode, itemByExpressionPosition.Text, regexObject);
         }
 
         private TreeNode GetTerminalNode()
