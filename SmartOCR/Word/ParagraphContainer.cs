@@ -24,7 +24,9 @@
             this.HorizontalLocation = ValidateLocation(range, WdInformation.wdHorizontalPositionRelativeToPage);
             this.VerticalLocation = ValidateLocation(range, WdInformation.wdVerticalPositionRelativeToPage);
             this.Text = RemoveInvalidChars(range.Text);
-            this.Soundex = new DefaultSoundexEncoder(this.Text).EncodedValue;
+
+            // this.Soundex = new DefaultSoundexEncoder(this.Text).EncodedValue;
+            this.Soundex = new DaitchMokotoffSoundexEncoder(this.Text).EncodedValue;
         }
 
         /// <summary>

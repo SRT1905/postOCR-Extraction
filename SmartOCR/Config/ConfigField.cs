@@ -152,7 +152,8 @@
 
         private static string EncodeString(string value)
         {
-            return new DefaultSoundexEncoder(value).EncodedValue;
+            // return new DefaultSoundexEncoder(value).EncodedValue;
+            return new DaitchMokotoffSoundexEncoder(value).EncodedValue;
         }
 
         private void SplitInputAndSetProperties(string input)

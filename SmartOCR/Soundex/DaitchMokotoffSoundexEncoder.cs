@@ -285,6 +285,11 @@
 
         private static int UpdatePosition(string word, int position, List<string> result)
         {
+            if (!CombinationsByFirstLetter.ContainsKey(word[position]))
+            {
+                return position;
+            }
+
             foreach (var combination in CombinationsByFirstLetter[word[position]])
             {
                 var newPosition = GetPositionFromSingleCombination(word, position, result, combination);
