@@ -62,8 +62,7 @@
         {
             sourceChars = RemoveInvalidLetters(sourceChars);
             sourceChars = DoIndexProcedures(sourceChars);
-            sourceChars = RemoveVowels(sourceChars);
-            return sourceChars;
+            return RemoveVowels(sourceChars);
         }
 
         private static List<char> RemoveInvalidLetters(List<char> sourceChars)

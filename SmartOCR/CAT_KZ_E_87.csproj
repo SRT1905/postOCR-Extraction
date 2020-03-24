@@ -113,6 +113,7 @@
     <Compile Include="Search\SearchTree.cs" />
     <Compile Include="Search\SimilarityDescription.cs" />
     <Compile Include="Search\TreeNode.cs" />
+    <Compile Include="Utilities\Transliteration.cs" />
     <Compile Include="Utilities\UtilitiesClass.cs" />
     <Compile Include="Utilities\GridCollection.cs" />
     <Compile Include="Utilities\GridStructure.cs" />

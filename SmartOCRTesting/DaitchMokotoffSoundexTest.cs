@@ -31,5 +31,13 @@ namespace SmartOCRTesting
             string second = Encode("Arnold Schwarzenegger");
             Assert.AreEqual(first, second);
         }
+
+        [TestMethod]
+        public void CyrillicWordsWithTyposTest()
+        {
+            string first = Encode("Грузоотправитель");
+            string second = Encode("Грузотпрвтель");
+            Assert.AreEqual(first, second);
+        }
     }
 }

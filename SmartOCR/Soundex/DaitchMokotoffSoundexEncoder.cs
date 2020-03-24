@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using SmartOCR.Utilities;
 
     /// <summary>
     /// Encodes string using Daitch-Mokotoff soundex algorithm.
@@ -226,20 +227,6 @@
             'A', 'E', 'I', 'J', 'O', 'U', 'Y',
         };
 
-        private static readonly Dictionary<string, string> TransliterationDictionary
-            = new Dictionary<string, string>
-        {
-                ["А"] = "A", ["Б"] = "B", ["В"] = "V", ["Г"] = "G",
-                ["Д"] = "D", ["Е"] = "E", ["Ё"] = "JO", ["Ж"] = "ZH",
-                ["З"] = "Z", ["И"] = "I", ["Й"] = "J", ["К"] = "K",
-                ["Л"] = "L", ["М"] = "M", ["Н"] = "N", ["О"] = "O",
-                ["П"] = "P", ["Р"] = "R", ["С"] = "S", ["Т"] = "T",
-                ["У"] = "U", ["Ф"] = "F", ["Х"] = "H", ["Ц"] = "Z",
-                ["Ч"] = "CH", ["Ш"] = "SH", ["Щ"] = "SCH", ["Ъ"] = string.Empty,
-                ["Ы"] = "Y", ["Ь"] = string.Empty, ["Э"] = "E", ["Ю"] = "JU",
-                ["Я"] = "JA",
-        };
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DaitchMokotoffSoundexEncoder"/> class.
         /// </summary>
@@ -258,12 +245,11 @@
                 return new string('0', 6);
             }
 
-            word = TransliterateWord(word);
             var result = new List<string>
             {
                 string.Empty,
             };
-            LoopThroughString(word, result);
+            LoopThroughString(Transliteration.TransliterateWord(word), result);
 
             // Filter out consecutive letters and '_' placeholders.
             return GetFilteredAndPaddedResult(result);
@@ -279,22 +265,22 @@
             }
         }
 
-        private static string TransliterateWord(string word)
-        {
-            return TransliterationDictionary.Aggregate(word, (current, translitPair) => current.Replace(translitPair.Key, translitPair.Value));
-        }
-
         private static string GetFilteredAndPaddedResult(List<string> result)
         {
             for (var index = 0; index < result.Count; index++)
             {
-                var cleanedUpValue = new string(TrimRepeatingIndexes(result[index].ToCharArray().ToList()).Where(item => item != '_').ToArray());
+                var cleanedUpValue = GetCleanedUpValue(result[index]);
                 result[index] = cleanedUpValue.Length < 6
                     ? cleanedUpValue.PadRight(6, '0')
                     : cleanedUpValue.Substring(0, 6);
             }
 
             return result.Count == 0 ? string.Empty : result[0];
+        }
+
+        private static string GetCleanedUpValue(string codedValue)
+        {
+            return new string(TrimRepeatingIndexes(codedValue.ToCharArray().ToList()).Where(item => item != '_').ToArray());
         }
 
         private static int UpdatePosition(string word, int position, List<string> result)
@@ -315,8 +301,7 @@
 
         private static int GetPositionFromSingleCombination(string word, int position, List<string> result, string combination)
         {
-            if (!word.Substring(position)
-                     .StartsWith(combination))
+            if (!word.Substring(position).StartsWith(combination))
             {
                 // Go to next combination.
                 return position;
