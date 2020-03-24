@@ -53,7 +53,7 @@
 
         private static void MergeSplitPattern(List<string> splitInput)
         {
-            splitInput[0] = $"{splitInput[0]};{splitInput[1]}";
+            splitInput[0] = string.Format("{0};{1}", splitInput[0], splitInput[1]);
             OffsetInputByOneItemToLeft(splitInput);
             splitInput.RemoveAt(splitInput.Count - 1);
         }
@@ -77,10 +77,12 @@
         {
             return new Dictionary<string, int>
             {
-                [parameterTitles[0]] = int.Parse(parsedInput[1], NumberStyles.Integer, NumberFormatInfo.InvariantInfo),
-                [parameterTitles[1]] = int.Parse(parsedInput[2], NumberStyles.Integer, NumberFormatInfo.InvariantInfo),
+                [parameterTitles[0]] = ParseInteger(parsedInput[1]),
+                [parameterTitles[1]] = ParseInteger(parsedInput[2]),
             };
         }
+
+        private static int ParseInteger(string item) => int.Parse(item, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
 
         private static void AddZerosToEnd(List<string> splitInput)
         {
@@ -101,11 +103,7 @@
             }
         }
 
-        private static string EncodeString(string value)
-        {
-            // return new DefaultSoundexEncoder(value).EncodedValue;
-            return new DaitchMokotoffSoundexEncoder(value).EncodedValue;
-        }
+        private static string EncodeString(string value) => new DaitchMokotoffSoundexEncoder(value).EncodedValue;
 
         private void InitializeSearchParameters(string valueType, List<string> parsedInput)
         {
@@ -150,12 +148,9 @@
             this.UseSoundex = true;
         }
 
-        private string ExtractSoundexExpression()
-        {
-            return Utilities.CreateRegexpObject(@"soundex\((.*)\)")
-                            .Match(this.TextExpression)
-                            .Groups[1]
-                            .Value;
-        }
+        private string ExtractSoundexExpression() => Utilities.CreateRegexpObject(@"soundex\((.*)\)")
+                                                              .Match(this.TextExpression)
+                                                              .Groups[1]
+                                                              .Value;
     }
 }

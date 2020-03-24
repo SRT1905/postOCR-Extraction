@@ -10,6 +10,9 @@
     /// </summary>
     public class GridStructure
     {
+        /// <summary>
+        /// Matrix of pairs (line mapping and tables).
+        /// </summary>
         private Tuple<LineMapping, List<WordTable>>[][] grid;
         private LineMapping source;
         private List<WordTable> tables;

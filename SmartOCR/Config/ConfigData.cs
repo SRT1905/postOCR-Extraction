@@ -32,15 +32,9 @@
         /// <summary>
         /// Gets config field by the specified string index.
         /// </summary>
-        /// <param name="name">String representation of element to get.</param>
+        /// <param name="name">Name of config field to get.</param>
         /// <returns>Single config field.</returns>
-        public ConfigField this[string name]
-        {
-            get
-            {
-                return this.Fields.First(singleField => singleField.Name == name);
-            }
-        }
+        public ConfigField this[string name] => this.Fields.First(singleField => singleField.Name == name);
 
         /// <summary>
         /// Inserts <see cref="ConfigField"/> instance to field collection.

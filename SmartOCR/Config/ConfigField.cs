@@ -108,10 +108,7 @@
         }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return $"Config field: {this.Name}; value type: {this.ValueType}";
-        }
+        public override string ToString() => string.Format("Config field: {0}; value type: {1}", this.Name, this.ValueType);
 
         private static Tuple<int, int> ParseSplitCoordinates(string[] coordinates)
         {
@@ -150,11 +147,7 @@
             }
         }
 
-        private static string EncodeString(string value)
-        {
-            // return new DefaultSoundexEncoder(value).EncodedValue;
-            return new DaitchMokotoffSoundexEncoder(value).EncodedValue;
-        }
+        private static string EncodeString(string value) => new DaitchMokotoffSoundexEncoder(value).EncodedValue;
 
         private void SplitInputAndSetProperties(string input)
         {
@@ -192,12 +185,9 @@
             this.UseSoundex = true;
         }
 
-        private string ExtractSoundexExpression()
-        {
-            return Utilities.CreateRegexpObject(@"soundex\((.*)\)")
-                            .Match(this.TextExpression)
-                            .Groups[1]
-                            .Value;
-        }
+        private string ExtractSoundexExpression() => Utilities.CreateRegexpObject(@"soundex\((.*)\)")
+                                                              .Match(this.TextExpression)
+                                                              .Groups[1]
+                                                              .Value;
     }
 }

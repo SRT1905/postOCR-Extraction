@@ -53,7 +53,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SmartOCR.Main.Program</StartupObject>
+    <StartupObject>SmartOCR.Main.EntryPoint</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
