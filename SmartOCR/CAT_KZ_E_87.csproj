@@ -130,7 +130,7 @@
     <Compile Include="Word\Read\WordReader.cs" />
     <Compile Include="Excel\ExcelApplication.cs" />
     <Compile Include="Excel\ExcelOutputWorkbook.cs" />
-    <Compile Include="Main\Program.cs" />
+    <Compile Include="Main\EntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Word\Read\WordApplication.cs" />
     <Compile Include="Word\WordTable.cs" />

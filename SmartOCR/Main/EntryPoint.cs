@@ -5,9 +5,9 @@
     using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
-    /// Entry point.
+    /// Used as entry point for Word document processing.
     /// </summary>
-    internal class Program
+    internal class EntryPoint
     {
         [STAThread]
         private static void Main(string[] args)
