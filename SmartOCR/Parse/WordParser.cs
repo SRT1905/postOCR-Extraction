@@ -49,7 +49,7 @@
             return this.treeStructure.GetValuesFromTree();
         }
 
-        private static bool DoesTreeNodeHasGridCoordinates(TreeNode fieldNode) => Equals(fieldNode.Content.GridCoordinates, new Tuple<int, int>(-1, -1));
+        private static bool DoesTreeNodeHasGridCoordinates(TreeNode fieldNode) => !Equals(fieldNode.Content.GridCoordinates, new Tuple<int, int>(-1, -1));
 
         private static bool ProcessTableNodeWithinGridSegment(TreeNode fieldNode, GridStructure gridStructure)
         {
@@ -100,7 +100,7 @@
 
         private void InitializeNodeAndGetData(TreeNode fieldNode, Func<TreeNode, GridStructure, bool> segmentSearchFunc, Action<TreeNode> postSegmentSearchAction)
         {
-            if (!DoesTreeNodeHasGridCoordinates(fieldNode))
+            if (DoesTreeNodeHasGridCoordinates(fieldNode))
             {
                 if (this.gridCollection.Any(pageGridPair => segmentSearchFunc(fieldNode, pageGridPair.Value)))
                 {
