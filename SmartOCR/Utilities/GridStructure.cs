@@ -24,14 +24,18 @@
         /// </summary>
         /// <param name="lineMapping">A source line mapping.</param>
         /// <param name="tableCollection">A collection of <see cref="WordTable"/>.</param>
-        /// <param name="size">Max number of segments (both rows and columns).</param>
-        public GridStructure(LineMapping lineMapping, List<WordTable> tableCollection, int size)
+        public GridStructure(LineMapping lineMapping, List<WordTable> tableCollection)
         {
-            this.InitializeFields(lineMapping, tableCollection, size);
+            this.InitializeFields(lineMapping, tableCollection);
             this.InitializeGrid();
             this.PopulateGrid();
             this.AddTablesToGrid();
         }
+
+        /// <summary>
+        /// Sets grid size for every instance of <see cref="GridStructure"/>.
+        /// </summary>
+        public static int StaticSize { private get; set; } = 3;
 
         /// <summary>
         /// Gets grid size.
@@ -70,10 +74,10 @@
                    gridColumn >= 0 && gridRow < this.Size;
         }
 
-        private void InitializeFields(LineMapping lineMapping, List<WordTable> tableCollection, int size)
+        private void InitializeFields(LineMapping lineMapping, List<WordTable> tableCollection)
         {
             this.source = lineMapping;
-            this.Size = size;
+            this.Size = StaticSize;
             this.tables = tableCollection;
             this.InitializeSegmentDimensions();
         }

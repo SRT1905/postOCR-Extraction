@@ -1,10 +1,12 @@
 ﻿namespace SmartOCR.Config
 {
+    using System;
     using System.IO;
     using Microsoft.Office.Interop.Excel;
     using SmartOCR.Excel;
     using SmartOCR.Search;
     using SmartOCR.Search.SimilarityAlgorithms;
+    using SmartOCR.Utilities;
     using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
@@ -39,6 +41,7 @@
         public ConfigData ParseConfig()
         {
             this.SetSimilarityAlgorithm();
+            this.SetGridStructureSize();
             return this.GetConfigData();
         }
 
@@ -163,6 +166,29 @@
             }
 
             Utilities.Debug("Default string similarity algorithm is used.", 2);
+        }
+
+        private void SetGridStructureSize()
+        {
+            for (var row = 1; row <= this.worksheet.UsedRange.Rows.Count; row++)
+            {
+                string gridSizeIdentifier = this.worksheet.UsedRange.Cells.Item[row, 1].Value2;
+                if (!gridSizeIdentifier.ToLower().StartsWith("grid size"))
+                {
+                    continue;
+                }
+
+                if (!int.TryParse(this.worksheet.UsedRange.Cells.Item[row, 2].Value2.ToString(), out int size))
+                {
+                    continue;
+                }
+
+                Utilities.Debug($"Size of grid structure is {this.worksheet.UsedRange.Cells.Item[row, 2].Value2}.", 2);
+                GridStructure.StaticSize = size;
+                return;
+            }
+
+            Utilities.Debug("Default size of grid structure is used.", 2);
         }
 
         private ConfigData AddConfigFields(ConfigData data, int headerRow)

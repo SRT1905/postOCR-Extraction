@@ -213,7 +213,9 @@
 
         private void TryAddGridStructure(int pageIndex, LineMapping mapping)
         {
-            this.GridCollection.Add(pageIndex, new GridStructure(mapping, this.TableCollection, 3)); // TODO: add dynamic grid structure size.
+            this.GridCollection.Add(
+                pageIndex,
+                new GridStructure(mapping, this.TableCollection));
         }
 
         private void GetDataFromPage(int pageIndex)
