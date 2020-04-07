@@ -60,25 +60,25 @@
         /// <summary>
         /// Tests paragraphs for matching with regular expression and performs similarity check with passed value.
         /// </summary>
-        /// <param name="regExObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
+        /// <param name="regexObject"><see cref="Regex"/> object that is used to test paragraphs.</param>
         /// <param name="checkValue">Value used for similarity check with found match. Can be null, then similarity check is not performed.</param>
         /// <returns>Indicator whether there is match between regular expression and paragraph contents.</returns>
-        public bool CheckLineContents(Regex regExObject, string checkValue)
+        public bool CheckLineContents(Regex regexObject, string checkValue)
         {
             for (int location = this.startIndex; location <= this.finishIndex; location++)
             {
                 string paragraphContent = this.GetTextToCheckByItsLocation(location);
-                if (!regExObject.IsMatch(paragraphContent))
+                if (!regexObject.IsMatch(paragraphContent))
                 {
                     continue;
                 }
 
                 if (string.IsNullOrEmpty(checkValue))
                 {
-                    return this.ProcessMatchWithoutCheck(regExObject, location, paragraphContent);
+                    return this.ProcessMatchWithoutCheck(regexObject, location, paragraphContent);
                 }
 
-                if (this.ProcessMatchWithCheck(regExObject, location, checkValue))
+                if (this.ProcessMatchWithCheck(regexObject, location, checkValue))
                 {
                     return true;
                 }

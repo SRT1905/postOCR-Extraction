@@ -54,8 +54,8 @@
         private static string[] GetCollectedDataWithMaxSimilarity(Dictionary<string, SimilarityDescription> collectedData)
         {
             return collectedData.Where(pair => pair.Value.Ratio == GetMaxSimilarityRatio(collectedData))
-                                                            .Select(pair => pair.Key)
-                                                            .ToArray();
+                                .Select(pair => pair.Key)
+                                .ToArray();
         }
 
         private void InitializeFields(TreeNode undefinedNode, LineMapping mapping, ConfigField configData)

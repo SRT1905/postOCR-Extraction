@@ -29,9 +29,8 @@
         /// </summary>
         /// <param name="value">A string to encode.</param>
         public DefaultSoundexEncoder(string value)
+            : base(value)
         {
-            this.SourceValue = value;
-            this.EncodedValue = this.EncodeValue(value);
         }
 
         /// <inheritdoc/>

@@ -11,6 +11,16 @@
     public abstract class Soundex
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="Soundex"/> class.
+        /// </summary>
+        /// <param name="value">A string to encode.</param>
+        protected Soundex(string value)
+        {
+            this.SourceValue = value;
+            this.EncodedValue = this.EncodeValue(value);
+        }
+
+        /// <summary>
         /// Gets or sets original decoded string value.
         /// </summary>
         public string SourceValue { get; protected set; }

@@ -207,7 +207,7 @@
         }
 
         /// <summary>
-        /// Checks whether argument, provided after document type is path to directory or file.
+        /// Checks whether argument, provided after config file is path to directory or file.
         /// </summary>
         /// <param name="path">Path, entered from command prompt.</param>
         /// <returns>PathType enumeration item, that indicates path type.</returns>

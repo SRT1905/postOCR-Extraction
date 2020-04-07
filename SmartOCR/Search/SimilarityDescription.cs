@@ -37,7 +37,7 @@
         public static ISimilarityAlgorithm SimilarityAlgorithm { private get; set; } = SimilarityAlgorithmSelector.GetAlgorithm("LevensteinAlgorithm");
 
         /// <summary>
-        /// Gets percentage of closeness between two strings.
+        /// Gets percentage of similarity between two strings.
         /// </summary>
         public double Ratio { get; private set; }
 

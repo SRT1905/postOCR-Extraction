@@ -155,7 +155,7 @@
         /// Adds ParagraphContainer instance to collection with maintaining sort order.
         /// </summary>
         /// <param name="paragraphCollection">Collection of ParagraphContainer objects.</param>
-        /// <param name="textRangeContainer">ParagraphContainer instance to add.</param>
+        /// <param name="textRangeContainer"><see cref="ParagraphContainer"/> instance to add.</param>
         /// <returns>Updated collection of ParagraphContainer objects.</returns>
         private static List<ParagraphContainer> InsertRangeInCollection(
             List<ParagraphContainer> paragraphCollection, ParagraphContainer textRangeContainer)
