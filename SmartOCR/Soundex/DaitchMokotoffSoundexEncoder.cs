@@ -248,7 +248,7 @@
             {
                 string.Empty,
             };
-            LoopThroughString(Transliteration.TransliterateWord(word), result);
+            LoopThroughString(Transliteration.ToLatin(word), result);
 
             // Filter out consecutive letters and '_' placeholders.
             return GetFilteredAndPaddedResult(result);

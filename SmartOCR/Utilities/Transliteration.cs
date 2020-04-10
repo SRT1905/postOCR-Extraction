@@ -26,13 +26,20 @@
         /// Transliterates Cyrillic letters to Latin.
         /// </summary>
         /// <param name="word">A word to transform.</param>
-        /// <param name="toLatin">Indicates whether word should be transliterated to Latin.</param>
         /// <returns>A transliterated word.</returns>
-        public static string TransliterateWord(string word, bool toLatin = true)
+        public static string ToLatin(string word)
         {
-            return TransliterationDictionary.Aggregate(word, (current, translitPair) => toLatin
-                                                                                            ? current.Replace(translitPair.Key, translitPair.Value)
-                                                                                            : current.Replace(translitPair.Value, translitPair.Key));
+            return TransliterationDictionary.Aggregate(word, (current, translitPair) => current.Replace(translitPair.Key, translitPair.Value));
+        }
+
+        /// <summary>
+        /// Transliterates Latin letters to Cyrillic.
+        /// </summary>
+        /// <param name="word">A word to transform.</param>
+        /// <returns>A transliterated word.</returns>
+        public static string ToCyrillic(string word)
+        {
+            return TransliterationDictionary.Aggregate(word, (current, translitPair) => current.Replace(translitPair.Value, translitPair.Key));
         }
     }
 }
