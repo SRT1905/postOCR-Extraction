@@ -14,7 +14,7 @@
         /// </summary>
         private const byte MinimalTextLength = 2;
         private readonly Document document;
-        private readonly int pageIndex;
+        private int pageIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordTextFrameReader"/> class.
@@ -35,6 +35,13 @@
         {
             Utilities.Debug($"Getting text in shapes from page {this.pageIndex}.", 3);
             return AddDataFromFrames(this.GetValidTextFrames());
+        }
+
+        /// <inheritdoc/>
+        public List<WordTable> GetWordTables(int pageIndex)
+        {
+            this.pageIndex = pageIndex;
+            return this.GetWordTables();
         }
 
         /// <inheritdoc/>

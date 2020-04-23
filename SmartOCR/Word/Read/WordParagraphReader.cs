@@ -55,6 +55,13 @@
         }
 
         /// <inheritdoc/>
+        public List<WordTable> GetWordTables(int pageIndex)
+        {
+            this.pageIndex = pageIndex;
+            return this.GetWordTables();
+        }
+
+        /// <inheritdoc/>
         public List<WordTable> GetWordTables()
         {
             var tables = new List<WordTable>();

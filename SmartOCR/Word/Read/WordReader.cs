@@ -42,7 +42,7 @@
         /// <summary>
         /// Gets collection of processed Word tables.
         /// </summary>
-        public List<WordTable> TableCollection { get; } = new List<WordTable>();
+        public SortedDictionary<int, List<WordTable>> TableCollection { get; } = new SortedDictionary<int, List<WordTable>>();
 
         /// <summary>
         /// Gets document contents grouped in separate lines.
@@ -213,9 +213,14 @@
 
         private void TryAddGridStructure(int pageIndex, LineMapping mapping)
         {
-            this.GridCollection.Add(
-                pageIndex,
-                new GridStructure(mapping, this.TableCollection));
+            var newGrid = new GridStructure(mapping, this.TableCollection[pageIndex]);
+            Utilities.Debug($"Grid segments for page {pageIndex}: ", 2);
+            foreach (var line in newGrid.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                Utilities.Debug(line, 2);
+            }
+
+            this.GridCollection.Add(pageIndex, newGrid);
         }
 
         private void GetDataFromPage(int pageIndex)
@@ -244,17 +249,22 @@
                 : GroupParagraphsByLine(documentContent);
         }
 
-        private void UpdateTableCollection()
+        private void UpdateTableCollection(int pageIndex)
         {
             foreach (var item in new ITableReader[] { this.paragraphReader, this.frameReader })
             {
-                this.TableCollection.AddRange(item.GetWordTables());
+                if (!this.TableCollection.ContainsKey(pageIndex))
+                {
+                    this.TableCollection.Add(pageIndex, new List<WordTable>());
+                }
+
+                this.TableCollection[pageIndex].AddRange(item.GetWordTables(pageIndex));
             }
         }
 
         private ParagraphMapping GetDataFromReaders(int pageIndex)
         {
-            this.UpdateTableCollection();
+            this.UpdateTableCollection(pageIndex);
             return MergeParagraphs(
                 this.paragraphReader.GetParagraphMapping(pageIndex),
                 this.frameReader.GetParagraphMapping());

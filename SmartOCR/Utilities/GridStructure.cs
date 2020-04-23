@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using SmartOCR.Word;
 
     /// <summary>
@@ -14,8 +15,8 @@
         /// Matrix of pairs (line mapping and tables).
         /// </summary>
         private Tuple<LineMapping, List<WordTable>>[][] grid;
-        private LineMapping source;
-        private List<WordTable> tables;
+        private LineMapping source = new LineMapping();
+        private List<WordTable> tables = new List<WordTable>();
         private int singleSegmentRowSize;
         private decimal singleSegmentColumnSize;
 
@@ -59,6 +60,33 @@
         /// <param name="gridCoordinates">A tuple, containing grid coordinates.</param>
         /// <returns>A pair of <see cref="LineMapping"/> instance and <see cref="WordTable"/> collection.</returns>
         public Tuple<LineMapping, List<WordTable>> this[Tuple<int, int> gridCoordinates] => this[gridCoordinates.Item1, gridCoordinates.Item2];
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            try
+            {
+                StringBuilder builder = new StringBuilder();
+                for (int row = 0; row < this.Size; row++)
+                {
+                    ParagraphContainer firstContainerInSegment = this[row, 0].Item1.Values.Where(item => item.Count > 0).First().First();
+                    builder.AppendFormat("({0}, {1})", firstContainerInSegment.HorizontalLocation, firstContainerInSegment.VerticalLocation);
+                    for (int column = 1; column < this.Size; column++)
+                    {
+                        firstContainerInSegment = this[row, column].Item1.Values.Where(item => item.Count > 0).First().First();
+                        builder.Append("-----").AppendFormat("({0}, {1})", firstContainerInSegment.HorizontalLocation, firstContainerInSegment.VerticalLocation);
+                    }
+
+                    builder.AppendLine();
+                }
+
+                return builder.ToString();
+            }
+            catch (InvalidOperationException)
+            {
+                return base.ToString();
+            }
+        }
 
         private static bool DoesGridSegmentContainsTableAnchor(LineMapping gridSegment, ParagraphContainer anchor)
         {
