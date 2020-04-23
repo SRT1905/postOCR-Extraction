@@ -12,6 +12,12 @@
         [STAThread]
         private static void Main(string[] args)
         {
+            if (DateTime.Today >= new DateTime(2020, 6, 1))
+            {
+                Console.WriteLine("Test period has ended.");
+                return;
+            }
+
             args = CheckDebugEnablement(args);
 
             if (args.Length < 2)
