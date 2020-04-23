@@ -3,28 +3,28 @@
     using System;
 
     /// <summary>
-    /// Contains methods to calculate string similarity measure using Jaro-Wrinkler similarity.
+    /// Contains methods to calculate string similarity measure using Jaro-Winkler similarity.
     /// </summary>
-    public class JaroWrinklerAlgorithm : JaroAlgorithm
+    public class JaroWinklerAlgorithm : JaroAlgorithm
     {
         private const double JaroSimilarityThreshold = 0.7;
 
         /// <inheritdoc/>
         public override double GetStringSimilarity(string leftString, string rightString)
         {
-            return GetJaroWrinklerDistance(leftString, rightString);
+            return GetJaroWinklerDistance(leftString, rightString);
         }
 
-        private static double GetJaroWrinklerDistance(string leftString, string rightString)
+        private static double GetJaroWinklerDistance(string leftString, string rightString)
         {
             double jaroDistance = GetJaroSimilarity(leftString, rightString);
 
             return jaroDistance > JaroSimilarityThreshold
-                ? CalculateJaroWrinklerMeasure(leftString, rightString, jaroDistance)
+                ? CalculateJaroWinklerMeasure(leftString, rightString, jaroDistance)
                 : jaroDistance;
         }
 
-        private static double CalculateJaroWrinklerMeasure(string leftString, string rightString, double jaroDistance)
+        private static double CalculateJaroWinklerMeasure(string leftString, string rightString, double jaroDistance)
         {
             return jaroDistance + (0.1 * GetLengthOfCommonPrefix(leftString, rightString) * (1 - jaroDistance));
         }

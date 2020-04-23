@@ -4,9 +4,9 @@
     using SmartOCR.Search.SimilarityAlgorithms;
 
     [TestClass]
-    public class JaroWrinklerAlgorithmTest
+    public class JaroWinklerAlgorithmTest
     {
-        static readonly JaroWrinklerAlgorithm algorithm = new JaroWrinklerAlgorithm();
+        static readonly JaroWinklerAlgorithm algorithm = new JaroWinklerAlgorithm();
 
         [TestMethod]
         public void EqualStringTest()
