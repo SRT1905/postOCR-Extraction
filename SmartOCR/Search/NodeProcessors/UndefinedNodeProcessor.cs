@@ -205,10 +205,23 @@
 
         private void TryAddLineNode(int line, decimal horizontalLocation)
         {
-            if (!this.node.Content.Lines.Contains(line))
+            if (!(this.node.Content.Lines.Contains(line) && this.DoChildrenShareHorizontalLocation(horizontalLocation)))
             {
                 this.AddLineNodeToFieldNode(line, horizontalLocation);
             }
+        }
+
+        private bool DoChildrenShareHorizontalLocation(decimal horizontalLocation)
+        {
+            foreach (TreeNode child in this.node.Children)
+            {
+                if (child.Content.HorizontalParagraph == horizontalLocation)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void AddLineNodeToFieldNode(int line, decimal horizontalLocation)
@@ -219,6 +232,7 @@
                                                              .AddLine(line)
                                                              .SetNodeLabel("Line")
                                                              .SetHorizontalParagraph(horizontalLocation)
+                                                             .SetSecondSearchParameter(1) // NOTE: added to preserve location of initial paragraph
                                                              .Build());
         }
     }
