@@ -74,7 +74,7 @@
         {
             this.gridCollection = reader.GridCollection;
             this.lineMapping = reader.Mapping;
-            this.tables = reader.TableCollection;
+            this.tables = reader.TableCollection.Values.SelectMany(item => item).ToList();
         }
 
         private void ProcessDocument()

@@ -8,7 +8,7 @@
     /// <summary>
     /// Used to encode strings representation so that they can be matched despite minor differences in spelling.
     /// </summary>
-    public abstract class Soundex
+    public abstract class Soundex // TODO: remove non-letter chars
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Soundex"/> class.

@@ -57,7 +57,7 @@
             if (checkStatus)
             {
                 lineNodeContent.HorizontalParagraph = lineChecker.ParagraphHorizontalLocation;
-                Utilities.Debug($"Found match in line {lineNumber}: {lineNodeContent.FoundValue}", 4);
+                Utilities.Debug($"Found match in line {lineNumber}: {lineChecker.JoinedMatches}", 4);
             }
 
             lineNodeContent.FoundValue = lineChecker.JoinedMatches;

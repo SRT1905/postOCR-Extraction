@@ -43,6 +43,13 @@
         /// </summary>
         public Dictionary<string, int> SearchParameters { get; private set; }
 
+        protected virtual List<string> ParseInput(string input)
+        {
+            return input == null
+                ? new List<string>() { null, "0", "0" }
+                : this.DefineExpressionParameters(input);
+        }
+
         private static void TryToMergeSplitPattern(List<string> splitInput)
         {
             while (!(int.TryParse(splitInput[1], out _) || string.IsNullOrEmpty(splitInput[1])))
@@ -109,13 +116,6 @@
         {
             string[] parameterTitles = DefineNumericParameterTitles(valueType);
             this.SearchParameters = MapParametersWithValues(parsedInput, parameterTitles);
-        }
-
-        private List<string> ParseInput(string input)
-        {
-            return input == null
-                ? new List<string>() { null, "0", "0" }
-                : this.DefineExpressionParameters(input);
         }
 
         private List<string> DefineExpressionParameters(string input)

@@ -12,7 +12,7 @@
     /// <summary>
     /// Performs collection and parsing of config data from config Excel workbook.
     /// </summary>
-    public class ConfigParser
+    public class ConfigParser // TODO: add parameter for terminal expression
     {
         private static Workbook configWorkbook;
         private readonly Worksheet worksheet;
