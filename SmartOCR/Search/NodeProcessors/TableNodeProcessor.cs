@@ -133,6 +133,11 @@
         {
             var childNode = this.GetTerminalNode();
             ParagraphContainer itemByExpressionPosition = GetCellByNodeContent(table, childNode);
+            if (itemByExpressionPosition == null)
+            {
+                return false;
+            }
+
             Regex regexObject = Utilities.CreateRegexpObject(childNode.Content.TextExpression);
             return regexObject.IsMatch(itemByExpressionPosition.Text) &&
                    ExtractValueFromMatch(childNode, itemByExpressionPosition.Text, regexObject);
