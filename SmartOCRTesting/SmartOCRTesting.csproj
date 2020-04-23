@@ -49,15 +49,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JaroWrinklerAlgorithmTest.cs" />
+    <Compile Include="JaroWinklerAlgorithmTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DefaultSoundexEncoderTest.cs" />
     <Compile Include="DaitchMokotoffSoundexTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmartOCR\SmartOCR.csproj">
+    <ProjectReference Include="..\SmartOCR\CAT_KZ_E_87.csproj">
       <Project>{f41fd661-8210-4669-bceb-5fcaa0f2a9a8}</Project>
-      <Name>SmartOCR</Name>
+      <Name>CAT_KZ_E_87</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

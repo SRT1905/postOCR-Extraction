@@ -7,7 +7,7 @@
     <ProjectGuid>{F41FD661-8210-4669-BCEB-5FCAA0F2A9A8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>SmartOCR</RootNamespace>
-    <AssemblyName>SmartOCR</AssemblyName>
+    <AssemblyName>CAT_KZ_E_87</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -76,6 +76,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\TerminalConfigExpression.cs" />
     <Compile Include="Main\CmdProcess.cs" />
     <Compile Include="Config\ConfigData.cs" />
     <Compile Include="Config\ConfigExpression.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Utilities\DeepCopyExtension.cs" />
     <Compile Include="Search\SimilarityAlgorithmSelector.cs" />
     <Compile Include="Search\SimilarityAlgorithms\JaroAlgorithm.cs" />
-    <Compile Include="Search\SimilarityAlgorithms\JaroWrinklerAlgorithm.cs" />
+    <Compile Include="Search\SimilarityAlgorithms\JaroWinklerAlgorithm.cs" />
     <Compile Include="Search\SimilarityAlgorithms\LevensteinAlgorithm.cs" />
     <Compile Include="Search\SimilarityAlgorithms\ISimilarityAlgorithm.cs" />
     <Compile Include="Search\SimilarityAlgorithms\RatcliffObershelpAlgorithm.cs" />
