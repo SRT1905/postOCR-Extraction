@@ -2,6 +2,8 @@
 {
     using System;
     using System.Linq;
+    using System.Windows.Forms;
+    using SmartOCR.UI;
     using Utilities = SmartOCR.Utilities.UtilitiesClass;
 
     /// <summary>
@@ -18,6 +20,12 @@
                 return;
             }
 
+            if (args.Length == 0)
+            {
+                Application.EnableVisualStyles();
+                args = GetArgumentsFromUI();
+            }
+
             args = CheckDebugEnablement(args);
 
             if (args.Length < 2)
@@ -30,8 +38,24 @@
             }
         }
 
+        private static string[] GetArgumentsFromUI()
+        {
+            StartForm startForm = new StartForm();
+            if (startForm.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            {
+                return new string[] { };
+            }
+
+            return startForm.CmdArguments;
+        }
+
         private static string[] CheckDebugEnablement(string[] args)
         {
+            if (args.Length == 0)
+            {
+                return args;
+            }
+
             if (args[0].StartsWith("-d"))
             {
                 args = ProcessDebugParameter(args);

@@ -55,9 +55,9 @@
     <Compile Include="DaitchMokotoffSoundexTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmartOCR\CAT_KZ_E_87.csproj">
+    <ProjectReference Include="..\SmartOCR\SmartOCR.csproj">
       <Project>{f41fd661-8210-4669-bceb-5fcaa0f2a9a8}</Project>
-      <Name>CAT_KZ_E_87</Name>
+      <Name>SmartOCR</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@
     <ProjectGuid>{F41FD661-8210-4669-BCEB-5FCAA0F2A9A8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>SmartOCR</RootNamespace>
-    <AssemblyName>CAT_KZ_E_87</AssemblyName>
+    <AssemblyName>SmartOCR</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -94,6 +94,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ConfigContainer.resx</DependentUpon>
     </Compile>
+    <Compile Include="UI\StartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\StartForm.Designer.cs">
+      <DependentUpon>StartForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\DeepCopyExtension.cs" />
     <Compile Include="Search\SimilarityAlgorithmSelector.cs" />
     <Compile Include="Search\SimilarityAlgorithms\JaroAlgorithm.cs" />
@@ -148,6 +154,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\StartForm.resx">
+      <DependentUpon>StartForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\config.xlsx" />
@@ -169,6 +178,8 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.1.118\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Tracking\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
