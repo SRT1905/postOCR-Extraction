@@ -18,7 +18,7 @@
         private readonly Document document;
         private int pageIndex;
         private ParagraphMapping paragraphs;
-        private List<int> paragraphIndexes;
+        private Range currentParagraphRange = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordParagraphReader"/> class.
@@ -29,7 +29,7 @@
         {
             this.document = document;
             this.pageIndex = pageIndex;
-            this.ResetParagraphIndexes();
+            this.currentParagraphRange = this.document.Paragraphs[1].Range;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@
         public ParagraphMapping GetParagraphMapping()
         {
             Utilities.Debug($"Getting paragraphCollection from page {this.pageIndex}.", 3);
-            return this.paragraphs ?? this.ReadDocument();
+            return this.ReadDocument();
         }
 
         /// <summary>
@@ -50,7 +50,11 @@
         public ParagraphMapping GetParagraphMapping(int newPageIndex)
         {
             this.pageIndex = newPageIndex;
-            this.ResetParagraphIndexes();
+            while (this.currentParagraphRange != null && this.currentParagraphRange.Information[WdInformation.wdActiveEndPageNumber] < this.pageIndex)
+            {
+                this.currentParagraphRange = this.currentParagraphRange.Next(WdUnits.wdParagraph, 1);
+            }
+
             return this.GetParagraphMapping();
         }
 
@@ -80,11 +84,6 @@
             {
                 paragraphCollection.Add(new ParagraphContainer(singleRange));
             }
-        }
-
-        private static List<int> GetRange(int start, int finish)
-        {
-            return Enumerable.Range(start, finish).ToList();
         }
 
         private void AddParagraphToContents(List<ParagraphContainer> paragraphCollection, int paragraphIndex)
@@ -123,37 +122,13 @@
             return this.paragraphs;
         }
 
-        private void ResetParagraphIndexes()
-        {
-            int startPoint = 0;
-            for (int paragraphIndex = 1; paragraphIndex <= this.document.Paragraphs.Count; paragraphIndex++)
-            {
-                int currentPage = this.document.Paragraphs[paragraphIndex].Range.Information[WdInformation.wdActiveEndPageNumber];
-                if (currentPage > this.pageIndex)
-                {
-                    this.paragraphIndexes = GetRange(startPoint, paragraphIndex - startPoint + 1);
-                    return;
-                }
-
-                startPoint = this.SetStartPoint(startPoint, paragraphIndex, currentPage);
-            }
-
-            this.paragraphIndexes = GetRange(startPoint, this.document.Paragraphs.Count);
-        }
-
-        private int SetStartPoint(int startPoint, int paragraphIndex, int currentPage)
-        {
-            return startPoint == 0 && this.pageIndex == currentPage
-                ? paragraphIndex
-                : startPoint;
-        }
-
         private List<ParagraphContainer> GetParagraphsOnPage()
         {
             var paragraphCollection = new List<ParagraphContainer>();
-            foreach (int paragraphIndex in this.paragraphIndexes)
+            while (this.currentParagraphRange != null && this.currentParagraphRange.Information[WdInformation.wdActiveEndPageNumber] == this.pageIndex)
             {
-                TryGetDataFromParagraph(paragraphCollection, this.document.Paragraphs[paragraphIndex].Range);
+                TryGetDataFromParagraph(paragraphCollection, this.currentParagraphRange);
+                this.currentParagraphRange = this.currentParagraphRange.Next(WdUnits.wdParagraph, 1);
             }
 
             return paragraphCollection;
