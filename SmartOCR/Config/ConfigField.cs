@@ -112,6 +112,11 @@
 
         private static Tuple<int, int> ParseSplitCoordinates(string[] coordinates)
         {
+            if (coordinates == null || coordinates.Length < 2)
+            {
+                return new Tuple<int, int>(-1, -1);
+            }
+
             return new Tuple<int, int>(
                 TryParseStringAsInteger(coordinates[0]),
                 TryParseStringAsInteger(coordinates[1]));

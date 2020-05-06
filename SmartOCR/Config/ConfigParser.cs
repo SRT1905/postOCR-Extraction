@@ -148,6 +148,11 @@
             for (var row = 1; row <= this.worksheet.UsedRange.Rows.Count; row++)
             {
                 string algorithmName = this.worksheet.UsedRange.Cells.Item[row, 1].Value2;
+                if (algorithmName == null)
+                {
+                    break;
+                }
+
                 if (!algorithmName.ToLower().StartsWith("similarity algorithm"))
                 {
                     continue;
@@ -170,9 +175,15 @@
 
         private void SetGridStructureSize()
         {
+            GridStructure.StaticSize = 0;
             for (var row = 1; row <= this.worksheet.UsedRange.Rows.Count; row++)
             {
                 string gridSizeIdentifier = this.worksheet.UsedRange.Cells.Item[row, 1].Value2;
+                if (gridSizeIdentifier == null)
+                {
+                    break;
+                }
+
                 if (!gridSizeIdentifier.ToLower().StartsWith("grid size"))
                 {
                     continue;
@@ -188,7 +199,7 @@
                 return;
             }
 
-            Utilities.Debug("Default size of grid structure is used.", 2);
+            Utilities.Debug("Grid structure is not used.", 2);
         }
 
         private ConfigData AddConfigFields(ConfigData data, int headerRow)

@@ -213,6 +213,7 @@
         /// <returns>PathType enumeration item, that indicates path type.</returns>
         private PathType ValidatePath(string path)
         {
+            // TODO: check config argument as path with or without extension
             if (Directory.Exists(path))
             {
                 Utilities.Debug("Arguments that represent documents to process will be processed as directories.", 1);
