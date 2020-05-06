@@ -213,6 +213,11 @@
 
         private void TryAddGridStructure(int pageIndex, LineMapping mapping)
         {
+            if (GridStructure.StaticSize == 0)
+            {
+                return;
+            }
+
             var newGrid = new GridStructure(mapping, this.TableCollection[pageIndex]);
             Utilities.Debug($"Grid segments for page {pageIndex}: ", 2);
             foreach (var line in newGrid.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))

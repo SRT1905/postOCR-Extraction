@@ -34,9 +34,9 @@
         }
 
         /// <summary>
-        /// Sets grid size for every instance of <see cref="GridStructure"/>.
+        /// Gets or sets grid size for every instance of <see cref="GridStructure"/>.
         /// </summary>
-        public static int StaticSize { private get; set; } = 3;
+        public static int StaticSize { get; set; } = 3;
 
         /// <summary>
         /// Gets grid size.

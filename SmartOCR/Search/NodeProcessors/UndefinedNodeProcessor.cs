@@ -108,9 +108,12 @@
             {
                 Utilities.Debug($"Found initial match at line {lineContents.Key} in paragraph '{container}'.", 4);
                 Utilities.Debug($"{description}.", 5);
-                collectedData.Add(
-                    CreateSimilarityDictionaryKey(lineContents, container, matchedDescriptions.IndexOf(description)),
-                    description);
+
+                string key = CreateSimilarityDictionaryKey(lineContents, container, matchedDescriptions.IndexOf(description));
+                if (!collectedData.ContainsKey(key))
+                {
+                    collectedData.Add(key, description);
+                }
             }
         }
 
