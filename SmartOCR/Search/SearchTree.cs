@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using SmartOCR.Config;
     using Utilities = SmartOCR.Utilities.UtilitiesClass;
@@ -56,6 +57,12 @@
             foreach (var field in this.configData.Fields)
             {
                 this.GetValuesForSingleField(finalValues, field);
+            }
+
+            Utilities.Debug("Collected data:", 2);
+            foreach (var item in finalValues)
+            {
+                Utilities.Debug($"[{item.Key}] = '{item.Value}'", 3);
             }
 
             return finalValues;
@@ -227,6 +234,7 @@
 
         private HashSet<string> GetDataFromChildren(string fieldName, List<string> childrenCollection)
         {
+            // TODO: set Hashset/List depending on config
             return childrenCollection.Count != 0
                 ? new HashSet<string>(childrenCollection)
                 : new HashSet<string>(this.GetDataFromPreTerminalNodes(fieldName));
